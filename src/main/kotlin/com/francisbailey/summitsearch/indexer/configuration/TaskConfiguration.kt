@@ -1,0 +1,35 @@
+package com.francisbailey.summitsearch.indexer.configuration
+
+import com.francisbailey.summitsearch.indexer.task.DefaultRateLimiter
+import com.francisbailey.summitsearch.indexer.task.RateLimiter
+import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.Bucket
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import java.time.Duration
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+
+@Configuration
+open class TaskConfiguration {
+
+    @Bean
+    fun indexingTaskExecutor(): Executor {
+        return Executors.newFixedThreadPool(INDEX_TASK_THREAD_COUNT)
+    }
+
+    @Bean
+    fun indexingTaskRateLimiter(): RateLimiter<String> {
+        return DefaultRateLimiter(
+            bucketBuilder = Bucket
+                .builder()
+                .addLimit(Bandwidth.simple(1, INDEX_TASK_INTERVAL))
+        )
+    }
+
+    companion object {
+        const val INDEX_TASK_THREAD_COUNT = 100
+        val INDEX_TASK_INTERVAL: Duration = Duration.ofSeconds(5)
+    }
+
+}
