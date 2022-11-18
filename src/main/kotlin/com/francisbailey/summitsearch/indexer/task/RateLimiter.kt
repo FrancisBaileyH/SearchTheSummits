@@ -11,6 +11,7 @@ interface RateLimiter<T> {
 class DefaultRateLimiter<T : Any>(
     private val bucketBuilder: LocalBucketBuilder
 ): RateLimiter<T> {
+
     /**
      * There is a memory leak here, as the map never gets purged. However, we only expect
      * a small number of entries, so this is tolerable for now.

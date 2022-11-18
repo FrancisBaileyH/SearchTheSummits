@@ -3,21 +3,23 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.7.21"
     kotlin("plugin.serialization") version "1.7.21"
-    id("org.springframework.boot") version "2.5.0"
+    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "2.7.5"
     application
 }
 
 group = "com.francisbailey"
 version = "1.0-SNAPSHOT"
 
-apply(plugin = "io.spring.dependency-management")
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
+
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
     implementation(platform("software.amazon.awssdk:bom:2.18.19"))
@@ -26,7 +28,14 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("io.ktor:ktor-client-core:2.1.3")
     implementation("io.ktor:ktor-client-cio:2.1.3")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("co.elastic.clients:elasticsearch-java:8.5.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.3")
+
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation("org.mockito:mockito-inline:4.8.0")
+    testImplementation("org.mockito:mockito-core:4.8.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
 tasks.test {
