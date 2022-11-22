@@ -15,6 +15,9 @@ class PageCrawlerService(
 ) {
     private val log = KotlinLogging.logger { }
 
+    /**
+     * @TODO need to handle 302 redirects and 404s at some point
+     */
     fun getHtmlContentAsString(pageUrl: URL) = runBlocking {
         log.info { "Fetching HTML content from: $pageUrl" }
 

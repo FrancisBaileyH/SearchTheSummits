@@ -14,7 +14,6 @@ class SearchIndexService(
 ) {
     private val log = KotlinLogging.logger { }
 
-
     fun indexPageContents(source: URL, htmlContent: String) {
         log.info { "Indexing content from: $source" }
         val result = elasticSearchClient.index(
@@ -38,7 +37,7 @@ class SearchIndexService(
 
 
     fun createIndexIfNotExists() {
-        if (indexExists(SUMMIT_INDEX_NAME)) {
+        if (!indexExists(SUMMIT_INDEX_NAME)) {
             log.info { "Index: $SUMMIT_INDEX_NAME not found. Attempting to create it now" }
 
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {

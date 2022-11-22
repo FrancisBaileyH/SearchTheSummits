@@ -12,7 +12,7 @@ open class BackgroundSchedulerConfiguration(
     private val pageIndexingCoordinator: PageIndexingCoordinator
 ) {
 
-    @Scheduled(fixedRate = 100)
+    @Scheduled(fixedRate = 1000)
     open fun runPageIndexingCoordinator() {
         pageIndexingCoordinator.coordinateTaskExecution()
     }
