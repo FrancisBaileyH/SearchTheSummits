@@ -29,7 +29,7 @@ open class TaskConfiguration {
 
     companion object {
         const val INDEX_TASK_THREAD_COUNT = 100
-        val INDEX_TASK_INTERVAL: Duration = Duration.ofSeconds(5)
+        val INDEX_TASK_INTERVAL: Duration = Duration.ofSeconds(1)
     }
 
 }
