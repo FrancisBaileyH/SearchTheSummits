@@ -10,6 +10,7 @@ import org.apache.http.HttpHost
 import org.elasticsearch.client.RestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
 import java.time.Duration
 
@@ -18,13 +19,14 @@ import java.time.Duration
 open class ClientConfiguration {
 
     @Bean
-    fun sqsClient(): SqsClient {
+    open fun sqsClient(): SqsClient {
         return SqsClient.builder()
+            .region(Region.US_WEST_2)
             .build()
     }
 
     @Bean
-    fun httpClient(): HttpClient {
+    open fun httpClient(): HttpClient {
        return HttpClient(CIO) {
             install(UserAgent) {
                 agent = CRAWLING_AGENT
@@ -40,7 +42,7 @@ open class ClientConfiguration {
     }
 
     @Bean
-    fun elasticSearchClient(): ElasticsearchClient {
+    open fun elasticSearchClient(): ElasticsearchClient {
         return ElasticsearchClient(
             RestClientTransport(
                 RestClient.builder(

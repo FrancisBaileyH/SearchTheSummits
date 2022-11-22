@@ -28,13 +28,17 @@ class SearchIndexService(
         log.info { "Result: $result" }
     }
 
-
-    fun createIndexIfNotExists() {
+    fun indexExists(name: String): Boolean {
         val indexExistsResponse = elasticSearchClient.indices().exists(ExistsRequest.of{
-            it.index(SUMMIT_INDEX_NAME)
+            it.index(name)
         })
 
-        if (!indexExistsResponse.value()) {
+        return indexExistsResponse.value()
+    }
+
+
+    fun createIndexIfNotExists() {
+        if (indexExists(SUMMIT_INDEX_NAME)) {
             log.info { "Index: $SUMMIT_INDEX_NAME not found. Attempting to create it now" }
 
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {

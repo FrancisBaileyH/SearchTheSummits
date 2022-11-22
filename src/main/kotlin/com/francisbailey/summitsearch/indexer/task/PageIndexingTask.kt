@@ -14,7 +14,7 @@ import java.net.URL
  */
 
 class PageIndexingTask(
-    private val queueName: String,
+    val queueName: String,
     private val pageCrawlerService: PageCrawlerService,
     private val taskQueuePollingClient: TaskQueuePollingClient,
     private val indexService: SearchIndexService,

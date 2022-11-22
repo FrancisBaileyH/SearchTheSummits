@@ -28,10 +28,10 @@ class PageIndexingCoordinator(
      */
     fun coordinateTaskExecution() {
         log.info { "Running indexing tasks now" }
-        indexingQueueProvider.getQueues().forEach {
+        indexingQueueProvider.getQueues().forEach { queue ->
             indexingTaskExecutor.execute(
                 PageIndexingTask(
-                    queueName = it,
+                    queueName = queue,
                     pageCrawlerService = pageCrawlerService,
                     taskQueuePollingClient = taskQueuePollingClient,
                     indexService = searchIndexService,

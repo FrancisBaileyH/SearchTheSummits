@@ -14,12 +14,12 @@ import java.util.concurrent.Executors
 open class TaskConfiguration {
 
     @Bean
-    fun indexingTaskExecutor(): Executor {
+    open fun indexingTaskExecutor(): Executor {
         return Executors.newFixedThreadPool(INDEX_TASK_THREAD_COUNT)
     }
 
     @Bean
-    fun indexingTaskRateLimiter(): RateLimiter<String> {
+    open fun indexingTaskRateLimiter(): RateLimiter<String> {
         return DefaultRateLimiter(
             bucketBuilder = Bucket
                 .builder()

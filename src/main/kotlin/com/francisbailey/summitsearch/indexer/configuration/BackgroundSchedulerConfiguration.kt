@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexer.background
+package com.francisbailey.summitsearch.indexer.configuration
 
 import com.francisbailey.summitsearch.indexer.IndexingQueueProvider
 import com.francisbailey.summitsearch.indexer.task.PageIndexingCoordinator
@@ -13,12 +13,12 @@ open class BackgroundSchedulerConfiguration(
 ) {
 
     @Scheduled(fixedRate = 100)
-    fun runPageIndexingCoordinator() {
+    open fun runPageIndexingCoordinator() {
         pageIndexingCoordinator.coordinateTaskExecution()
     }
 
     @Scheduled(fixedRate = 10000)
-    fun runIndexingQueueProvider() {
+    open fun runIndexingQueueProvider() {
         indexingQueueProvider.refreshQueues()
     }
 

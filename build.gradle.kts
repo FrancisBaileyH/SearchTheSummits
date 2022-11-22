@@ -30,6 +30,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:2.1.3")
     implementation("co.elastic.clients:elasticsearch-java:8.5.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.12.3")
+    implementation("jakarta.json:jakarta.json-api:2.0.1")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")
