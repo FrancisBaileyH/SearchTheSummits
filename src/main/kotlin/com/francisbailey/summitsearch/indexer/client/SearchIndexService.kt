@@ -14,13 +14,20 @@ class SearchIndexService(
 ) {
     private val log = KotlinLogging.logger { }
 
+    init {
+        createIndexIfNotExists()
+    }
+
     fun indexPageContents(source: URL, htmlContent: String) {
         log.info { "Indexing content from: $source" }
         val result = elasticSearchClient.index(
             IndexRequest.of {
                 it.index(SUMMIT_INDEX_NAME)
                 it.id(source.toString())
-                it.document(htmlContent)
+                it.document(HtmlMapping(
+                    source = source,
+                    html = htmlContent
+                ))
             }
         )
 
@@ -70,7 +77,12 @@ class SearchIndexService(
 
 
     companion object {
-        const val SUMMIT_INDEX_NAME = "SummitSearchIndex"
+        const val SUMMIT_INDEX_NAME = "summit-search-index"
     }
-
 }
+
+
+data class HtmlMapping(
+    val source: URL,
+    val html: String
+)
