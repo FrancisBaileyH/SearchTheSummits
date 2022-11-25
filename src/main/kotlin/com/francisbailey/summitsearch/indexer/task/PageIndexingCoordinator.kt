@@ -2,8 +2,8 @@ package com.francisbailey.summitsearch.indexer.task
 
 import com.francisbailey.summitsearch.indexer.IndexingQueueProvider
 import com.francisbailey.summitsearch.indexer.client.PageCrawlerService
-import com.francisbailey.summitsearch.indexer.client.SearchIndexService
 import com.francisbailey.summitsearch.indexer.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.concurrent.Executor
@@ -14,7 +14,7 @@ class PageIndexingCoordinator(
     private val indexingTaskExecutor: Executor,
     private val indexingTaskRateLimiter: RateLimiter<String>,
     private val taskQueuePollingClient: TaskQueuePollingClient,
-    private val searchIndexService: SearchIndexService,
+    private val summitSearchIndexService: SummitSearchIndexService,
     private val pageCrawlerService: PageCrawlerService
 ) {
     private val log = KotlinLogging.logger { }
@@ -34,7 +34,7 @@ class PageIndexingCoordinator(
                     queueName = queue,
                     pageCrawlerService = pageCrawlerService,
                     taskQueuePollingClient = taskQueuePollingClient,
-                    indexService = searchIndexService,
+                    indexService = summitSearchIndexService,
                     indexingTaskRateLimiter = indexingTaskRateLimiter
                 )
             )

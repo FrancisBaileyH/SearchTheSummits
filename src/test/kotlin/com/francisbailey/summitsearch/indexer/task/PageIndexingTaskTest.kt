@@ -1,6 +1,8 @@
 package com.francisbailey.summitsearch.indexer.task
 
 import com.francisbailey.summitsearch.indexer.client.*
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
@@ -11,7 +13,7 @@ class PageIndexingTaskTest {
     private val queueName = "IndexQueue-Test1"
     private val pageCrawlerService = mock<PageCrawlerService>()
     private val taskQueuePollingClient = mock<TaskQueuePollingClient>()
-    private val indexService = mock<SearchIndexService>()
+    private val indexService = mock<SummitSearchIndexService>()
     private val indexingTaskRateLimiter = mock<RateLimiter<String>>()
 
 
@@ -66,7 +68,7 @@ class PageIndexingTaskTest {
 
         verify(indexingTaskRateLimiter).tryConsume(queueName)
         verify(taskQueuePollingClient).pollTask(queueName)
-        verify(indexService).indexPageContents(URL(testTask.details.pageUrl), htmlContent)
+        verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(testTask.details.pageUrl), htmlContent))
         verify(taskQueuePollingClient).deleteTask(testTask)
     }
 

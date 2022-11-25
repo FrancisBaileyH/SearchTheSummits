@@ -1,8 +1,9 @@
 package com.francisbailey.summitsearch.indexer.task
 
 import com.francisbailey.summitsearch.indexer.client.PageCrawlerService
-import com.francisbailey.summitsearch.indexer.client.SearchIndexService
 import com.francisbailey.summitsearch.indexer.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
 import java.net.URL
 
@@ -17,7 +18,7 @@ class PageIndexingTask(
     val queueName: String,
     private val pageCrawlerService: PageCrawlerService,
     private val taskQueuePollingClient: TaskQueuePollingClient,
-    private val indexService: SearchIndexService,
+    private val indexService: SummitSearchIndexService,
     private val indexingTaskRateLimiter: RateLimiter<String>
 ): Runnable {
 
@@ -35,7 +36,10 @@ class PageIndexingTask(
 
                 val htmlContent = pageCrawlerService.getHtmlContentAsString(pageUrl)
 
-                indexService.indexPageContents(pageUrl, htmlContent)
+                indexService.indexPageContents(SummitSearchIndexRequest(
+                    source = pageUrl,
+                    htmlContent = htmlContent
+                ))
 
                 taskQueuePollingClient.deleteTask(indexTask)
                 log.info { "Successfully completed indexing task for: $queueName with $pageUrl" }

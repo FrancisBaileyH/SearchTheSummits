@@ -1,17 +1,11 @@
 package com.francisbailey.summitsearch.indexer.configuration
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient
-import co.elastic.clients.json.jackson.JacksonJsonpMapper
-import co.elastic.clients.transport.TransportUtils
-import co.elastic.clients.transport.rest_client.RestClientTransport
+import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
-import org.apache.http.HttpHost
-import org.apache.http.auth.AuthScope
-import org.apache.http.auth.UsernamePasswordCredentials
-import org.apache.http.impl.client.BasicCredentialsProvider
-import org.elasticsearch.client.RestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -51,31 +45,14 @@ open class ClientConfiguration(
     }
 
     @Bean
-    open fun elasticSearchClient(): ElasticsearchClient {
-        val fingerprint = environment.getRequiredProperty("ES_FINGERPRINT")
-        val username = environment.getRequiredProperty("ES_USERNAME")
-        val password = environment.getRequiredProperty("ES_PASSWORD")
-
-        val sslContext = TransportUtils.sslContextFromCaFingerprint(fingerprint)
-        val credsProv = BasicCredentialsProvider().apply {
-            this.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(username, password))
-        }
-
-        return ElasticsearchClient(
-            RestClientTransport(
-               RestClient.builder(
-                    HttpHost(
-                        "localhost",
-                        9200,
-                        "https"
-                    )
-                ).setHttpClientConfigCallback {
-                    it.setSSLContext(sslContext)
-                    it.setDefaultCredentialsProvider(credsProv)
-                }.build(),
-                JacksonJsonpMapper()
-            )
-        )
+    open fun summitSearchIndexService(): SummitSearchIndexService {
+        return SummitSearchIndexServiceFactory.build(
+            SearchIndexServiceConfiguration(
+            fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+            username = environment.getRequiredProperty("ES_USERNAME"),
+            password = environment.getRequiredProperty("ES_PASSWORD"),
+            endpoint = "localhost"
+        ))
     }
 
     companion object {

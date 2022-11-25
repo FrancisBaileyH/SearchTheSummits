@@ -14,6 +14,13 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/FrancisBaileyH/SummitSearchIndexService")
+        credentials {
+            username = project.findProperty("gpr.user") as String
+            password = project.findProperty("gpr.key") as String
+        }
+    }
 }
 
 dependencies {
@@ -28,9 +35,10 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("io.ktor:ktor-client-core:2.1.3")
     implementation("io.ktor:ktor-client-cio:2.1.3")
-    implementation("co.elastic.clients:elasticsearch-java:8.5.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.3")
+
+    implementation("com.francisbailey.summitsearch:summitsearchindexservice:1.0.0")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
+
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")
