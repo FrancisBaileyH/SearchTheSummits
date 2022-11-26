@@ -1,5 +1,6 @@
-package com.francisbailey.summitsearch.index.worker.task.task
+package com.francisbailey.summitsearch.index.worker.task
 
+import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.index.worker.task.client.*
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest

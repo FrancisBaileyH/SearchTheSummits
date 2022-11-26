@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.task.client
+package com.francisbailey.summitsearch.index.worker.client
 
 import io.ktor.client.*
 import io.ktor.client.plugins.*
@@ -25,6 +25,7 @@ class PageCrawlerService(
 
         val response = getPage(pageUrl)
 
+        response.contentType()?.fileExtensions()
         if (response.contentType() != ContentType.Text.Html) {
             throw InvalidContentTypeException("Unexpected content type: ${response.contentType()} from $pageUrl")
         }

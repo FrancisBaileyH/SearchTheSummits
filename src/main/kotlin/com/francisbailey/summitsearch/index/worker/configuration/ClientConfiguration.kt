@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.task.configuration
+package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService

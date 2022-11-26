@@ -1,8 +1,8 @@
-package com.francisbailey.summitsearch.index.worker.task.task
+package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.task.IndexingQueueProvider
-import com.francisbailey.summitsearch.index.worker.task.client.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.task.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
+import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.client.TaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
 import org.springframework.stereotype.Component

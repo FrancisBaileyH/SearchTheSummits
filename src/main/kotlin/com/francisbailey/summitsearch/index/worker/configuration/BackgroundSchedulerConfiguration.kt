@@ -1,7 +1,7 @@
-package com.francisbailey.summitsearch.index.worker.task.configuration
+package com.francisbailey.summitsearch.index.worker.configuration
 
-import com.francisbailey.summitsearch.index.worker.task.IndexingQueueProvider
-import com.francisbailey.summitsearch.index.worker.task.task.PageIndexingTaskCoordinator
+import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
+import com.francisbailey.summitsearch.index.worker.task.PageIndexingTaskCoordinator
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.Scheduled
 

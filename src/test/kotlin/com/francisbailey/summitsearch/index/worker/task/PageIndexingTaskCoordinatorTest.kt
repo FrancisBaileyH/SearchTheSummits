@@ -1,10 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.task.client.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.task.client.TaskQueuePollingClient
-import com.francisbailey.summitsearch.index.worker.task.task.PageIndexingTask
-import com.francisbailey.summitsearch.index.worker.task.task.PageIndexingTaskCoordinator
-import com.francisbailey.summitsearch.index.worker.task.task.RateLimiter
+import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
+import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.client.TaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
