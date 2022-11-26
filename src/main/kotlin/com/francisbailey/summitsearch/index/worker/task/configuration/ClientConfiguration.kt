@@ -28,14 +28,18 @@ open class ClientConfiguration(
             .build()
     }
 
+    /**
+     * expectSuccess = true will turn on exceptions for non 20X responses
+     */
     @Bean
     open fun httpClient(): HttpClient {
        return HttpClient(CIO) {
+            expectSuccess = true
             install(UserAgent) {
                 agent = CRAWLING_AGENT
             }
             install(HttpRequestRetry) {
-               retryOnServerErrors(3)
+                retryOnServerErrors(4)
                 exponentialDelay()
             }
             engine {
