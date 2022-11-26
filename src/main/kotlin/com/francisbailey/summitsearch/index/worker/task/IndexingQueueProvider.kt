@@ -1,6 +1,6 @@
-package com.francisbailey.summitsearch.indexer
+package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.indexer.client.TaskQueueClient
+import com.francisbailey.summitsearch.index.worker.task.client.TaskQueueClient
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 

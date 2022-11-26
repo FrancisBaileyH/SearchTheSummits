@@ -1,7 +1,7 @@
-package com.francisbailey.summitsearch.indexer.configuration
+package com.francisbailey.summitsearch.index.worker.task.configuration
 
-import com.francisbailey.summitsearch.indexer.IndexingQueueProvider
-import com.francisbailey.summitsearch.indexer.task.PageIndexingCoordinator
+import com.francisbailey.summitsearch.index.worker.task.IndexingQueueProvider
+import com.francisbailey.summitsearch.index.worker.task.task.PageIndexingTaskCoordinator
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.Scheduled
 
@@ -9,12 +9,12 @@ import org.springframework.scheduling.annotation.Scheduled
 @Configuration
 open class BackgroundSchedulerConfiguration(
     private val indexingQueueProvider: IndexingQueueProvider,
-    private val pageIndexingCoordinator: PageIndexingCoordinator
+    private val pageIndexingTaskCoordinator: PageIndexingTaskCoordinator
 ) {
 
     @Scheduled(fixedRate = 1000)
     open fun runPageIndexingCoordinator() {
-        pageIndexingCoordinator.coordinateTaskExecution()
+        pageIndexingTaskCoordinator.coordinateTaskExecution()
     }
 
     @Scheduled(fixedRate = 10000)

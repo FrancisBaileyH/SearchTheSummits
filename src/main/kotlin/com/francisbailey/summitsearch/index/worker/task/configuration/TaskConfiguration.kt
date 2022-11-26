@@ -1,7 +1,7 @@
-package com.francisbailey.summitsearch.indexer.configuration
+package com.francisbailey.summitsearch.index.worker.task.configuration
 
-import com.francisbailey.summitsearch.indexer.task.DefaultRateLimiter
-import com.francisbailey.summitsearch.indexer.task.RateLimiter
+import com.francisbailey.summitsearch.index.worker.task.task.DefaultRateLimiter
+import com.francisbailey.summitsearch.index.worker.task.task.RateLimiter
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import org.springframework.context.annotation.Bean

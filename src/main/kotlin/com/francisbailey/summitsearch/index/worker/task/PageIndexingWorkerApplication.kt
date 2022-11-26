@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexer
+package com.francisbailey.summitsearch.index.worker.task
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

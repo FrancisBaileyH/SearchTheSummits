@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexer.configuration
+package com.francisbailey.summitsearch.index.worker.task.configuration
 
 import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -52,7 +52,9 @@ open class ClientConfiguration(
             username = environment.getRequiredProperty("ES_USERNAME"),
             password = environment.getRequiredProperty("ES_PASSWORD"),
             endpoint = "localhost"
-        ))
+        )).also {
+            it.createIndexIfNotExists()
+        }
     }
 
     companion object {

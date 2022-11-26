@@ -1,5 +1,6 @@
-package com.francisbailey.summitsearch.indexer.task
+package com.francisbailey.summitsearch.index.worker.task
 
+import com.francisbailey.summitsearch.index.worker.task.task.DefaultRateLimiter
 import io.github.bucket4j.local.LocalBucket
 import io.github.bucket4j.local.LocalBucketBuilder
 import org.junit.jupiter.api.Assertions.assertFalse

@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexer.client
+package com.francisbailey.summitsearch.index.worker.task.client
 
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -26,9 +26,20 @@ class PageCrawlerService(
             "Unexpected response when fetching from: $pageUrl"
         }
 
-        response.bodyAsText().also {
-            log.info { "Successfully retrieved HTML content from: $pageUrl" }
+        if (response.contentType() != ContentType.Text.Html) {
+            throw InvalidContentTypeException("Unexpected content type: ${response.contentType()} from $pageUrl")
+        }
+
+        try {
+            response.bodyAsText().also {
+                log.info { "Successfully retrieved HTML content from: $pageUrl" }
+            }
+        } catch (e: Exception) {
+            throw UnparsableContentException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
         }
     }
 
 }
+
+class InvalidContentTypeException(message: String): Exception(message)
+class UnparsableContentException(message: String): Exception(message)

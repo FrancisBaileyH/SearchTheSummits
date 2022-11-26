@@ -1,6 +1,11 @@
-package com.francisbailey.summitsearch.indexer.task
+package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.indexer.client.*
+import com.francisbailey.summitsearch.index.worker.task.client.IndexTask
+import com.francisbailey.summitsearch.index.worker.task.client.IndexTaskDetails
+import com.francisbailey.summitsearch.index.worker.task.client.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.task.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.task.task.PageIndexingTask
+import com.francisbailey.summitsearch.index.worker.task.task.RateLimiter
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.junit.jupiter.api.Test

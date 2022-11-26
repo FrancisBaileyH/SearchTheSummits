@@ -1,15 +1,15 @@
-package com.francisbailey.summitsearch.indexer.task
+package com.francisbailey.summitsearch.index.worker.task.task
 
-import com.francisbailey.summitsearch.indexer.IndexingQueueProvider
-import com.francisbailey.summitsearch.indexer.client.PageCrawlerService
-import com.francisbailey.summitsearch.indexer.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.task.IndexingQueueProvider
+import com.francisbailey.summitsearch.index.worker.task.client.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.task.client.TaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.concurrent.Executor
 
 @Component
-class PageIndexingCoordinator(
+class PageIndexingTaskCoordinator(
     private val indexingQueueProvider: IndexingQueueProvider,
     private val indexingTaskExecutor: Executor,
     private val indexingTaskRateLimiter: RateLimiter<String>,

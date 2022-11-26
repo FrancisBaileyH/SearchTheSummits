@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexer.client
+package com.francisbailey.summitsearch.index.worker.task.client
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

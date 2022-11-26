@@ -1,7 +1,7 @@
-package com.francisbailey.summitsearch.indexer.task
+package com.francisbailey.summitsearch.index.worker.task.task
 
-import com.francisbailey.summitsearch.indexer.client.PageCrawlerService
-import com.francisbailey.summitsearch.indexer.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.task.client.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.task.client.TaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
@@ -34,7 +34,12 @@ class PageIndexingTask(
                 val pageUrl = URL(indexTask.details.pageUrl)
                 log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
 
-                val htmlContent = pageCrawlerService.getHtmlContentAsString(pageUrl)
+                val htmlContent = try {
+                    pageCrawlerService.getHtmlContentAsString(pageUrl)
+                } catch (e: Exception) {
+                    log.error(e) { "Unable retrieve HTML content from: $pageUrl" }
+                    return
+                }
 
                 indexService.indexPageContents(SummitSearchIndexRequest(
                     source = pageUrl,
