@@ -36,10 +36,11 @@ dependencies {
     implementation("io.ktor:ktor-client-core:2.1.3")
     implementation("io.ktor:ktor-client-cio:2.1.3")
 
-    implementation("com.francisbailey.summitsearch:summitsearchindexservice:1.0.2")
+    implementation("com.francisbailey.summitsearch:summitsearchindexservice:1.0.4")
+    implementation("org.jsoup:jsoup:1.15.3")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
 
-
+    testImplementation("io.ktor:ktor-client-mock:2.1.3")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")
     testImplementation("org.mockito:mockito-core:4.8.0")

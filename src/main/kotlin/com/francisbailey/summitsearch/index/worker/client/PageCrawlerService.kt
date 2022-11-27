@@ -7,31 +7,36 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
 
 @Service
 class PageCrawlerService(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val htmlParser: (String) -> Document
 ) {
     private val log = KotlinLogging.logger { }
+
+    @Autowired
+    constructor(httpClient: HttpClient): this(
+        httpClient,
+        { Jsoup.parse(it) }
+    )
 
     /**
      * With expectSuccess enabled on client, we will see ServerResponseException and ClientResponseExceptions
      * being thrown here
      */
-    fun getHtmlContentAsString(pageUrl: URL): String = runBlocking {
+    fun getHtmlDocument(pageUrl: URL): Document = runBlocking {
         log.info { "Fetching HTML content from: $pageUrl" }
 
         val response = getPage(pageUrl)
 
-        response.contentType()?.fileExtensions()
-        if (response.contentType() != ContentType.Text.Html) {
-            throw InvalidContentTypeException("Unexpected content type: ${response.contentType()} from $pageUrl")
-        }
-
         try {
-            response.bodyAsText().also {
+            htmlParser(response.bodyAsText()).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
             }
         } catch (e: Exception) {
@@ -46,8 +51,13 @@ class PageCrawlerService(
             when (e) {
                 is ClientRequestException,
                 is RedirectResponseException -> {
+                    val exception = e as ResponseException
+                    if (exception.response.status == HttpStatusCode.TooManyRequests) {
+                        throw RetryablePageException(e.localizedMessage)
+                    }
                     throw PermanentNonRetryablePageException(e.localizedMessage)
                 }
+                is SendCountExceedException,
                 is ServerResponseException -> {
                     throw RetryablePageException(e.localizedMessage)
                 }
@@ -61,5 +71,4 @@ open class RetryablePageException(message: String): RuntimeException(message)
 open class TemporaryNonRetryablePageException(message: String): RetryablePageException(message)
 open class PermanentNonRetryablePageException(message: String): RuntimeException(message)
 
-class InvalidContentTypeException(message: String): PermanentNonRetryablePageException(message)
 class UnparsableContentException(message: String): TemporaryNonRetryablePageException(message)

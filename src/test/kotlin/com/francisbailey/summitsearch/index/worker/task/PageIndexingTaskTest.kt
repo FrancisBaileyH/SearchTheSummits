@@ -1,12 +1,10 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.task.client.*
-import com.francisbailey.summitsearch.index.worker.task.PageIndexingTask
-import com.francisbailey.summitsearch.index.worker.task.RateLimiter
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
@@ -61,11 +59,11 @@ class PageIndexingTaskTest {
 
     @Test
     fun `crawl page and index contents if rate limit not exceeded and task is present on queue`() {
-        val htmlContent = "<html>Some Web Page</html>"
+        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
 
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
         whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlContentAsString(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
 
         task.run()
 
@@ -79,7 +77,7 @@ class PageIndexingTaskTest {
     fun `deletes page contents from index when 40X error or 30X response is encountered`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
         whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlContentAsString(any())).thenThrow(PermanentNonRetryablePageException("test"))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(PermanentNonRetryablePageException("test"))
 
         task.run()
 
@@ -92,7 +90,7 @@ class PageIndexingTaskTest {
     fun `only deletes task when retryable exceptions occur`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
         whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlContentAsString(any())).thenThrow(RetryablePageException("test"))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
 
         task.run()
 

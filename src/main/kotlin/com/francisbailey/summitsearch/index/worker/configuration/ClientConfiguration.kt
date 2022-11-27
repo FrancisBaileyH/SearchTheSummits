@@ -4,6 +4,7 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import io.ktor.client.*
+import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import org.springframework.context.annotation.Bean
@@ -13,6 +14,16 @@ import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsPro
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
 import java.time.Duration
+
+
+@Configuration
+open class HttpEngineConfiguration {
+
+    @Bean
+    open fun httpClientEngine() = CIO.create {
+        requestTimeout = Duration.ofSeconds(3).toMillis()
+    }
+}
 
 
 @Configuration
@@ -32,19 +43,17 @@ open class ClientConfiguration(
      * expectSuccess = true will turn on exceptions for non 20X responses
      */
     @Bean
-    open fun httpClient(): HttpClient {
-       return HttpClient(CIO) {
+    open fun httpClient(httpClientEngine: HttpClientEngine): HttpClient {
+       return HttpClient(httpClientEngine) {
             expectSuccess = true
             install(UserAgent) {
                 agent = CRAWLING_AGENT
             }
             install(HttpRequestRetry) {
-                retryOnServerErrors(4)
+                retryOnServerErrors(3)
                 exponentialDelay()
             }
-            engine {
-                requestTimeout = Duration.ofSeconds(3).toMillis()
-            }
+           followRedirects = false
         }
     }
 

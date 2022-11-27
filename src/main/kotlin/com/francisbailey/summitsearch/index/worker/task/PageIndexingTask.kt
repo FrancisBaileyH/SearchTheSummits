@@ -1,7 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.task.client.*
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -42,11 +41,11 @@ class PageIndexingTask(
 
         try {
             log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
-            val htmlContent = pageCrawlerService.getHtmlContentAsString(pageUrl)
+            val document = pageCrawlerService.getHtmlDocument(pageUrl)
 
             indexService.indexPageContents(SummitSearchIndexRequest(
                 source = pageUrl,
-                htmlContent = htmlContent
+                htmlDocument = document
             ))
 
             log.info { "Successfully completed indexing task for: $queueName with $pageUrl" }
