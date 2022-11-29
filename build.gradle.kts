@@ -40,6 +40,8 @@ dependencies {
     implementation("org.jsoup:jsoup:1.15.3")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
 
+    implementation("redis.clients:jedis:4.3.0")
+
     testImplementation("io.ktor:ktor-client-mock:2.1.3")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")

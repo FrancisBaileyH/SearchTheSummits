@@ -11,9 +11,10 @@ import java.net.URL
 class PageIndexingTask(
     val queueName: String,
     private val pageCrawlerService: PageCrawlerService,
-    private val taskQueuePollingClient: TaskQueuePollingClient,
+    private val indexingTaskQueuePollingClient: IndexingTaskQueuePollingClient,
     private val indexService: SummitSearchIndexService,
-    private val indexingTaskRateLimiter: RateLimiter<String>
+    private val indexingTaskRateLimiter: RateLimiter<String>,
+    private val linkDiscoveryService: LinkDiscoveryService
 ): Runnable {
 
     private val log = KotlinLogging.logger { }
@@ -26,7 +27,7 @@ class PageIndexingTask(
         log.info { "Running indexing task for: $queueName" }
 
         if (indexingTaskRateLimiter.tryConsume(queueName)) {
-            val indexTask = taskQueuePollingClient.pollTask(queueName)
+            val indexTask = indexingTaskQueuePollingClient.pollTask(queueName)
 
             if (indexTask != null) {
                 processTask(indexTask)
@@ -42,7 +43,9 @@ class PageIndexingTask(
         try {
             log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
             val document = pageCrawlerService.getHtmlDocument(pageUrl)
+            val organicLinks = document.body().getLinks()
 
+            linkDiscoveryService.submitDiscoveries(task, organicLinks)
             indexService.indexPageContents(SummitSearchIndexRequest(
                 source = pageUrl,
                 htmlDocument = document
@@ -62,7 +65,7 @@ class PageIndexingTask(
                 else -> throw e
             }
         } finally {
-            taskQueuePollingClient.deleteTask(task)
+            indexingTaskQueuePollingClient.deleteTask(task)
         }
     }
 

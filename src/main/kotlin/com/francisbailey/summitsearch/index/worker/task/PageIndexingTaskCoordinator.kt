@@ -2,7 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -13,9 +13,10 @@ class PageIndexingTaskCoordinator(
     private val indexingQueueProvider: IndexingQueueProvider,
     private val indexingTaskExecutor: Executor,
     private val indexingTaskRateLimiter: RateLimiter<String>,
-    private val taskQueuePollingClient: TaskQueuePollingClient,
+    private val indexingTaskQueuePollingClient: IndexingTaskQueuePollingClient,
     private val summitSearchIndexService: SummitSearchIndexService,
-    private val pageCrawlerService: PageCrawlerService
+    private val pageCrawlerService: PageCrawlerService,
+    private val linkDiscoveryService: LinkDiscoveryService
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -33,9 +34,10 @@ class PageIndexingTaskCoordinator(
                 PageIndexingTask(
                     queueName = queue,
                     pageCrawlerService = pageCrawlerService,
-                    taskQueuePollingClient = taskQueuePollingClient,
+                    indexingTaskQueuePollingClient = indexingTaskQueuePollingClient,
                     indexService = summitSearchIndexService,
-                    indexingTaskRateLimiter = indexingTaskRateLimiter
+                    indexingTaskRateLimiter = indexingTaskRateLimiter,
+                    linkDiscoveryService = linkDiscoveryService
                 )
             )
         }

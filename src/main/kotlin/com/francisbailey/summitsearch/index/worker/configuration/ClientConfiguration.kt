@@ -10,6 +10,8 @@ import io.ktor.client.plugins.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.UnifiedJedis
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
@@ -68,6 +70,16 @@ open class ClientConfiguration(
         )).also {
             it.createIndexIfNotExists()
         }
+    }
+
+    @Bean
+    open fun redisClient(): UnifiedJedis {
+        return JedisPooled(
+            "localhost",
+            49153,
+            environment.getRequiredProperty("REDIS_USERNAME"),
+            environment.getRequiredProperty("REDIS_PASSWORD")
+        )
     }
 
     companion object {

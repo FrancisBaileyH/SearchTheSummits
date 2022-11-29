@@ -1,13 +1,13 @@
 package com.francisbailey.summitsearch.index.worker
 
-import com.francisbailey.summitsearch.index.worker.client.TaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 
 @Service
 class IndexingQueueProvider(
-    private val taskQueueClient: TaskQueueClient
+    private val taskQueueClient: IndexingTaskQueueClient
 ){
     private val log = KotlinLogging.logger { }
 

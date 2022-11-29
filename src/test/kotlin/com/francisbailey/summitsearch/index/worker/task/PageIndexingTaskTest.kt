@@ -14,12 +14,19 @@ class PageIndexingTaskTest {
 
     private val queueName = "IndexQueue-Test1"
     private val pageCrawlerService = mock<PageCrawlerService>()
-    private val taskQueuePollingClient = mock<TaskQueuePollingClient>()
+    private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
     private val indexService = mock<SummitSearchIndexService>()
     private val indexingTaskRateLimiter = mock<RateLimiter<String>>()
+    private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
-
-    private val task = PageIndexingTask(queueName, pageCrawlerService, taskQueuePollingClient, indexService, indexingTaskRateLimiter)
+    private val task = PageIndexingTask(
+        queueName,
+        pageCrawlerService,
+        indexingTaskQueuePollingClient,
+        indexService,
+        indexingTaskRateLimiter,
+        linkDiscoveryService
+    )
 
     private val defaultIndexTask = IndexTask(
         messageHandle = "testHandle123",
@@ -27,7 +34,8 @@ class PageIndexingTaskTest {
         details = IndexTaskDetails(
             id = "123456",
             pageUrl = "https://www.francisbaileyh.com",
-            submitTime = Date().time
+            submitTime = Date().time,
+            taskRunId = "test123"
         )
     )
 
@@ -39,7 +47,7 @@ class PageIndexingTaskTest {
 
         verify(indexingTaskRateLimiter).tryConsume(queueName)
 
-        verifyNoInteractions(taskQueuePollingClient)
+        verifyNoInteractions(indexingTaskQueuePollingClient)
         verifyNoInteractions(indexService)
         verifyNoInteractions(pageCrawlerService)
     }
@@ -47,12 +55,12 @@ class PageIndexingTaskTest {
     @Test
     fun `skip indexing if no tasks are present on queue`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
-        whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(null)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(null)
 
         task.run()
 
         verify(indexingTaskRateLimiter).tryConsume(queueName)
-        verify(taskQueuePollingClient).pollTask(queueName)
+        verify(indexingTaskQueuePollingClient).pollTask(queueName)
         verifyNoInteractions(indexService)
         verifyNoInteractions(pageCrawlerService)
     }
@@ -62,40 +70,40 @@ class PageIndexingTaskTest {
         val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
 
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
-        whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
         whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
 
         task.run()
 
         verify(indexingTaskRateLimiter).tryConsume(queueName)
-        verify(taskQueuePollingClient).pollTask(queueName)
+        verify(indexingTaskQueuePollingClient).pollTask(queueName)
         verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(defaultIndexTask.details.pageUrl), htmlContent))
-        verify(taskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
     }
 
     @Test
     fun `deletes page contents from index when 40X error or 30X response is encountered`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
-        whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
         whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(PermanentNonRetryablePageException("test"))
 
         task.run()
 
         verify(indexService, never()).indexPageContents(any())
         verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = URL(defaultIndexTask.details.pageUrl))))
-        verify(taskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
     }
 
     @Test
     fun `only deletes task when retryable exceptions occur`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
-        whenever(taskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
         whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
 
         task.run()
 
         verifyNoInteractions(indexService)
-        verify(taskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
     }
 
 }

@@ -9,10 +9,14 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
 
+/**
+ * @TODO handle redirects
+ */
 @Service
 class PageCrawlerService(
     private val httpClient: HttpClient,
@@ -40,7 +44,7 @@ class PageCrawlerService(
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
             }
         } catch (e: Exception) {
-            throw UnparsableContentException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
+            throw UnparsableContentException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}", e)
         }
     }
 
@@ -53,13 +57,13 @@ class PageCrawlerService(
                 is RedirectResponseException -> {
                     val exception = e as ResponseException
                     if (exception.response.status == HttpStatusCode.TooManyRequests) {
-                        throw RetryablePageException(e.localizedMessage)
+                        throw RetryablePageException(e.localizedMessage, e)
                     }
-                    throw PermanentNonRetryablePageException(e.localizedMessage)
+                    throw PermanentNonRetryablePageException(e.localizedMessage, e)
                 }
                 is SendCountExceedException,
                 is ServerResponseException -> {
-                    throw RetryablePageException(e.localizedMessage)
+                    throw RetryablePageException(e.localizedMessage, e)
                 }
                 else -> throw e
             }
@@ -67,8 +71,12 @@ class PageCrawlerService(
     }
 }
 
-open class RetryablePageException(message: String): RuntimeException(message)
-open class TemporaryNonRetryablePageException(message: String): RetryablePageException(message)
-open class PermanentNonRetryablePageException(message: String): RuntimeException(message)
+fun Element.getLinks(): List<String> {
+    return this.select("a[href]").map { it.attr("abs:href") }
+}
 
-class UnparsableContentException(message: String): TemporaryNonRetryablePageException(message)
+open class RetryablePageException(message: String, e: Exception): RuntimeException(message, e)
+open class TemporaryNonRetryablePageException(message: String, e: Exception): RetryablePageException(message, e)
+open class PermanentNonRetryablePageException(message: String, e: Exception): RuntimeException(message, e)
+
+class UnparsableContentException(message: String, e: Exception): TemporaryNonRetryablePageException(message, e)

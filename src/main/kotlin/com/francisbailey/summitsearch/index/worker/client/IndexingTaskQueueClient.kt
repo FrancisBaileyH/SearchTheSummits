@@ -2,26 +2,34 @@ package com.francisbailey.summitsearch.index.worker.client
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
-import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
-import software.amazon.awssdk.services.sqs.model.ListQueuesRequest
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
+import software.amazon.awssdk.services.sqs.model.*
 
-interface TaskQueuePollingClient {
+interface IndexingTaskQueuePollingClient {
     fun pollTask(queueName: String): IndexTask?
     fun deleteTask(indexTask: IndexTask)
+    fun addTask(indexTask: IndexTask)
 }
 
-interface TaskQueueClient: TaskQueuePollingClient {
+interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
     fun listTaskQueues(): Set<String>
 }
 
 @Component
-class SQSTaskQueueClient(
+class SQSIndexingTaskQueueClient(
     private val sqsClient: SqsClient
-): TaskQueueClient {
+): IndexingTaskQueueClient {
+
+    override fun addTask(indexTask: IndexTask) {
+        sqsClient.sendMessage(SendMessageRequest.builder()
+            .queueUrl(indexTask.source)
+            .messageBody(Json.encodeToString(indexTask.details))
+            .build()
+        )
+    }
 
     override fun listTaskQueues(): Set<String> {
         val request = ListQueuesRequest.builder()
@@ -68,7 +76,7 @@ class SQSTaskQueueClient(
 
 
 data class IndexTask(
-    val messageHandle: String,
+    val messageHandle: String? = null,
     val source: String,
     val details: IndexTaskDetails
 )
@@ -77,6 +85,7 @@ data class IndexTask(
 @Serializable
 data class IndexTaskDetails(
     val id: String,
+    val taskRunId: String,
     val pageUrl: String,
     val submitTime: Long
 )

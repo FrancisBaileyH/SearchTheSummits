@@ -2,7 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.client.TaskQueuePollingClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -13,17 +13,19 @@ class PageIndexingTaskCoordinatorTest {
     private val indexingQueueProvider = mock<IndexingQueueProvider>()
     private val executor = mock<Executor>()
     private val indexingTaskRateLimiter = mock<RateLimiter<String>>()
-    private val taskQueuePollingClient = mock<TaskQueuePollingClient>()
+    private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
     private val searchIndexService = mock<SummitSearchIndexService>()
     private val pageCrawlerService = mock<PageCrawlerService>()
+    private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
     private val indexingCoordinator = PageIndexingTaskCoordinator(
         indexingQueueProvider = indexingQueueProvider,
         indexingTaskExecutor = executor,
         indexingTaskRateLimiter = indexingTaskRateLimiter,
-        taskQueuePollingClient = taskQueuePollingClient,
+        indexingTaskQueuePollingClient = indexingTaskQueuePollingClient,
         summitSearchIndexService = searchIndexService,
-        pageCrawlerService = pageCrawlerService
+        pageCrawlerService = pageCrawlerService,
+        linkDiscoveryService
     )
 
 
