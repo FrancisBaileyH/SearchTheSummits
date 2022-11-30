@@ -4,22 +4,23 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.client.TaskStore
+import com.francisbailey.summitsearch.index.worker.extension.normalize
 import mu.KotlinLogging
 import java.net.URL
 import java.time.Instant
 import java.util.UUID
 
-/**
- * @TODO clean URLS? slug only? Probably just need path not full URL in key
- * @TODO - add link filtering. E.g. no wp-uploads
- */
 class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,
     private val taskStore: TaskStore,
     private val associatedTask: IndexTask,
-    private val discovery: String
+    val discovery: String
 ): Runnable {
 
+    /**
+     * @TODO clean URLS? slug only? Probably just need path not full URL in key
+     * @TODO - add link filtering. E.g. no wp-uploads
+     */
     private val log = KotlinLogging.logger {  }
 
     /**
@@ -28,7 +29,7 @@ class LinkDiscoveryTask(
      */
     override fun run() {
         try {
-            val discoveryUrl = URL(discovery)
+            val discoveryUrl = URL(discovery).normalize()
             val associatedTaskUrl = URL(associatedTask.details.pageUrl)
 
             if (discovery.length > MAX_LINK_SIZE) {
@@ -68,9 +69,8 @@ class LinkDiscoveryTask(
         }
     }
 
-
     companion object {
-        const val MAX_LINK_SIZE = 250
+        const val MAX_LINK_SIZE = 255
     }
 
 }

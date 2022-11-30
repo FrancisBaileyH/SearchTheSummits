@@ -45,7 +45,7 @@ class TaskStore(
     }
 
     companion object {
-        const val MAX_KEY_LENGTH = 100
+        const val MAX_KEY_LENGTH = 255
     }
 }
 

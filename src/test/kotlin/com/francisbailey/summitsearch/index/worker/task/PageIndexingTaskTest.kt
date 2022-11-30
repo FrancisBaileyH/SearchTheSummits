@@ -82,10 +82,34 @@ class PageIndexingTaskTest {
     }
 
     @Test
+    fun `submit new links for discovery if any are found`() {
+        val links = listOf("https://francisbailey.com/test", "https://francisbailey.com/test2")
+        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
+
+        links.forEach {
+            htmlContent.body().appendElement("a")
+                .attr("href", it)
+                .text(it)
+        }
+
+        whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+
+        task.run()
+
+        verify(indexingTaskRateLimiter).tryConsume(queueName)
+        verify(indexingTaskQueuePollingClient).pollTask(queueName)
+        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, links)
+        verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(defaultIndexTask.details.pageUrl), htmlContent))
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
+    }
+
+    @Test
     fun `deletes page contents from index when 40X error or 30X response is encountered`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(PermanentNonRetryablePageException("test"))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(PermanentNonRetryablePageException("test", Exception("test")))
 
         task.run()
 
@@ -98,7 +122,7 @@ class PageIndexingTaskTest {
     fun `only deletes task when retryable exceptions occur`() {
         whenever(indexingTaskRateLimiter.tryConsume(queueName)).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test", Exception("test")))
 
         task.run()
 
