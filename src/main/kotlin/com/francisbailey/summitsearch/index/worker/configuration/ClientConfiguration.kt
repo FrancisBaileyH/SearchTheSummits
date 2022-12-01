@@ -4,9 +4,15 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.compression.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.core.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -15,7 +21,9 @@ import redis.clients.jedis.UnifiedJedis
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
+import java.nio.charset.CodingErrorAction
 import java.time.Duration
+import kotlin.text.Charsets
 
 
 @Configuration
@@ -54,6 +62,10 @@ open class ClientConfiguration(
             install(HttpRequestRetry) {
                 retryOnServerErrors(3)
                 exponentialDelay()
+            }
+            install(ContentEncoding) {
+                gzip()
+                deflate()
             }
            followRedirects = false
         }

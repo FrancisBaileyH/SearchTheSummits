@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.client
 
+import com.francisbailey.summitsearch.index.worker.extension.bodyAsTextSafe
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -40,7 +41,8 @@ class PageCrawlerService(
         val response = getPage(pageUrl)
 
         try {
-            htmlParser(response.bodyAsText()).also {
+            htmlParser(response.bodyAsTextSafe()).also {
+                it.setBaseUri(pageUrl.toString().substringBeforeLast("/")) // need to fetch relative href links
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
             }
         } catch (e: Exception) {

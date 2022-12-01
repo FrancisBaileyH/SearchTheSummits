@@ -36,6 +36,26 @@ class PageCrawlerServiceTest {
     }
 
     @Test
+    fun `sets base URI correctly`() {
+        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { _ ->
+            respond(
+                content = "<html>Test</html>",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "text/html")
+            )
+        }))
+
+        val documentA = service.getHtmlDocument(URL("https://francisbailey.com/test#abc"))
+        assertEquals("https://francisbailey.com", documentA.baseUri())
+
+        val documentB = service.getHtmlDocument(URL("https://francisbailey.com/test/test123/test.html"))
+        assertEquals("https://francisbailey.com/test/test123", documentB.baseUri())
+
+        val documentC = service.getHtmlDocument(URL("https://francisbailey.com/test/test123?query=x#fragment"))
+        assertEquals("https://francisbailey.com/test", documentC.baseUri())
+    }
+
+    @Test
     fun `throws UnparsableContentException when htmlParser call fails`() {
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
             respond(

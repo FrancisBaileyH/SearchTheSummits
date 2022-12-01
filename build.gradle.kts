@@ -35,6 +35,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("io.ktor:ktor-client-core:2.1.3")
     implementation("io.ktor:ktor-client-cio:2.1.3")
+    implementation("io.ktor:ktor-client-encoding:2.1.3")
 
     implementation("com.francisbailey.summitsearch:summitsearchindexservice:1.0.4")
     implementation("org.jsoup:jsoup:1.15.3")
