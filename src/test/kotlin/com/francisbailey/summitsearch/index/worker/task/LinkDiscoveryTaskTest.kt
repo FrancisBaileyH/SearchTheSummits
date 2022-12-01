@@ -77,7 +77,7 @@ class LinkDiscoveryTaskTest {
 
     @Test
     fun `normalizes links before consulting the store`() {
-        val discovery = URL("https://francisbailey.com/test?query=x#someFragment")
+        val discovery = URL("https://francisbailey.com/test/test2?query=x#someFragment")
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
         whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
@@ -86,7 +86,7 @@ class LinkDiscoveryTaskTest {
         buildTask(discovery.toString()).run()
 
         verifyNoInteractions(taskQueueClient)
-        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test?query=x"))
+        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test/test2"))
     }
 
     @Test

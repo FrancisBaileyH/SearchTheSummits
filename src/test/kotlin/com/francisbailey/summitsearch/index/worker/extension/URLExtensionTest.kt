@@ -9,8 +9,8 @@ class URLExtensionTest {
 
     @Test
     fun `should return url with fragments removed`() {
-        val url = URL("https://francisbaileyh.com/test?query=x#someFragment")
-        val expectedUrl = URL("https://francisbaileyh.com/test?query=x")
+        val url = URL("https://francisbaileyh.com/test/test3/index.html?query=x#someFragment")
+        val expectedUrl = URL("https://francisbaileyh.com/test/test3/index.html")
 
         assertEquals(expectedUrl, url.normalize())
     }

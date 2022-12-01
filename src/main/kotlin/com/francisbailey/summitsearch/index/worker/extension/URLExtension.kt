@@ -7,5 +7,5 @@ import java.net.URL
  */
 fun URL.normalize(): URL {
     val uri = this.toURI()
-    return URL("${uri.scheme}:${uri.schemeSpecificPart}")
+    return URL("${uri.scheme}://${uri.host}${uri.path}")
 }
