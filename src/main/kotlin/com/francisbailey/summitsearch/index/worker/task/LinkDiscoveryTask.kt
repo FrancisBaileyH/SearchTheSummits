@@ -18,7 +18,6 @@ class LinkDiscoveryTask(
 ): Runnable {
 
     /**
-     * @TODO clean URLS? slug only? Probably just need path not full URL in key
      * @TODO - add link filtering. E.g. no wp-uploads
      */
     private val log = KotlinLogging.logger {  }
