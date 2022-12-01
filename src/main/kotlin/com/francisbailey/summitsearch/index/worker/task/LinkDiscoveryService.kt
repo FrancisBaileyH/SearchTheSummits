@@ -2,7 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.client.TaskStore
+import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executor
@@ -16,7 +16,7 @@ import java.util.concurrent.Executor
 class LinkDiscoveryService(
     private val linkDiscoveryTaskExecutor: Executor,
     private val taskQueueClient: IndexingTaskQueueClient,
-    private val taskStore: TaskStore
+    private val pageMetadataStore: PageMetadataStore
 ) {
     private val log = KotlinLogging.logger {  }
 
@@ -28,7 +28,7 @@ class LinkDiscoveryService(
         }.toSet().forEach {
             linkDiscoveryTaskExecutor.execute(LinkDiscoveryTask(
                 taskQueueClient = taskQueueClient,
-                taskStore = taskStore,
+                pageMetadataStore = pageMetadataStore,
                 associatedTask = associatedTask,
                 discovery = it
             ))

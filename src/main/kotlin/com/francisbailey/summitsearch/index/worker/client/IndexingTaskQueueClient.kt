@@ -7,6 +7,8 @@ import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.*
+import java.time.Duration
+
 
 interface IndexingTaskQueuePollingClient {
     fun pollTask(queueName: String): IndexTask?
@@ -52,7 +54,7 @@ class SQSIndexingTaskQueueClient(
 
         return message?.body()?.run {
             IndexTask(
-                details = Json.decodeFromString<IndexTaskDetails>(this),
+                details = Json.decodeFromString(this),
                 messageHandle = message.receiptHandle(),
                 source = queueName
             )
@@ -87,7 +89,10 @@ data class IndexTaskDetails(
     val id: String,
     val taskRunId: String,
     val pageUrl: String,
-    val submitTime: Long
-)
+    val submitTime: Long,
+    val refreshIntervalSeconds: Long // 0 represents never refresh
+) {
+    fun refreshDuration(): Duration = Duration.ofSeconds(refreshIntervalSeconds)
+}
 
 

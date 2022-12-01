@@ -1,18 +1,18 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.client.IndexTask
-import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
-import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.client.TaskStore
+import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
+import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStoreItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
+import java.time.Duration
 
 class LinkDiscoveryTaskTest {
 
     private val taskQueueClient =  mock<IndexingTaskQueueClient>()
-    private val taskStore = mock<TaskStore>()
+    private val pageMetadataStore = mock<PageMetadataStore>()
     private val indexTaskDetails = mock<IndexTaskDetails> {
         on(mock.id).thenReturn("test123")
         on(mock.taskRunId).thenReturn("taskRunId123")
@@ -21,6 +21,8 @@ class LinkDiscoveryTaskTest {
         on(mock.details).thenReturn(indexTaskDetails)
         on(mock.source).thenReturn("some-queue")
     }
+
+    private val pageMetadataStoreItem = mock<PageMetadataStoreItem>()
 
 
     @Test
@@ -36,7 +38,7 @@ class LinkDiscoveryTaskTest {
         task.run()
 
         verifyNoInteractions(taskQueueClient)
-        verifyNoInteractions(taskStore)
+        verifyNoInteractions(pageMetadataStore)
     }
 
     @Test
@@ -46,7 +48,7 @@ class LinkDiscoveryTaskTest {
         buildTask("https://some-other-page.com").run()
 
         verifyNoInteractions(taskQueueClient)
-        verifyNoInteractions(taskStore)
+        verifyNoInteractions(pageMetadataStore)
     }
 
     @Test
@@ -56,54 +58,61 @@ class LinkDiscoveryTaskTest {
         buildTask("https://francisbailey.com").run()
 
         verifyNoInteractions(taskQueueClient)
-        verifyNoInteractions(taskStore)
+        verifyNoInteractions(pageMetadataStore)
     }
 
     @Test
-    fun `skips link if its already mapped in the task store`() {
+    fun `skips link if metadata is too new`() {
         val discovery = URL("https://francisbailey.com/test")
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
-        whenever(taskStore.hasTask(any(), any())).thenReturn(true)
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
 
         buildTask(discovery.toString()).run()
 
         verifyNoInteractions(taskQueueClient)
-        verify(taskStore).hasTask(indexTaskDetails.taskRunId, discovery)
+        verify(pageMetadataStore).getMetadata(discovery)
     }
 
     @Test
     fun `normalizes links before consulting the store`() {
         val discovery = URL("https://francisbailey.com/test?query=x#someFragment")
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
-        whenever(taskStore.hasTask(any(), any())).thenReturn(true)
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
 
         buildTask(discovery.toString()).run()
 
         verifyNoInteractions(taskQueueClient)
-        verify(taskStore).hasTask(indexTaskDetails.taskRunId, URL("https://francisbailey.com/test?query=x"))
+        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test?query=x"))
     }
 
     @Test
     fun `if all conditions met then link is added to task queue and saved to task store`() {
         val discovery = URL("https://francisbailey.com/test")
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
-        whenever(taskStore.hasTask(indexTaskDetails.taskRunId, discovery)).thenReturn(false)
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(true)
 
         buildTask(discovery.toString()).run()
 
-        verify(taskStore).hasTask(indexTaskDetails.taskRunId, discovery)
+        verify(pageMetadataStore).getMetadata(discovery)
+        verify(pageMetadataStoreItem).canRefresh(indexTaskDetails.refreshDuration())
         verify(taskQueueClient).addTask(check {
             assertEquals(it.details.pageUrl, discovery.toString())
             assertEquals(it.source, associatedTask.source)
             assertEquals(it.details.taskRunId, indexTaskDetails.taskRunId)
         })
-        verify(taskStore).saveTask(indexTaskDetails.taskRunId, discovery)
+        verify(pageMetadataStore).saveMetadata(indexTaskDetails.taskRunId, discovery)
     }
 
 
     private fun buildTask(discovery: String) = LinkDiscoveryTask(
         taskQueueClient,
-        taskStore,
+        pageMetadataStore,
         associatedTask,
         discovery
     )

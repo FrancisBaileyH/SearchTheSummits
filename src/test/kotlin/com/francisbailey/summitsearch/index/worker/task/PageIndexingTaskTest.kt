@@ -8,6 +8,7 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
+import java.time.Duration
 import java.util.*
 
 class PageIndexingTaskTest {
@@ -35,7 +36,8 @@ class PageIndexingTaskTest {
             id = "123456",
             pageUrl = "https://www.francisbaileyh.com",
             submitTime = Date().time,
-            taskRunId = "test123"
+            taskRunId = "test123",
+            refreshIntervalSeconds = Duration.ofMinutes(60).seconds
         )
     )
 

@@ -2,7 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.client.TaskStore
+import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -12,9 +12,9 @@ class LinkDiscoveryServiceTest {
 
     private val linkDiscoveryTaskExecutor = mock<Executor>()
     private val taskQueueClient = mock<IndexingTaskQueueClient>()
-    private val taskStore = mock<TaskStore>()
+    private val pageMetadataStore = mock<PageMetadataStore>()
 
-    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, taskStore)
+    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, pageMetadataStore)
 
     private val associatedTask = mock<IndexTask>()
 

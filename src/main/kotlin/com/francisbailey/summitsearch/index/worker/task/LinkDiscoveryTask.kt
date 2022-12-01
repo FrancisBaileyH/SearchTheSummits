@@ -3,7 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.client.TaskStore
+import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import mu.KotlinLogging
 import java.net.URL
@@ -12,7 +12,7 @@ import java.util.UUID
 
 class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,
-    private val taskStore: TaskStore,
+    private val pageMetadataStore: PageMetadataStore,
     private val associatedTask: IndexTask,
     val discovery: String
 ): Runnable {
@@ -47,7 +47,9 @@ class LinkDiscoveryTask(
                 return
             }
 
-            if (!taskStore.hasTask(associatedTask.details.taskRunId, discoveryUrl)) {
+            val metadata = pageMetadataStore.getMetadata(discoveryUrl)
+
+            if (metadata == null || metadata.canRefresh(associatedTask.details.refreshDuration())) {
                 log.info { "New link discovery as part of: ${associatedTask.details.id}" }
                 taskQueueClient.addTask(
                     IndexTask(
@@ -56,12 +58,13 @@ class LinkDiscoveryTask(
                             id = UUID.randomUUID().toString(),
                             taskRunId = associatedTask.details.taskRunId,
                             pageUrl = discovery,
-                            submitTime = Instant.now().toEpochMilli()
+                            submitTime = Instant.now().toEpochMilli(),
+                            refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds
                         )
                     )
                 )
 
-                taskStore.saveTask(associatedTask.details.taskRunId, discoveryUrl)
+                pageMetadataStore.saveMetadata(associatedTask.details.taskRunId, discoveryUrl)
                 log.info { "Successfully processed discovery" }
             }
         } catch (e: Exception) {

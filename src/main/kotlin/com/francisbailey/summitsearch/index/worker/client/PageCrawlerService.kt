@@ -61,7 +61,7 @@ class PageCrawlerService(
                     if (exception.response.status == HttpStatusCode.TooManyRequests) {
                         throw RetryablePageException(e.localizedMessage, e)
                     }
-                    throw PermanentNonRetryablePageException(e.localizedMessage, e)
+                    throw PermanentNonRetryablePageException("Found non retryable exception", e)
                 }
                 is SendCountExceedException,
                 is ServerResponseException -> {
