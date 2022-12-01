@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.client
 
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
+import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.*
 import io.ktor.http.*
@@ -8,7 +9,7 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.*
 import org.springframework.core.env.Environment
 import java.net.URL
 
@@ -17,6 +18,10 @@ class PageCrawlerServiceTest {
     private val url = URL("https://francisbailey.com")
 
     private val environment = mock<Environment>()
+
+    private val crawlerConfiguration = mock<CrawlerConfiguration> {
+        on(mock.charsetOverride).thenReturn(hashMapOf())
+    }
 
     private val clientConfiguration = ClientConfiguration(environment)
 
@@ -30,7 +35,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }))
+        }), crawlerConfiguration)
 
         assertEquals(content.html(), service.getHtmlDocument(url).html())
     }
@@ -43,7 +48,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }))
+        }), crawlerConfiguration)
 
         val documentA = service.getHtmlDocument(URL("https://francisbailey.com/test#abc"))
         assertEquals("https://francisbailey.com", documentA.baseUri())
@@ -55,6 +60,32 @@ class PageCrawlerServiceTest {
         assertEquals("https://francisbailey.com/test", documentC.baseUri())
     }
 
+    /** @TODO FIX NPE WHEN WE HAVE TIME
+    @Test
+    fun `uses charset override if one is present`() {
+        whenever(crawlerConfiguration.charsetOverride).thenReturn(hashMapOf(url.host to Charsets.ISO_8859_1))
+        val content = Jsoup.parse("<html>Test</html>")
+        val response = mock<HttpResponse>()
+//        val client = mock<HttpClient>()
+//
+//        response.stub {
+//            onBlocking { bodyAsText(Charsets.ISO_8859_1) }.doReturn(content.html())
+//            onBlocking { bodyAsText() }.doReturn(content.html())
+//        }
+//        client.stub {
+//            onBlocking { get(any<String>()) }.doReturn(response)
+//        }
+
+        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { request ->
+            assertEquals(url.toURI(), request.url.toURI())
+            mockResponse(response)
+        }), crawlerConfiguration)
+
+        assertEquals(content.html(), service.getHtmlDocument(url).html())
+        verifyBlocking(response) { bodyAsText(Charsets.ISO_8859_1) }
+    }
+  */
+
     @Test
     fun `throws UnparsableContentException when htmlParser call fails`() {
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
@@ -63,7 +94,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        })) {
+        }), crawlerConfiguration) {
            throw RuntimeException("Couldn't Parse Test")
         }
 
@@ -78,7 +109,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }))
+        }), crawlerConfiguration)
 
         assertThrows<UnparsableContentException> { service.getHtmlDocument(url) }
     }
@@ -89,7 +120,7 @@ class PageCrawlerServiceTest {
             println(errorCode)
             val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
                 respondError(HttpStatusCode(errorCode, "Test Client Error"))
-            }))
+            }), crawlerConfiguration)
 
             assertThrows<PermanentNonRetryablePageException> { service.getHtmlDocument(url) }
         }
@@ -104,7 +135,7 @@ class PageCrawlerServiceTest {
                 install(HttpRequestRetry) {
                     noRetry() // disable for 50X errors to speed up tests
                 }
-            })
+            }, crawlerConfiguration)
 
             assertThrows<RetryablePageException> { service.getHtmlDocument(url) }
         }
@@ -114,7 +145,7 @@ class PageCrawlerServiceTest {
     fun `throws RetryablePageException on 429 error code`() {
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
             respondError(HttpStatusCode(429, "Server Error"))
-        }))
+        }), crawlerConfiguration)
 
         assertThrows<RetryablePageException> { service.getHtmlDocument(url) }
     }

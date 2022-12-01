@@ -1,11 +1,14 @@
 package com.francisbailey.summitsearch.index.worker.client
 
-import com.francisbailey.summitsearch.index.worker.extension.bodyAsTextSafe
+import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.charsets.Charsets
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jsoup.Jsoup
@@ -21,13 +24,15 @@ import java.net.URL
 @Service
 class PageCrawlerService(
     private val httpClient: HttpClient,
+    private val crawlerConfiguration: CrawlerConfiguration,
     private val htmlParser: (String) -> Document
 ) {
     private val log = KotlinLogging.logger { }
 
     @Autowired
-    constructor(httpClient: HttpClient): this(
+    constructor(httpClient: HttpClient, crawlerConfiguration: CrawlerConfiguration): this(
         httpClient,
+        crawlerConfiguration,
         { Jsoup.parse(it) }
     )
 
@@ -39,9 +44,10 @@ class PageCrawlerService(
         log.info { "Fetching HTML content from: $pageUrl" }
 
         val response = getPage(pageUrl)
+        val charset = crawlerConfiguration.charsetOverride[pageUrl.host] ?: response.charset() ?: Charsets.UTF_8
 
         try {
-            htmlParser(response.bodyAsTextSafe()).also {
+            htmlParser(response.bodyAsText(charset)).also {
                 it.setBaseUri(pageUrl.toString().substringBeforeLast("/")) // need to fetch relative href links
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
             }
