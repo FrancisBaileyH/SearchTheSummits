@@ -4,15 +4,10 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.compression.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.utils.io.charsets.*
-import io.ktor.utils.io.core.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -21,9 +16,7 @@ import redis.clients.jedis.UnifiedJedis
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
-import java.nio.charset.CodingErrorAction
 import java.time.Duration
-import kotlin.text.Charsets
 
 
 @Configuration
@@ -78,7 +71,7 @@ open class ClientConfiguration(
             fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
             username = environment.getRequiredProperty("ES_USERNAME"),
             password = environment.getRequiredProperty("ES_PASSWORD"),
-            endpoint = "localhost"
+            endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
         )).also {
             it.createIndexIfNotExists()
         }
@@ -87,15 +80,15 @@ open class ClientConfiguration(
     @Bean
     open fun redisClient(): UnifiedJedis {
         return JedisPooled(
-            "localhost",
-            49153,
+            environment.getRequiredProperty("REDIS_ENDPOINT"),
+            environment.getRequiredProperty("REDIS_PORT").toInt(),
             environment.getRequiredProperty("REDIS_USERNAME"),
             environment.getRequiredProperty("REDIS_PASSWORD")
         )
     }
 
     companion object {
-        const val CRAWLING_AGENT = "SummitSearch Crawler"
+        const val CRAWLING_AGENT = "SearchTheSummitsBot"
     }
 
 }
