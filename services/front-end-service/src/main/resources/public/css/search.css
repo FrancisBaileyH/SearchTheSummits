@@ -1,0 +1,12 @@
+.search-container {
+    margin: 0 auto;
+    max-width: 450px;
+    text-align: center;
+    padding-top: 25%;
+}
+
+.search-container #search-bar {
+    width: 100%;
+    border-radius: 20px;
+    height: 40px;
+}

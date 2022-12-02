@@ -14,17 +14,9 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/FrancisBaileyH/SummitSearchIndexService")
-        credentials {
-            username = project.findProperty("gpr.user") as String
-            password = project.findProperty("gpr.key") as String
-        }
-    }
 }
 
 dependencies {
-
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
 
     implementation("org.springframework.boot:spring-boot-starter")
@@ -37,7 +29,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:2.1.3")
     implementation("io.ktor:ktor-client-encoding:2.1.3")
 
-    implementation("com.francisbailey.summitsearch:summitsearchindexservice:1.0.4")
+    implementation(project(":lib:search-index-service"))
     implementation("org.jsoup:jsoup:1.15.3")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
 
