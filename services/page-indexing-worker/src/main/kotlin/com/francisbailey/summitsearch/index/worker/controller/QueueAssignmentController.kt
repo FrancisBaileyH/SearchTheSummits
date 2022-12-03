@@ -1,7 +1,10 @@
 package com.francisbailey.summitsearch.index.worker.controller
 
+import com.francisbailey.summitsearch.index.worker.api.DeleteAssignmentsResponse
+import com.francisbailey.summitsearch.index.worker.api.GetAssignmentsResponse
+import com.francisbailey.summitsearch.index.worker.api.PutAssignmentRequest
+import com.francisbailey.summitsearch.index.worker.api.PutAssignmentResponse
 import com.francisbailey.summitsearch.index.worker.task.QueueAssignmentStore
-import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.bind.annotation.*
@@ -46,23 +49,3 @@ class QueueAssignmentController(
         FAILURE
     }
 }
-
-@Serializable
-data class PutAssignmentRequest(
-    val assignments: Set<String>
-)
-
-@Serializable
-data class PutAssignmentResponse(
-    val status: String
-)
-
-@Serializable
-data class DeleteAssignmentsResponse(
-    val status: String
-)
-
-@Serializable
-data class GetAssignmentsResponse(
-    val assignments: Set<String>
-)
