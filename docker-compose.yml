@@ -39,7 +39,7 @@ services:
 
 volumes:
   es-volume:
-    external: false
+    external: true
   redis-volume:
     external: false
 
