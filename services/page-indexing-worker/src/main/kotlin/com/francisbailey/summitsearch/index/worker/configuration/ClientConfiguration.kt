@@ -64,9 +64,12 @@ open class ClientConfiguration(
         }
     }
 
+    /**
+     * @TODO dev profile for this
+     */
     @Bean
     open fun summitSearchIndexService(): SummitSearchIndexService {
-        return SummitSearchIndexServiceFactory.build(
+        return SummitSearchIndexServiceFactory.buildInsecureLocal(
             SearchIndexServiceConfiguration(
             fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
             username = environment.getRequiredProperty("ES_USERNAME"),

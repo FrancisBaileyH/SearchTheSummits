@@ -14,6 +14,26 @@ import org.elasticsearch.client.RestClient
 class SummitSearchIndexServiceFactory {
 
     companion object {
+
+        fun buildInsecureLocal(configuration: SearchIndexServiceConfiguration): SummitSearchIndexService {
+            val elasticSearchClient = ElasticsearchClient(
+                RestClientTransport(
+                    RestClient.builder(
+                        HttpHost(
+                            configuration.endpoint,
+                            configuration.port,
+                            "http"
+                        )
+                    ).build(),
+                    JacksonJsonpMapper().apply {
+                        this.objectMapper().registerModule(KotlinModule())
+                    }
+                )
+            )
+
+            return SummitSearchIndexService(elasticSearchClient, configuration.paginationResultSize)
+        }
+
         fun build(configuration: SearchIndexServiceConfiguration): SummitSearchIndexService {
             val sslContext = TransportUtils.sslContextFromCaFingerprint(configuration.fingerprint)
             val credentialsProvider = BasicCredentialsProvider().apply {

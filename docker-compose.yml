@@ -1,0 +1,46 @@
+version: '3'
+services:
+  front-end-service:
+    profiles: ["frontend"]
+    env_file: variables.env
+    ports:
+      - "8080:8080"
+    build:
+      context: ./services/front-end-service
+      dockerfile: Dockerfile
+
+  elasticsearch:
+    profiles: ["frontend", "backend"]
+    image: elasticsearch:8.5.2
+    ports:
+      - "9200:9200"
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    volumes:
+      - es-volume:/usr/share/elasticsearch/data
+
+  redis:
+    profiles: ["backend"]
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-volume:/data
+    command: redis-server --requirepass redispw
+
+  page-indexing-worker:
+    profiles: ["backend"]
+    env_file: variables.env
+    build:
+      context: ./services/page-indexing-worker
+      dockerfile: Dockerfile
+
+
+volumes:
+  es-volume:
+    external: false
+  redis-volume:
+    external: false
+
+
