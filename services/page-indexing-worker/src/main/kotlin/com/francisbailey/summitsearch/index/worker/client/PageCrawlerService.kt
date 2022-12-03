@@ -2,18 +2,15 @@ package com.francisbailey.summitsearch.index.worker.client
 
 import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.charsets.Charsets
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -77,10 +74,6 @@ class PageCrawlerService(
             }
         }
     }
-}
-
-fun Element.getLinks(): List<String> {
-    return this.select("a[href]").map { it.attr("abs:href") }
 }
 
 open class RetryablePageException(message: String, e: Exception): RuntimeException(message, e)
