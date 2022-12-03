@@ -32,6 +32,8 @@ services:
   page-indexing-worker:
     profiles: ["backend"]
     env_file: variables.env
+    ports:
+      - "8081:8080"
     build:
       context: ./services/page-indexing-worker
       dockerfile: Dockerfile

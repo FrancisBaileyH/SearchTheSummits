@@ -1,6 +1,5 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -10,7 +9,7 @@ import java.util.concurrent.Executor
 
 @Component
 class PageIndexingTaskCoordinator(
-    private val indexingQueueProvider: IndexingQueueProvider,
+    private val queueAssignmentStore: QueueAssignmentStore,
     private val indexingTaskExecutor: Executor,
     private val indexingTaskRateLimiter: RateLimiter<String>,
     private val indexingTaskQueuePollingClient: IndexingTaskQueuePollingClient,
@@ -29,7 +28,9 @@ class PageIndexingTaskCoordinator(
      */
     fun coordinateTaskExecution() {
         log.info { "Running indexing tasks now" }
-        indexingQueueProvider.getQueues().forEach { queue ->
+        queueAssignmentStore.getAssignments().also {
+            log.info { "Running tasks against: ${it.size} assignments" }
+        }.forEach { queue ->
             indexingTaskExecutor.execute(
                 PageIndexingTask(
                     queueName = queue,

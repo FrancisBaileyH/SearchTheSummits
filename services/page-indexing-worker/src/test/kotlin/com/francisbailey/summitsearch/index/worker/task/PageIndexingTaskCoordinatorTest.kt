@@ -1,6 +1,5 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.IndexingQueueProvider
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -10,7 +9,7 @@ import java.util.concurrent.Executor
 
 class PageIndexingTaskCoordinatorTest {
 
-    private val indexingQueueProvider = mock<IndexingQueueProvider>()
+    private val queueAssignmentStore = mock<QueueAssignmentStore>()
     private val executor = mock<Executor>()
     private val indexingTaskRateLimiter = mock<RateLimiter<String>>()
     private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
@@ -19,7 +18,7 @@ class PageIndexingTaskCoordinatorTest {
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
     private val indexingCoordinator = PageIndexingTaskCoordinator(
-        indexingQueueProvider = indexingQueueProvider,
+        queueAssignmentStore = queueAssignmentStore,
         indexingTaskExecutor = executor,
         indexingTaskRateLimiter = indexingTaskRateLimiter,
         indexingTaskQueuePollingClient = indexingTaskQueuePollingClient,
@@ -33,7 +32,7 @@ class PageIndexingTaskCoordinatorTest {
     fun `iterates through queues if there are any and adds task to executor`() {
         val queues = setOf("QueueA", "QueueB", "QueueC")
 
-        whenever(indexingQueueProvider.getQueues()).thenReturn(queues)
+        whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
 
         indexingCoordinator.coordinateTaskExecution()
 
@@ -45,7 +44,7 @@ class PageIndexingTaskCoordinatorTest {
     @Test
     fun `does not execute tasks if there are no queues`() {
         val queues = emptySet<String>()
-        whenever(indexingQueueProvider.getQueues()).thenReturn(queues)
+        whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
 
         indexingCoordinator.coordinateTaskExecution()
 
