@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStoreItem
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,6 +23,10 @@ class LinkDiscoveryTaskTest {
         on(mock.source).thenReturn("some-queue")
     }
 
+    private val linkDiscoveryFilterService = mock<LinkDiscoveryFilterService> {
+        on(mock.shouldFilter(any())).thenReturn(false)
+    }
+
     private val pageMetadataStoreItem = mock<PageMetadataStoreItem>()
 
 
@@ -39,6 +44,7 @@ class LinkDiscoveryTaskTest {
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
+        verifyNoInteractions(linkDiscoveryFilterService)
     }
 
     @Test
@@ -49,6 +55,7 @@ class LinkDiscoveryTaskTest {
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
+        verifyNoInteractions(linkDiscoveryFilterService)
     }
 
     @Test
@@ -59,6 +66,20 @@ class LinkDiscoveryTaskTest {
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
+        verifyNoInteractions(linkDiscoveryFilterService)
+    }
+
+    @Test
+    fun `ignores link if filter service returns true on should filter`() {
+        val discovery = URL("https://francisbailey.com/wp-content/some-file.jpg")
+        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(linkDiscoveryFilterService.shouldFilter(any())).thenReturn(true)
+
+        buildTask(discovery.toString()).run()
+
+        verifyNoInteractions(taskQueueClient)
+        verifyNoInteractions(pageMetadataStore)
+        verify(linkDiscoveryFilterService).shouldFilter(discovery)
     }
 
     @Test
@@ -114,6 +135,7 @@ class LinkDiscoveryTaskTest {
         taskQueueClient,
         pageMetadataStore,
         associatedTask,
+        linkDiscoveryFilterService,
         discovery
     )
 }

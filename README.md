@@ -20,6 +20,7 @@ docker run --rm --volumes-from ES-TEST-DATA-RESTORE -v %cd%:/backup busybox tar 
 ```
 4. From the main project directory run:
 ```
+.\gradlew build
 docker-compose build
 docker-compose --profile frontend up
 ```

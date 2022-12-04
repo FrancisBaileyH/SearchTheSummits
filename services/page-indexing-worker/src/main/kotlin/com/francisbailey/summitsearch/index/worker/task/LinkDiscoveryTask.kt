@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import mu.KotlinLogging
@@ -14,6 +15,7 @@ class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,
     private val pageMetadataStore: PageMetadataStore,
     private val associatedTask: IndexTask,
+    private val linkDiscoveryFilterService: LinkDiscoveryFilterService,
     val discovery: String
 ): Runnable {
 
@@ -43,6 +45,11 @@ class LinkDiscoveryTask(
 
             if (discoveryUrl == associatedTaskUrl) {
                 log.warn { "Discovered URL is the same as task URL. Skipping" }
+                return
+            }
+
+            if (linkDiscoveryFilterService.shouldFilter(discoveryUrl)) {
+                log.warn { "Skipping link as it matches a filter" }
                 return
             }
 
