@@ -49,7 +49,7 @@ class LinkDiscoveryTask(
             }
 
             if (linkDiscoveryFilterService.shouldFilter(discoveryUrl)) {
-                log.warn { "Skipping link as it matches a filter" }
+                log.warn { "Skipping $discoveryUrl as it matches a filter" }
                 return
             }
 
