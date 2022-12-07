@@ -2,7 +2,6 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import mu.KotlinLogging
 import org.springframework.stereotype.Service

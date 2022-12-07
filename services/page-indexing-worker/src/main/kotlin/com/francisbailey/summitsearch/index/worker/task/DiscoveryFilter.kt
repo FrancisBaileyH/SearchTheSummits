@@ -1,19 +1,29 @@
-package com.francisbailey.summitsearch.index.worker.crawler
+package com.francisbailey.summitsearch.index.worker.task
 
-import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.regex.Pattern
 
-@Service
+
 class LinkDiscoveryFilterService(
-    private val defaultChain: LinkDiscoveryFilterChain = DefaultFilterChain
+    private val defaultChain: LinkDiscoveryFilterChain
 ) {
     private val hostFilterChainMap = hashMapOf<String, LinkDiscoveryFilterChain>()
 
+    private val hostFilterCacheChainMap = hashMapOf<String, LinkDiscoveryFilterChain>()
+
+    /**
+     * @TODO shouldCache?
+     */
     fun shouldFilter(url: URL): Boolean {
         val filterChain = hostFilterChainMap[url.host]
 
         return filterChain?.shouldFilter(url) ?: defaultChain.shouldFilter(url)
+    }
+
+    fun shouldCache(url: URL): Boolean {
+        val filterChain = hostFilterCacheChainMap[url.host]
+
+        return filterChain?.shouldFilter(url) ?: false
     }
 
     fun addFilterChain(url: URL, chain: LinkDiscoveryFilterChain) {
@@ -50,17 +60,7 @@ class PathMatchingDiscoveryFilter(
     private val regex = pattern.toRegex()
 
     override fun matches(url: URL): Boolean {
-        return url.path.matches(regex)
-    }
-}
-
-
-object DefaultFilterChain: LinkDiscoveryFilterChain(exclusive = true) {
-    init {
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/category/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
+        val fullPath = url.toURI().rawSchemeSpecificPart.replace("//${url.host}", "")
+        return fullPath.matches(regex)
     }
 }

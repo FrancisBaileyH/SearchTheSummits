@@ -1,9 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.crawler.DefaultFilterChain
-import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterChain
-import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
-import com.francisbailey.summitsearch.index.worker.crawler.PathMatchingDiscoveryFilter
+import com.francisbailey.summitsearch.index.worker.configuration.CascadeClimbersFilter
+import com.francisbailey.summitsearch.index.worker.configuration.DefaultFilterChain
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -27,7 +25,8 @@ class CrawlerFilterTest {
             "/some-file.gif",
             "/some-file.jpeg",
             "/some-file.png",
-            "/some-file.jPeG"
+            "/some-file.jPeG",
+            "/some-file?query=x"
         )
 
         pathsToExclude.forEach {
@@ -40,8 +39,52 @@ class CrawlerFilterTest {
     }
 
     @Test
+    fun `cascade climbers filter skips expected links`() {
+        val expectedToSkip = listOf(
+            "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/?do=getLastComment",
+            "https://cascadeclimbers.com/forum/topic/75809-joffre-peak-flavelle-lane-8152010/",
+            "https://cascadeclimbers.com/forum/profile/9797-jasong/",
+            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/?sortby=title&sortdirection=asc&page=4"
+        )
+
+        val expectedNotToSkip = listOf(
+            "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/",
+            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/?page=2"
+        )
+
+        val allowedTopics = listOf(
+            "34-alaska",
+            "16-british-columbiacanada",
+            "10-north-cascades",
+            "11-alpine-lakes",
+            "13-southern-wa-cascades",
+            "12-mount-rainier-np",
+            "14-olympic-peninsula",
+            "28-centraleastern-washington",
+            "15-oregon-cascades",
+            "41-columbia-river-gorge",
+            "25-california",
+            "49-idaho",
+            "48-montana",
+            "52-the-rest-of-the-us-and-international"
+        ).map {
+            "https://cascadeclimbers.com/forum/forum/$it/"
+        }
+
+        expectedNotToSkip.plus(allowedTopics)
+
+        expectedToSkip.forEach {
+            assertTrue(CascadeClimbersFilter.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(CascadeClimbersFilter.shouldFilter(URL(it)))
+        }
+    }
+
+    @Test
     fun `runs inclusive filter chain associated with host`() {
-        val filterService = LinkDiscoveryFilterService()
+        val filterService = LinkDiscoveryFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
         val host = "www.francisbaileyh.com"
 
@@ -58,7 +101,7 @@ class CrawlerFilterTest {
 
     @Test
     fun `runs exclusive filter chain associated with host`() {
-        val filterService = LinkDiscoveryFilterService()
+        val filterService = LinkDiscoveryFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
         val host = "www.francisbaileyh.com"
 

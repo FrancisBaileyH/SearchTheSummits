@@ -1,7 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStoreItem
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -107,7 +106,7 @@ class LinkDiscoveryTaskTest {
         buildTask(discovery.toString()).run()
 
         verifyNoInteractions(taskQueueClient)
-        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test/test2"))
+        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test/test2?query=x"))
     }
 
     @Test

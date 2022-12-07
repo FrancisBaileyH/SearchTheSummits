@@ -3,7 +3,6 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.crawler.LinkDiscoveryFilterService
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import mu.KotlinLogging
@@ -19,9 +18,6 @@ class LinkDiscoveryTask(
     val discovery: String
 ): Runnable {
 
-    /**
-     * @TODO - add link filtering. E.g. no wp-uploads
-     */
     private val log = KotlinLogging.logger {  }
 
     /**
@@ -56,14 +52,14 @@ class LinkDiscoveryTask(
             val metadata = pageMetadataStore.getMetadata(discoveryUrl)
 
             if (metadata == null || metadata.canRefresh(associatedTask.details.refreshDuration())) {
-                log.info { "New link discovery as part of: ${associatedTask.details.id}" }
+                log.info { "New link discovery: $discoveryUrl as part of: ${associatedTask.details.id}" }
                 taskQueueClient.addTask(
                     IndexTask(
                         source = associatedTask.source,
                         details = IndexTaskDetails(
                             id = UUID.randomUUID().toString(),
                             taskRunId = associatedTask.details.taskRunId,
-                            pageUrl = discovery,
+                            pageUrl = discoveryUrl.toString(),
                             submitTime = Instant.now().toEpochMilli(),
                             refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds
                         )
