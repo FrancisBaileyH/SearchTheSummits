@@ -35,6 +35,8 @@ dependencies {
 
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:search-index-service"))
+    implementation(project(":lib:service-common"))
+
     implementation("org.jsoup:jsoup:1.15.3")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
 

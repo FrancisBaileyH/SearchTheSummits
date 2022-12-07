@@ -6,6 +6,7 @@ import com.francisbailey.summitsearch.index.worker.client.RetryablePageException
 import com.francisbailey.summitsearch.index.worker.client.UnparsableContentException
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
 import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
+import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.*
 import io.ktor.http.*
@@ -27,7 +28,9 @@ class PageCrawlerServiceTest {
         on(mock.charsetOverride).thenReturn(hashMapOf())
     }
 
-    private val clientConfiguration = ClientConfiguration(environment)
+    private val regionConfig = mock<RegionConfig>()
+
+    private val clientConfiguration = ClientConfiguration(environment, regionConfig)
 
     @Test
     fun `returns html page as text when fetched successfully`() {

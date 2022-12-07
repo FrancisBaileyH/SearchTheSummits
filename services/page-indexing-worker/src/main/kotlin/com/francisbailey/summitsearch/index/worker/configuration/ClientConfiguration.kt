@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.configuration
 import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
+import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
@@ -31,7 +32,8 @@ open class HttpEngineConfiguration {
 
 @Configuration
 open class ClientConfiguration(
-    private val environment: Environment
+    private val environment: Environment,
+    private val regionConfig: RegionConfig
 ) {
 
     @Bean
@@ -64,18 +66,26 @@ open class ClientConfiguration(
         }
     }
 
-    /**
-     * @TODO dev profile for this
-     */
     @Bean
     open fun summitSearchIndexService(): SummitSearchIndexService {
-        return SummitSearchIndexServiceFactory.buildInsecureLocal(
-            SearchIndexServiceConfiguration(
-            fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-            username = environment.getRequiredProperty("ES_USERNAME"),
-            password = environment.getRequiredProperty("ES_PASSWORD"),
-            endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
-        )).also {
+        return when {
+            regionConfig.isProd -> SummitSearchIndexServiceFactory.build(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                )
+            )
+            else -> SummitSearchIndexServiceFactory.buildInsecureLocal(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                )
+            )
+        }.also {
             it.createIndexIfNotExists()
         }
     }
