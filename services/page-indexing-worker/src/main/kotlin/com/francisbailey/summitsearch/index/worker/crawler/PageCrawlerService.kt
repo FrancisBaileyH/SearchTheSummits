@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.client
+package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import io.ktor.client.*

@@ -1,6 +1,9 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
+import com.francisbailey.summitsearch.index.worker.crawler.PermanentNonRetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.RetryablePageException
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
