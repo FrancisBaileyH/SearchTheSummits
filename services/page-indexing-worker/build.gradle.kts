@@ -22,7 +22,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
-    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
     implementation(platform("software.amazon.awssdk:bom:2.18.19"))
     implementation("software.amazon.awssdk:sqs")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
@@ -32,6 +31,8 @@ dependencies {
     implementation("io.ktor:ktor-client-core:2.1.3")
     implementation("io.ktor:ktor-client-cio:2.1.3")
     implementation("io.ktor:ktor-client-encoding:2.1.3")
+
+    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
 
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:search-index-service"))

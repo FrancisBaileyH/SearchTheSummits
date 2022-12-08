@@ -19,6 +19,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
+
     implementation(project(":lib:search-index-service"))
     implementation(project(":lib:service-common"))
 

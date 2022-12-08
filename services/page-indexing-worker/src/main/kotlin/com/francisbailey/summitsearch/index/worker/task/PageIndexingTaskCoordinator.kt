@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.services.common.RateLimiter
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.concurrent.Executor

@@ -4,6 +4,7 @@ import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.services.common.RateLimiter
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*

@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.task
+package com.francisbailey.summitsearch.services.common
 
 import io.github.bucket4j.local.LocalBucket
 import io.github.bucket4j.local.LocalBucketBuilder

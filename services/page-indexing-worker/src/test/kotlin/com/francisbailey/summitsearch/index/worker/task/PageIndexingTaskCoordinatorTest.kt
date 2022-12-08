@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.services.common.RateLimiter
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.util.concurrent.Executor

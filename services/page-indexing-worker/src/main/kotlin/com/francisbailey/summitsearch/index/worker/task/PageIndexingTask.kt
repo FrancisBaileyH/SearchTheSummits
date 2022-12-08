@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.extension.getLinks
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.services.common.RateLimiter
 import mu.KotlinLogging
 import java.net.URL
 

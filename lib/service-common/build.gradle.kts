@@ -14,6 +14,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
     implementation("org.springframework.boot:spring-boot-starter")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
