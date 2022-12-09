@@ -18,7 +18,7 @@ open class ThrottlingConfiguration(
     )
 
     @Bean
-    fun defaultApiRateLimiter(): RateLimiter<String> {
+    open fun defaultApiRateLimiter(): RateLimiter<String> {
         return rateLimiterFactory.build(1L)
     }
 }
