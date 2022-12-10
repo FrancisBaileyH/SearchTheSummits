@@ -33,9 +33,7 @@ open class ClientConfiguration(
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
-                ).also {
-                    log.info { "Starting index client with config: $it" }
-                })
+                ))
         }
 
     }
