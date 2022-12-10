@@ -9,18 +9,15 @@ import org.springframework.context.annotation.Configuration
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-import java.util.concurrent.ThreadPoolExecutor
 
 @Configuration
 open class TaskConfiguration {
 
     @Bean
-    open fun indexingTaskExecutor(): Executor {
-        return Executors.newFixedThreadPool(INDEX_TASK_THREAD_COUNT)
-    }
+    open fun indexingTaskExecutor(): Executor = Executors.newFixedThreadPool(INDEX_TASK_THREAD_COUNT)
 
     @Bean
-    open fun linkDiscoveryTaskExecutor() = Executors.newFixedThreadPool(LINK_DISCOVERY_THREAD_COUNT) as ThreadPoolExecutor
+    open fun linkDiscoveryTaskExecutor(): Executor = Executors.newFixedThreadPool(LINK_DISCOVERY_THREAD_COUNT)
 
     @Bean
     open fun circuitBreakerRegistry(): CircuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults()
