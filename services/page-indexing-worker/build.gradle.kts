@@ -32,8 +32,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:2.1.3")
     implementation("io.ktor:ktor-client-encoding:2.1.3")
 
-    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
-
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:1.7.0")
     implementation("io.github.resilience4j:resilience4j-ratelimiter:1.7.0")
 
