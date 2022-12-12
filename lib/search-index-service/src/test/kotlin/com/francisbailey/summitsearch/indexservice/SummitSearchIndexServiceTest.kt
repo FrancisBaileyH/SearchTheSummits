@@ -197,6 +197,26 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
+    fun `excluded elements are removed from page on example site CascadeClimbers`() {
+        val index = "index-with-excluded-elements"
+        val pages = setOf("AssiniboineCC")
+
+        val testIndexService = createIndex(index)
+
+        pages.forEach {
+            testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$it"), htmlDocument = loadHtml(it)))
+        }
+
+        refreshIndex(index)
+
+        val result = testIndexService.query(SummitSearchQueryRequest(
+            term = "Share this post"
+        ))
+
+        assertEquals(0, result.hits.size)
+    }
+
+    @Test
     fun `deletes document from index when delete call made`() {
         val index = "test-index-delete-test"
         val testIndexService = createIndex(index)
