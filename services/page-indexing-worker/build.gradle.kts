@@ -21,6 +21,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     implementation(platform("software.amazon.awssdk:bom:2.18.19"))
     implementation("software.amazon.awssdk:sqs")

@@ -35,15 +35,35 @@ services:
     env_file: variables.env
     ports:
       - "8081:8080"
+      - "9091:9090"
     build:
       context: ./services/page-indexing-worker
       dockerfile: Dockerfile
+
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus
+    ports:
+      - "9092:9090"
+    build:
+      context: ./services/prometheus
+      dockerfile: Dockerfile
+
+  grafana:
+    profiles: ["monitoring"]
+    image: grafana/grafana
+    volumes:
+      - grafana-volume:/var/lib/grafana
+    ports:
+      - "3000:3000"
 
 
 volumes:
   es-volume:
     external: true
   redis-volume:
+    external: false
+  grafana-volume:
     external: false
 
 
