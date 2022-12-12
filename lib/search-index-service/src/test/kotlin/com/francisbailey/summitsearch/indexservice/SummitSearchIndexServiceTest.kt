@@ -51,10 +51,6 @@ class SummitSearchIndexServiceTest {
         testIndexService.createIndexIfNotExists()
 
         assertTrue(testIndexService.indexExists())
-
-        val state = client.indices().get(GetIndexRequest.of { it.index(index) })[index]
-
-        assertEquals("TypeMapping: {\"properties\":{\"html\":{\"type\":\"text\",\"analyzer\":\"htmlStripAnalyzer\"}}}", state?.mappings().toString())
     }
 
     @Test
@@ -270,7 +266,6 @@ class SummitSearchIndexServiceTest {
                     request.document(
                         HtmlMapping(
                             source = sourceURL,
-                            rawHtml = html.html(),
                             textContent = html.body().text(),
                             title = html.title()
                         )

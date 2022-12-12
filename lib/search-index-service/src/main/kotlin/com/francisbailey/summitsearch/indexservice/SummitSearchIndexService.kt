@@ -106,8 +106,7 @@ class SummitSearchIndexService(
                 it.document(HtmlMapping(
                     source = request.source,
                     title = title,
-                    textContent = textOnly,
-                    rawHtml = request.htmlDocument.html()
+                    textContent = textOnly
                 ))
             }
         )
@@ -142,24 +141,6 @@ class SummitSearchIndexService(
 
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {
                 it.index(indexName)
-                it.settings { settings ->
-                    settings.analysis { analysis ->
-                        analysis.analyzer("htmlStripAnalyzer") { analyzer ->
-                            analyzer.custom { custom ->
-                                custom.filter(listOf("lowercase"))
-                                custom.charFilter(listOf("html_strip"))
-                                custom.tokenizer("standard")
-                            }
-                        }
-                    }
-                }
-                it.mappings { mappings ->
-                    mappings.properties("html") { property ->
-                        property.text { text ->
-                            text.analyzer("htmlStripAnalyzer")
-                        }
-                    }
-                }
             })
 
             log.info { "Result: ${response.acknowledged()}" }
@@ -214,6 +195,5 @@ data class SummitSearchDeleteIndexRequest(
 internal data class HtmlMapping(
     val source: URL,
     val textContent: String,
-    val title: String,
-    val rawHtml: String
+    val title: String
 )
