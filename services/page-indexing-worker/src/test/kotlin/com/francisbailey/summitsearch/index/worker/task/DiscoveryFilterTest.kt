@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.configuration.CascadeClimbersFilter
+import com.francisbailey.summitsearch.index.worker.configuration.ClubTreadFilter
 import com.francisbailey.summitsearch.index.worker.configuration.DefaultFilterChain
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -80,6 +81,36 @@ class CrawlerFilterTest {
 
         expectedNotToSkip.forEach {
             assertFalse(CascadeClimbersFilter.shouldFilter(URL(it)))
+        }
+    }
+
+    @Test
+    fun `club tread filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "27-british-columbia",
+            "130-canadian-rockies",
+            "34-alberta",
+            "37-washington-state",
+            "35-other-regions"
+        ).map {
+            "https://forums.clubtread.com/$it/"
+        }
+
+        expectedNotToSkip.plus("https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a.html")
+        expectedNotToSkip.plus("https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut.html")
+
+        val expectedToSkip = listOf(
+            "https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut-2.html",
+            "https://forums.clubtread.com/newreply.php?do=newreply&p=476682",
+            "https://forums.clubtread.com/members/71772-losthiker.html"
+        )
+
+        expectedToSkip.forEach {
+            assertTrue(ClubTreadFilter.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(ClubTreadFilter.shouldFilter(URL(it)))
         }
     }
 

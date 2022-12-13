@@ -15,13 +15,14 @@ open class FilterConfiguration {
     open fun linkDiscoveryFilterService(): LinkDiscoveryFilterService {
         return LinkDiscoveryFilterService(defaultChain = DefaultFilterChain).apply {
             addFilterChain(URL("https://cascadeclimbers.com"), CascadeClimbersFilter)
+            addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
         }
     }
 }
 
 object DefaultFilterChain: LinkDiscoveryFilterChain(exclusive = true) {
     init {
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*"))) // avoid query parameters in links
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
@@ -61,7 +62,23 @@ object CascadeClimbersFilter: LinkDiscoveryFilterChain(exclusive = false) {
         allowedTopics.forEach {
             addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[1-9]{1,10})$")))
         }
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
     }
+}
 
+object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
+    init {
+        val allowedTopics = listOf(
+            "27-british-columbia",
+            "130-canadian-rockies",
+            "34-alberta",
+            "37-washington-state",
+            "35-other-regions"
+        )
+
+        allowedTopics.forEach {
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/)$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z].html$")))
+        }
+    }
 }
