@@ -86,9 +86,6 @@ class SummitSearchIndexService(
         )
     }
 
-    /**
-     * Content we want? Any text that isn't a link within the body?
-     */
     fun indexPageContents(request: SummitSearchIndexRequest) {
         log.info { "Indexing content from: ${request.source}" }
 

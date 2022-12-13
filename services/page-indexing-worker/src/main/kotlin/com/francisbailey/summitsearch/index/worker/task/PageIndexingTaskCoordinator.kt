@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePolli
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.concurrent.Executor
@@ -20,7 +21,8 @@ class PageIndexingTaskCoordinator(
     private val linkDiscoveryService: LinkDiscoveryService,
     private val circuitBreakerRegistry: CircuitBreakerRegistry,
     private val taskRateLimiterRegistry: RateLimiterRegistry,
-    private val taskPermitService: TaskPermitService
+    private val taskPermitService: TaskPermitService,
+    private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -52,10 +54,14 @@ class PageIndexingTaskCoordinator(
             val perQueueCircuitBreaker = circuitBreakerRegistry.circuitBreaker(queue)
 
             when {
-                !taskDependencyCircuitBreaker.tryAcquirePermission() ->
+                !taskDependencyCircuitBreaker.tryAcquirePermission() -> {
+                    meterRegistry.counter("task.indexing.dropped").increment()
                     log.warn { "Skipping tasks because task Dependency circuit breaker has tripped" }
-                !perQueueCircuitBreaker.tryAcquirePermission() ->
+                }
+                !perQueueCircuitBreaker.tryAcquirePermission() -> {
+                    meterRegistry.counter("task.indexing.dropped").increment()
                     log.warn { "Skipping: $queue, because per queue circuit breaker has tripped" }
+                }
                 else -> {
                     val permit = taskPermitService.tryAcquirePermit(queue)
 
@@ -70,10 +76,12 @@ class PageIndexingTaskCoordinator(
                                 dependencyCircuitBreaker = taskDependencyCircuitBreaker,
                                 perQueueCircuitBreaker = perQueueCircuitBreaker,
                                 linkDiscoveryService = linkDiscoveryService,
-                                taskPermit = permit
+                                taskPermit = permit,
+                                meterRegistry = meterRegistry
                             )
                         )
                     } else {
+                        meterRegistry.counter("task.indexing.dropped").increment()
                         log.warn { "Skipping $queue because ${taskPermitService.permits} permits have been issue already" }
                     }
                 }

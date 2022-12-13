@@ -9,6 +9,10 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -49,7 +53,8 @@ class PageIndexingTaskTest {
         depencencyCircuitBreaker,
         perQueuecircuitBreaker,
         linkDiscoveryService,
-        taskPermit
+        taskPermit,
+        SimpleMeterRegistry()
     )
 
     private val defaultIndexTask = IndexTask(

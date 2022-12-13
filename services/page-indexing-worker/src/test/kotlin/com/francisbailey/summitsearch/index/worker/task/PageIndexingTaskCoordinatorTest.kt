@@ -6,6 +6,9 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.util.concurrent.Executor
@@ -30,7 +33,6 @@ class PageIndexingTaskCoordinatorTest {
 
     private val taskPermit = mock<TaskPermit>()
 
-
     private val indexingCoordinator = PageIndexingTaskCoordinator(
         queueAssignmentStore = queueAssignmentStore,
         indexingTaskExecutor = executor,
@@ -40,7 +42,8 @@ class PageIndexingTaskCoordinatorTest {
         summitSearchIndexService = searchIndexService,
         pageCrawlerService = pageCrawlerService,
         linkDiscoveryService = linkDiscoveryService,
-        taskPermitService = taskPermitService
+        taskPermitService = taskPermitService,
+        meterRegistry = SimpleMeterRegistry()
     )
 
 

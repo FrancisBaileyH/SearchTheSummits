@@ -9,6 +9,7 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.URL
 
@@ -22,7 +23,8 @@ class PageIndexingTask(
     private val dependencyCircuitBreaker: CircuitBreaker,
     private val perQueueCircuitBreaker: CircuitBreaker,
     private val linkDiscoveryService: LinkDiscoveryService,
-    private val taskPermit: TaskPermit
+    private val taskPermit: TaskPermit,
+    private val meterRegistry: MeterRegistry
 ): Runnable {
 
     private val log = KotlinLogging.logger { }
@@ -42,6 +44,7 @@ class PageIndexingTask(
                 }
             }
         } else {
+            meterRegistry.counter("task.indexing.rate-limited").increment()
             log.warn { "Indexing rate exceeded for: $queueName. Backing off" }
         }
     }
@@ -51,18 +54,28 @@ class PageIndexingTask(
         log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
 
         try {
-            val document = pageCrawlerService.getHtmlDocument(pageUrl)
+            val document = meterRegistry.timer("task.indexing.latency.host.${pageUrl.host}").recordCallable {
+                pageCrawlerService.getHtmlDocument(pageUrl)
+            }!!
+
             val organicLinks = document.body().getLinks()
 
             dependencyCircuitBreaker.executeCallable {
 
                 linkDiscoveryService.submitDiscoveries(task, organicLinks)
-                indexService.indexPageContents(SummitSearchIndexRequest(
-                    source = pageUrl,
-                    htmlDocument = document
-                ))
+                meterRegistry.timer("task.indexing.indexservice.latency").recordCallable {
+                    indexService.indexPageContents(
+                        SummitSearchIndexRequest(
+                            source = pageUrl,
+                            htmlDocument = document
+                        )
+                    )
+                }
 
                 log.info { "Successfully completed indexing task for: $queueName with $pageUrl" }
+                meterRegistry.counter("task.indexing.success").increment()
+                meterRegistry.counter("task.indexing.success.host.${pageUrl.host}").increment()
+                meterRegistry.counter("task.indexing.links.discovered").increment(organicLinks.size.toDouble())
             }
         } catch (e: PermanentNonRetryablePageException) {
             log.error(e) { "Removing invalid content from index for: $pageUrl" }
