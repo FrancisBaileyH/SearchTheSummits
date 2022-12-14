@@ -55,11 +55,11 @@ class PageIndexingTaskCoordinator(
 
             when {
                 !taskDependencyCircuitBreaker.tryAcquirePermission() -> {
-                    meterRegistry.counter("task.indexing.dropped").increment()
+                    meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
                     log.warn { "Skipping tasks because task Dependency circuit breaker has tripped" }
                 }
                 !perQueueCircuitBreaker.tryAcquirePermission() -> {
-                    meterRegistry.counter("task.indexing.dropped").increment()
+                    meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
                     log.warn { "Skipping: $queue, because per queue circuit breaker has tripped" }
                 }
                 else -> {
@@ -81,7 +81,7 @@ class PageIndexingTaskCoordinator(
                             )
                         )
                     } else {
-                        meterRegistry.counter("task.indexing.dropped").increment()
+                        meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
                         log.warn { "Skipping $queue because ${taskPermitService.permits} permits have been issue already" }
                     }
                 }

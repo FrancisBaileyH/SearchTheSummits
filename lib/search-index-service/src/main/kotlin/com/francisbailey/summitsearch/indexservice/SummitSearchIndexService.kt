@@ -154,7 +154,7 @@ class SummitSearchIndexService(
         const val HIGHLIGHT_FRAGMENT_SIZE = 100
 
         private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
-            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
+            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header", "table")
 
             override fun matches(root: Element, element: Element): Boolean {
                 return excludedTags.contains(element.normalName())

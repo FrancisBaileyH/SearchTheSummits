@@ -54,7 +54,7 @@ class PageIndexingTask(
         log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
 
         try {
-            val document = meterRegistry.timer("task.indexing.latency.host.${pageUrl.host}").recordCallable {
+            val document = meterRegistry.timer("task.indexing.latency.page", "host", pageUrl.host).recordCallable {
                 pageCrawlerService.getHtmlDocument(pageUrl)
             }!!
 
@@ -73,8 +73,7 @@ class PageIndexingTask(
                 }
 
                 log.info { "Successfully completed indexing task for: $queueName with $pageUrl" }
-                meterRegistry.counter("task.indexing.success").increment()
-                meterRegistry.counter("task.indexing.success.host.${pageUrl.host}").increment()
+                meterRegistry.counter("task.indexing.success", "host" , pageUrl.host).increment()
                 meterRegistry.counter("task.indexing.links.discovered").increment(organicLinks.size.toDouble())
             }
         } catch (e: PermanentNonRetryablePageException) {
