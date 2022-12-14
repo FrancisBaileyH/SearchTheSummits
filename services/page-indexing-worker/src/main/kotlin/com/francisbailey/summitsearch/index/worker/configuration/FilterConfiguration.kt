@@ -77,7 +77,7 @@ object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
         )
 
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/)$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/|/index[1-9]{1,10}.html)$")))
             addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z].html$")))
         }
     }

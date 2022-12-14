@@ -48,7 +48,7 @@ class CrawlerFilterTest {
             "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/?sortby=title&sortdirection=asc&page=4"
         )
 
-        val expectedNotToSkip = listOf(
+        val expectedNotToSkip = mutableListOf(
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/",
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010",
             "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2"
@@ -73,7 +73,7 @@ class CrawlerFilterTest {
             "https://cascadeclimbers.com/forum/forum/$it/"
         }
 
-        expectedNotToSkip.plus(allowedTopics)
+        expectedNotToSkip.addAll(allowedTopics)
 
         expectedToSkip.forEach {
             assertTrue(CascadeClimbersFilter.shouldFilter(URL(it)))
@@ -94,10 +94,11 @@ class CrawlerFilterTest {
             "35-other-regions"
         ).map {
             "https://forums.clubtread.com/$it/"
-        }
+        }.toMutableList()
 
-        expectedNotToSkip.plus("https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a.html")
-        expectedNotToSkip.plus("https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut.html")
+        expectedNotToSkip.add("https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a.html")
+        expectedNotToSkip.add("https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut.html")
+        expectedNotToSkip.add("https://forums.clubtread.com/130-canadian-rockies/index2.html") // paginated topic
 
         val expectedToSkip = listOf(
             "https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut-2.html",
@@ -110,6 +111,7 @@ class CrawlerFilterTest {
         }
 
         expectedNotToSkip.forEach {
+            println(it)
             assertFalse(ClubTreadFilter.shouldFilter(URL(it)))
         }
     }
