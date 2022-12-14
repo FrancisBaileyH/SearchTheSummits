@@ -22,6 +22,17 @@ services:
     volumes:
       - es-volume:/usr/share/elasticsearch/data
 
+  kibana:
+    profiles: ["monitoring"]
+    image: kibana:8.5.2
+    ports:
+      - "5601:5601"
+    environment:
+      SERVER_NAME: monitoring.searchthesummits.com
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    volumes:
+      - kibana-volume:/usr/share/kibana/data
+
   redis:
     profiles: ["backend"]
     image: redis:latest
@@ -66,6 +77,8 @@ volumes:
   redis-volume:
     external: false
   grafana-volume:
+    external: false
+  kibana-volume:
     external: false
 
 

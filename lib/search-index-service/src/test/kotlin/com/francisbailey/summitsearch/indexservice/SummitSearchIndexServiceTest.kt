@@ -267,7 +267,8 @@ class SummitSearchIndexServiceTest {
                         HtmlMapping(
                             source = sourceURL,
                             textContent = html.body().text(),
-                            title = html.title()
+                            title = html.title(),
+                            host = sourceURL.host
                         )
                     )
                     request.refresh(Refresh.True)

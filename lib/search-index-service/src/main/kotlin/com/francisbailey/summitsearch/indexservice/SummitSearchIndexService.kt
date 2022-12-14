@@ -103,7 +103,8 @@ class SummitSearchIndexService(
                 it.document(HtmlMapping(
                     source = request.source,
                     title = title,
-                    textContent = textOnly
+                    textContent = textOnly,
+                    host = request.source.host
                 ))
             }
         )
@@ -190,6 +191,7 @@ data class SummitSearchDeleteIndexRequest(
 )
 
 internal data class HtmlMapping(
+    val host: String,
     val source: URL,
     val textContent: String,
     val title: String
