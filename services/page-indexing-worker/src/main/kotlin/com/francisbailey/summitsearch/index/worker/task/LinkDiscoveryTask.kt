@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
+import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.URL
 import java.time.Instant
@@ -15,6 +16,7 @@ class LinkDiscoveryTask(
     private val pageMetadataStore: PageMetadataStore,
     private val associatedTask: IndexTask,
     private val linkDiscoveryFilterService: LinkDiscoveryFilterService,
+    private val meterRegistry: MeterRegistry,
     val discovery: String
 ): Runnable {
 
@@ -49,7 +51,9 @@ class LinkDiscoveryTask(
                 return
             }
 
-            val metadata = pageMetadataStore.getMetadata(discoveryUrl)
+            val metadata = meterRegistry.timer("task.linkdiscovery.metadata.get.latency").recordCallable {
+                pageMetadataStore.getMetadata(discoveryUrl)
+            }
 
             if (metadata == null || metadata.canRefresh(associatedTask.details.refreshDuration())) {
                 log.info { "New link discovery: $discoveryUrl as part of: ${associatedTask.details.id}" }
@@ -66,7 +70,9 @@ class LinkDiscoveryTask(
                     )
                 )
 
-                pageMetadataStore.saveMetadata(associatedTask.details.taskRunId, discoveryUrl)
+                meterRegistry.timer("task.linkdiscovery.metadata.put.latency").recordCallable {
+                    pageMetadataStore.saveMetadata(associatedTask.details.taskRunId, discoveryUrl)
+                }
                 log.info { "Successfully processed discovery" }
             }
         } catch (e: Exception) {

@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStoreItem
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -27,6 +28,8 @@ class LinkDiscoveryTaskTest {
     }
 
     private val pageMetadataStoreItem = mock<PageMetadataStoreItem>()
+
+    private val meterRegistry = SimpleMeterRegistry()
 
 
     @Test
@@ -135,6 +138,7 @@ class LinkDiscoveryTaskTest {
         pageMetadataStore,
         associatedTask,
         linkDiscoveryFilterService,
+        meterRegistry,
         discovery
     )
 }

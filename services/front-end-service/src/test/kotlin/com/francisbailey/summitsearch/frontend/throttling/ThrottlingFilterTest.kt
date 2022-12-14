@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.frontend.throttling
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -13,7 +14,7 @@ class ThrottlingFilterTest {
 
     private val throttlingService = mock<ThrottlingService>()
 
-    private val throttlingFilter = ThrottlingFilter(throttlingService)
+    private val throttlingFilter = ThrottlingFilter(throttlingService, SimpleMeterRegistry())
 
     private val request = mock<HttpServletRequest>()
 

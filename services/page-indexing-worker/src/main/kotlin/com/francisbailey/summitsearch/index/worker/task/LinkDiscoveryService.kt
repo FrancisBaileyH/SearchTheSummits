@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
+import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executor
@@ -17,7 +18,8 @@ class LinkDiscoveryService(
     private val linkDiscoveryTaskExecutor: Executor,
     private val taskQueueClient: IndexingTaskQueueClient,
     private val pageMetadataStore: PageMetadataStore,
-    private val linkDiscoveryFilterService: LinkDiscoveryFilterService
+    private val linkDiscoveryFilterService: LinkDiscoveryFilterService,
+    private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger {  }
 
@@ -32,6 +34,7 @@ class LinkDiscoveryService(
                 pageMetadataStore = pageMetadataStore,
                 associatedTask = associatedTask,
                 linkDiscoveryFilterService = linkDiscoveryFilterService,
+                meterRegistry = meterRegistry,
                 discovery = it
             ))
         }

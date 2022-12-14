@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.frontend.throttling
 
 import io.github.resilience4j.ratelimiter.RateLimiterConfig
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -18,7 +19,8 @@ import javax.servlet.http.HttpServletResponse
 @Component
 @Order(1)
 class ThrottlingFilter(
-    private val throttlingService: ThrottlingService
+    private val throttlingService: ThrottlingService,
+    private val meterRegistry: MeterRegistry
 ): Filter {
 
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -26,6 +28,7 @@ class ThrottlingFilter(
         val httpResponse = response as HttpServletResponse
 
         if (throttlingService.shouldThrottle(httpRequest)) {
+            meterRegistry.counter("throttlingfilter.throttled").increment()
             httpResponse.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "Too many requests from user")
         } else {
             chain.doFilter(request, response)

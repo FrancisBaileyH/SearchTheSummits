@@ -63,7 +63,7 @@ class PageIndexingTask(
             dependencyCircuitBreaker.executeCallable {
 
                 linkDiscoveryService.submitDiscoveries(task, organicLinks)
-                meterRegistry.timer("task.indexing.indexservice.latency").recordCallable {
+                meterRegistry.timer("task.indexing.indexservice.add.latency").recordCallable {
                     indexService.indexPageContents(
                         SummitSearchIndexRequest(
                             source = pageUrl,

@@ -1,11 +1,21 @@
 package com.francisbailey.summitsearch.index.worker.task
 
+import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class QueueAssignmentStore() {
+class QueueAssignmentStore(
+    meterRegistry: MeterRegistry
+) {
     private val assignedQueues = mutableSetOf<String>()
+
+    init {
+        Gauge.builder("queue.assignment.count", assignedQueues) {
+            it.size.toDouble()
+        }.register(meterRegistry)
+    }
 
     private val log = KotlinLogging.logger {  }
 

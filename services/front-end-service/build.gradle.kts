@@ -19,7 +19,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:1.7.0")
     implementation("io.github.resilience4j:resilience4j-ratelimiter:1.7.0")

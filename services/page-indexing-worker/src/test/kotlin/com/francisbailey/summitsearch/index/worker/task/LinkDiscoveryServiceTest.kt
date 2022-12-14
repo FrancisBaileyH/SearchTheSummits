@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -14,8 +15,9 @@ class LinkDiscoveryServiceTest {
     private val taskQueueClient = mock<IndexingTaskQueueClient>()
     private val pageMetadataStore = mock<PageMetadataStore>()
     private val linkDiscoveryFilterService = mock<LinkDiscoveryFilterService>()
+    private val meterRegistry = SimpleMeterRegistry()
 
-    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, pageMetadataStore, linkDiscoveryFilterService)
+    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, pageMetadataStore, linkDiscoveryFilterService, meterRegistry)
 
     private val associatedTask = mock<IndexTask>()
 
