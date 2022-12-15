@@ -14,12 +14,4 @@ class URLExtensionTest {
 
         assertEquals(expectedUrl, url.normalize())
     }
-
-    @Test
-    fun `should return url with last slash removed`() {
-        val url = URL("https://francisbaileyh.com/test/test3/index.html/")
-        val expectedUrl = URL("https://francisbaileyh.com/test/test3/index.html")
-
-        assertEquals(expectedUrl, url.normalize())
-    }
 }

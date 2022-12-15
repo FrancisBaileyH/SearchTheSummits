@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
+import com.francisbailey.summitsearch.indexservice.extension.normalizeWithoutSlash
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -95,7 +96,7 @@ class SummitSearchIndexService(
         val result = elasticSearchClient.index(
             IndexRequest.of {
                 it.index(indexName)
-                it.id(request.source.toString())
+                it.id(request.source.normalizeWithoutSlash().toString())
                 it.document(HtmlMapping(
                     source = request.source,
                     title = title,

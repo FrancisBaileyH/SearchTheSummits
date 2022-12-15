@@ -6,6 +6,6 @@ import java.net.URL
  * Strip fragments from URL
  */
 fun URL.normalize(): URL {
-    val uri = this.toURI()
-    return URL("${uri.scheme}:${uri.schemeSpecificPart.removeSuffix("/")}")
+    val uri = this.toURI().normalize()
+    return URL("${uri.scheme}:${uri.schemeSpecificPart}")
 }
