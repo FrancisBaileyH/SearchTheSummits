@@ -45,9 +45,16 @@ class PageMetadataStore(
         log.info { "Successfully saved $taskRunId and $pageUrl to $key" }
     }
 
+    fun saveDiscoveryMetadata(discoveryHost: String) {
+        log.info { "Adding discovery: $discoveryHost" }
+        redisClient.sadd(DISCOVERY_METADATA_KEY, discoveryHost)
+        log.info { "Successfully added discovery" }
+    }
+
     private fun buildKey(pageUrl: URL) = "Page-$pageUrl".take(MAX_KEY_LENGTH)
 
     companion object {
+        const val DISCOVERY_METADATA_KEY = "Page-Discoveries-Metadata"
         const val MAX_KEY_LENGTH = 255
     }
 }

@@ -55,8 +55,8 @@ class LinkDiscoveryTaskTest {
 
         buildTask("https://some-other-page.com").run()
 
+        verify(pageMetadataStore).saveDiscoveryMetadata("some-other-page.com")
         verifyNoInteractions(taskQueueClient)
-        verifyNoInteractions(pageMetadataStore)
         verifyNoInteractions(linkDiscoveryFilterService)
     }
 

@@ -38,6 +38,7 @@ class LinkDiscoveryTask(
 
             if (discoveryUrl.host != associatedTaskUrl.host) {
                 log.warn { "Link: $discoveryUrl is from external source. Skipping" }
+                pageMetadataStore.saveDiscoveryMetadata(discoveryUrl.host)
                 return
             }
 
