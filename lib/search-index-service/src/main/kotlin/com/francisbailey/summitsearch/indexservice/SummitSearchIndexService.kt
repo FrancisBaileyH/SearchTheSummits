@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
 import co.elastic.clients.elasticsearch.core.DeleteRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
@@ -71,14 +72,8 @@ class SummitSearchIndexService(
             hits = response.hits().hits().map {
                 SummitSearchHit(
                     highlight = it.highlight()[HtmlMapping::textContent.name]!!.last(),
-                    source = it.fields()[HtmlMapping::source.name]!!.deserialize(
-                        JsonpDeserializer.arrayDeserializer(
-                            JsonpDeserializer.stringDeserializer()
-                        )).first(),
-                    title = it.fields()[HtmlMapping::title.name]!!.deserialize(
-                        JsonpDeserializer.arrayDeserializer(
-                            JsonpDeserializer.stringDeserializer()
-                        )).first()
+                    source = it.stringField(HtmlMapping::source.name),
+                    title = it.stringField(HtmlMapping::title.name)
                 )
             },
             next = queryRequest.from + paginationResultSize,
@@ -95,6 +90,7 @@ class SummitSearchIndexService(
 
         val textOnly = request.htmlDocument.body().text()
         val title = request.htmlDocument.title()
+        val description = request.htmlDocument.selectFirst("meta[name=description]")
 
         val result = elasticSearchClient.index(
             IndexRequest.of {
@@ -104,7 +100,8 @@ class SummitSearchIndexService(
                     source = request.source,
                     title = title,
                     textContent = textOnly,
-                    host = request.source.host
+                    host = request.source.host,
+                    seoDescription = description?.attr("content") ?: ""
                 ))
             }
         )
@@ -139,6 +136,13 @@ class SummitSearchIndexService(
 
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {
                 it.index(indexName)
+                it.mappings { mapping ->
+                    mapping.properties("host") { property ->
+                        property.keyword { keyword ->
+                            keyword.docValues(true)
+                        }
+                    }
+                }
             })
 
             log.info { "Result: ${response.acknowledged()}" }
@@ -155,7 +159,7 @@ class SummitSearchIndexService(
         const val HIGHLIGHT_FRAGMENT_SIZE = 100
 
         private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
-            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header", "table")
+            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
 
             override fun matches(root: Element, element: Element): Boolean {
                 return excludedTags.contains(element.normalName())
@@ -193,6 +197,14 @@ data class SummitSearchDeleteIndexRequest(
 internal data class HtmlMapping(
     val host: String,
     val source: URL,
-    val textContent: String,
-    val title: String
+    val title: String,
+    val seoDescription: String,
+    val textContent: String
 )
+
+internal fun Hit<HtmlMapping>.stringField(name: String): String {
+    return this.fields()[name]!!.deserialize(
+        JsonpDeserializer.arrayDeserializer(
+            JsonpDeserializer.stringDeserializer()
+        )).first()
+}

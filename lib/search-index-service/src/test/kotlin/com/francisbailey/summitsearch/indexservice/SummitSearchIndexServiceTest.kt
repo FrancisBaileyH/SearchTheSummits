@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch._types.Refresh
 import co.elastic.clients.elasticsearch.core.GetRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import co.elastic.clients.elasticsearch.indices.GetIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -165,8 +164,20 @@ class SummitSearchIndexServiceTest {
         testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/LibertyBell"), htmlDocument = page))
         refreshIndex(index)
 
+        val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
 
-        assertFalse(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
+        assertFalse(result.hits.isEmpty())
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(URL("$source/LibertyBell").toString())
+            },
+            HtmlMapping::class.java
+        )
+        assertTrue(document.found())
+        assertEquals(URL(source).host, document.source()?.host)
+        assertEquals("In fact, there's a very high concentration of ", document.source()?.seoDescription)
     }
 
     @Test
@@ -257,6 +268,9 @@ class SummitSearchIndexServiceTest {
         indexedPages.forEach {
             val sourceURL = URL("$source/$it")
             val html = loadHtml(it)
+            val description = html.select("meta[name=description]")
+                .firstOrNull()
+                ?.text() ?: ""
 
 
              client.index(
@@ -268,7 +282,8 @@ class SummitSearchIndexServiceTest {
                             source = sourceURL,
                             textContent = html.body().text(),
                             title = html.title(),
-                            host = sourceURL.host
+                            host = sourceURL.host,
+                            seoDescription = description
                         )
                     )
                     request.refresh(Refresh.True)

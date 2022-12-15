@@ -1,8 +1,9 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
-import co.elastic.clients.json.jsonb.JsonbJsonpMapper
+import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.rest_client.RestClientTransport
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
@@ -45,7 +46,9 @@ class ElasticSearchTestServer {
             }
             .build()
 
-        val transport = RestClientTransport(restClient, JsonbJsonpMapper())
+        val transport = RestClientTransport(restClient, JacksonJsonpMapper().apply {
+            this.objectMapper().registerModule(KotlinModule())
+        })
 
         client = ElasticsearchClient(transport)
 
