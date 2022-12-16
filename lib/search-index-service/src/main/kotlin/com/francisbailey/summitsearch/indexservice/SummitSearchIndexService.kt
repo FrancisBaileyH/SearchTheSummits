@@ -99,6 +99,10 @@ class SummitSearchIndexService(
         )
     }
 
+    /**
+     * Add punctuation to fix missing/broken text. Up for debate if we should just leave
+     * the text naturally as it is however.
+     */
     fun indexPageContents(request: SummitSearchIndexRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
