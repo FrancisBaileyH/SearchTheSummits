@@ -2,24 +2,28 @@ package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.elasticsearch.core.DeleteRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
+import com.francisbailey.summitsearch.indexservice.extension.hasPunctuation
 import com.francisbailey.summitsearch.indexservice.extension.normalizeWithoutSlash
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Evaluator
 import java.net.URL
+import javax.swing.text.html.HTML
 
 class SummitSearchIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    private val indexName: String = SUMMIT_INDEX_NAME
+    val indexName: String = SUMMIT_INDEX_NAME
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -41,9 +45,14 @@ class SummitSearchIndexService(
                     track.enabled(true)
                 }
                 it.query { query ->
-                    query.matchPhrasePrefix { match ->
-                        match.field(HtmlMapping::textContent.name)
+                    query.multiMatch { match ->
                         match.query(queryRequest.term)
+                        match.type(TextQueryType.PhrasePrefix)
+                        match.fields(
+                            HtmlMapping::rawTextContent.name,
+                            HtmlMapping::seoDescription.name,
+                            HtmlMapping::paragraphContent.name
+                        )
                     }
                 }
                 it.fields(listOf(
@@ -58,10 +67,13 @@ class SummitSearchIndexService(
                     sourceConfig.fetch(false)
                 }
                 it.highlight { highlight ->
+                    highlight.numberOfFragments(HIGHLIGHT_FRAGMENT_COUNT)
                     highlight.fragmentSize(HIGHLIGHT_FRAGMENT_SIZE)
-                    highlight.fields(HtmlMapping::textContent.name) { highlightField ->
-                        highlightField
-                    }
+                    highlight.fields(mapOf(
+                        HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
+                        HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
+                        HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                    ))
                 }
                 it.size(paginationResultSize)
                 it.from(queryRequest.from)
@@ -71,8 +83,13 @@ class SummitSearchIndexService(
 
         return SummitSearchPaginatedResult(
             hits = response.hits().hits().map {
+                // Order of precedence for matches
+                val seoHighlight = it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull()
+                val paragraphHighlight = it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull()
+                val rawTextHighlight = it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
+
                 SummitSearchHit(
-                    highlight = it.highlight()[HtmlMapping::textContent.name]!!.last(),
+                    highlight = seoHighlight ?: paragraphHighlight ?: rawTextHighlight!!,
                     source = it.stringField(HtmlMapping::source.name),
                     title = it.stringField(HtmlMapping::title.name)
                 )
@@ -90,6 +107,20 @@ class SummitSearchIndexService(
         }
 
         val textOnly = request.htmlDocument.body().text()
+        val paragraphContent = StringBuffer()
+
+        request.htmlDocument.body().select(HTML.Tag.P.toString()).forEach {
+            it.text().run {
+                paragraphContent.append(this)
+                if (this.isNotBlank() && !this.hasPunctuation()) {
+                    paragraphContent.append(". ")
+                }
+            }
+        }
+
+        val paragraphContentBuffer = StringBuffer()
+        paragraphContentBuffer.append(paragraphContent)
+
         val title = request.htmlDocument.title()
         val description = request.htmlDocument.selectFirst("meta[name=description]")
 
@@ -98,10 +129,11 @@ class SummitSearchIndexService(
                 it.index(indexName)
                 it.id(request.source.normalizeWithoutSlash().toString())
                 it.document(HtmlMapping(
-                    source = request.source,
                     title = title,
-                    textContent = textOnly,
+                    source = request.source,
                     host = request.source.host,
+                    rawTextContent = textOnly,
+                    paragraphContent = paragraphContent.toString(),
                     seoDescription = description?.attr("content") ?: ""
                 ))
             }
@@ -157,7 +189,8 @@ class SummitSearchIndexService(
         const val SUMMIT_INDEX_NAME = "summit-search-index"
         const val MAX_FROM_VALUE = 1_000
         const val MAX_QUERY_TERM_SIZE = 100
-        const val HIGHLIGHT_FRAGMENT_SIZE = 100
+        const val HIGHLIGHT_FRAGMENT_SIZE = 200
+        const val HIGHLIGHT_FRAGMENT_COUNT = 1
 
         private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
             private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
@@ -200,7 +233,8 @@ internal data class HtmlMapping(
     val source: URL,
     val title: String,
     val seoDescription: String,
-    val textContent: String
+    val paragraphContent: String,
+    val rawTextContent: String
 )
 
 internal fun Hit<HtmlMapping>.stringField(name: String): String {
