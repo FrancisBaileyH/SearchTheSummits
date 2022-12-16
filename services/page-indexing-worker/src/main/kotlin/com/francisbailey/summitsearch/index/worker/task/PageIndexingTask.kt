@@ -1,8 +1,9 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryablePageException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.PermanentNonRetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.RedirectedPageException
 import com.francisbailey.summitsearch.index.worker.extension.getLinks
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
@@ -61,7 +62,6 @@ class PageIndexingTask(
             val organicLinks = document.body().getLinks()
 
             dependencyCircuitBreaker.executeCallable {
-
                 linkDiscoveryService.submitDiscoveries(task, organicLinks)
                 meterRegistry.timer("task.indexing.indexservice.add.latency").recordCallable {
                     indexService.indexPageContents(
@@ -76,9 +76,15 @@ class PageIndexingTask(
                 meterRegistry.counter("task.indexing.success", "host" , pageUrl.host).increment()
                 meterRegistry.counter("task.indexing.links.discovered").increment(organicLinks.size.toDouble())
             }
-        } catch (e: PermanentNonRetryablePageException) {
+        }
+        catch (e: RedirectedPageException) {
+            log.info { "Found page redirect. Submitting to discovery service if value is present" }
+            e.location?.run {
+                linkDiscoveryService.submitDiscoveries(task, listOf(this))
+            }
+        }
+        catch (e: NonRetryablePageException) {
             log.error(e) { "Removing invalid content from index for: $pageUrl" }
-
             dependencyCircuitBreaker.executeCallable {
                 indexService.deletePageContents(SummitSearchDeleteIndexRequest(pageUrl))
             }

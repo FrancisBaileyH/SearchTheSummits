@@ -1,8 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
+import com.francisbailey.summitsearch.index.worker.extension.isRedirect
 import io.ktor.client.*
-import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
 
-/**
- * @TODO handle redirects
- */
+
 @Service
 class PageCrawlerService(
     private val httpClient: HttpClient,
@@ -33,10 +31,6 @@ class PageCrawlerService(
         { Jsoup.parse(it) }
     )
 
-    /**
-     * With expectSuccess enabled on client, we will see ServerResponseException and ClientResponseExceptions
-     * being thrown here
-     */
     fun getHtmlDocument(pageUrl: URL): Document = runBlocking {
         log.info { "Fetching HTML content from: $pageUrl" }
 
@@ -45,39 +39,35 @@ class PageCrawlerService(
 
         try {
             htmlParser(response.bodyAsText(charset)).also {
-                it.setBaseUri(pageUrl.toString().substringBeforeLast("/")) // need to fetch relative href links
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
+                it.setBaseUri(pageUrl.toString().substringBeforeLast("/")) // need to fetch relative href links
             }
         } catch (e: Exception) {
-            throw UnparsableContentException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}", e)
+            throw UnparsablePageException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
         }
     }
 
     private suspend fun getPage(pageUrl: URL): HttpResponse {
-        return try {
-            httpClient.get(pageUrl)
-        } catch (e: Exception) {
-            when (e) {
-                is ClientRequestException,
-                is RedirectResponseException -> {
-                    val exception = e as ResponseException
-                    if (exception.response.status == HttpStatusCode.TooManyRequests) {
-                        throw RetryablePageException(e.localizedMessage, e)
-                    }
-                    throw PermanentNonRetryablePageException("Found non retryable exception", e)
-                }
-                is SendCountExceedException,
-                is ServerResponseException -> {
-                    throw RetryablePageException(e.localizedMessage, e)
-                }
-                else -> throw e
-            }
+        val response = httpClient.get(pageUrl)
+
+        if (response.status.value < 300) {
+            return response
+        }
+
+        if (response.status.isRedirect()) {
+            throw RedirectedPageException(location = response.headers[HttpHeaders.Location], "Found redirect on: $pageUrl")
+        }
+
+        when(response.status.value) {
+            429 -> throw RetryablePageException("Throttled on $pageUrl")
+            in 400..499 -> throw NonRetryablePageException("Status: ${response.status} when retrieving: $pageUrl")
+            in 500 .. 599 -> throw RetryablePageException("Status: ${response.status} when retrieving: $pageUrl")
+            else -> throw NonRetryablePageException("Unknown status: ${response.status} when retrieving: $pageUrl")
         }
     }
 }
 
-open class RetryablePageException(message: String, e: Exception): RuntimeException(message, e)
-open class TemporaryNonRetryablePageException(message: String, e: Exception): RetryablePageException(message, e)
-open class PermanentNonRetryablePageException(message: String, e: Exception): RuntimeException(message, e)
-
-class UnparsableContentException(message: String, e: Exception): TemporaryNonRetryablePageException(message, e)
+open class NonRetryablePageException(message: String): RuntimeException(message)
+open class RetryablePageException(message: String): RuntimeException(message)
+open class UnparsablePageException(message: String): RuntimeException(message)
+open class RedirectedPageException(val location: String?, message: String): RuntimeException(message)

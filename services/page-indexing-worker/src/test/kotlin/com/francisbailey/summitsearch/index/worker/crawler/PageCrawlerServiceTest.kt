@@ -88,6 +88,31 @@ class PageCrawlerServiceTest {
         verifyBlocking(response) { bodyAsText(Charsets.ISO_8859_1) }
     }
   */
+    @Test
+    fun `throws redirected page exception with location on redirect errors`() {
+        val redirectCodes = setOf(
+            HttpStatusCode.MovedPermanently,
+            HttpStatusCode.Found,
+            HttpStatusCode.TemporaryRedirect,
+            HttpStatusCode.PermanentRedirect,
+            HttpStatusCode.SeeOther,
+        )
+        val location = "https://some-url.com"
+
+        redirectCodes.forEach { code ->
+            val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
+                respond(
+                    content = "<html>Test</html>",
+                    status = code,
+                    headers = headersOf(HttpHeaders.Location, location)
+                )
+            }), crawlerConfiguration)
+
+            assertThrows<RedirectedPageException> { service.getHtmlDocument(url) }.also {
+                assertEquals(location, it.location)
+            }
+        }
+    }
 
     @Test
     fun `throws UnparsableContentException when htmlParser call fails`() {
@@ -101,7 +126,7 @@ class PageCrawlerServiceTest {
            throw RuntimeException("Couldn't Parse Test")
         }
 
-        assertThrows<UnparsableContentException> { service.getHtmlDocument(url) }
+        assertThrows<UnparsablePageException> { service.getHtmlDocument(url) }
     }
 
     @Test
@@ -114,18 +139,18 @@ class PageCrawlerServiceTest {
             )
         }), crawlerConfiguration)
 
-        assertThrows<UnparsableContentException> { service.getHtmlDocument(url) }
+        assertThrows<UnparsablePageException> { service.getHtmlDocument(url) }
     }
 
     @Test
-    fun `throws PermanentNonRetryablePageException on Client and Retry exception encounters`() {
-        (300..428).plus(430..499).forEach { errorCode ->
+    fun `throws NonRetryablePageException when status is between 400 and 499 except 429`() {
+        (400..428).plus(430..499).forEach { errorCode ->
             println(errorCode)
             val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
                 respondError(HttpStatusCode(errorCode, "Test Client Error"))
             }), crawlerConfiguration)
 
-            assertThrows<PermanentNonRetryablePageException> { service.getHtmlDocument(url) }
+            assertThrows<NonRetryablePageException> { service.getHtmlDocument(url) }
         }
     }
 

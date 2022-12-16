@@ -1,17 +1,15 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryablePageException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.PermanentNonRetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.RedirectedPageException
 import com.francisbailey.summitsearch.index.worker.crawler.RetryablePageException
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
-import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Timer
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
@@ -145,10 +143,10 @@ class PageIndexingTaskTest {
     }
 
     @Test
-    fun `deletes page contents from index when 40X error or 30X response is encountered`() {
+    fun `deletes page contents from index when 40X error is encountered`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(PermanentNonRetryablePageException("test", Exception("test")))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(NonRetryablePageException("test"))
 
         task.run()
 
@@ -162,10 +160,25 @@ class PageIndexingTaskTest {
     fun `only deletes task when retryable exceptions occur`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test", Exception("test")))
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
 
         assertThrows<RetryablePageException> { task.run() }
 
+        verifyNoInteractions(indexService)
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(taskPermit).close()
+    }
+
+    @Test
+    fun `submits discovery on page redirected exception`() {
+        val location = "https://some-site.com/redirect/here"
+        whenever(rateLimiter.acquirePermission()).thenReturn(true)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RedirectedPageException(location, "test"))
+
+        task.run()
+
+        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(location))
         verifyNoInteractions(indexService)
         verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
         verify(taskPermit).close()

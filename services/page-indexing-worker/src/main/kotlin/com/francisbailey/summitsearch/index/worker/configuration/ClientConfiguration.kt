@@ -50,7 +50,6 @@ open class ClientConfiguration(
     @Bean
     open fun httpClient(httpClientEngine: HttpClientEngine): HttpClient {
        return HttpClient(httpClientEngine) {
-            expectSuccess = true
             install(UserAgent) {
                 agent = CRAWLING_AGENT
             }

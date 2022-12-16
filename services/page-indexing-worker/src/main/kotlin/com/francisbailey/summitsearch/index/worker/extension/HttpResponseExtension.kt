@@ -14,3 +14,12 @@ suspend fun HttpResponse.bodyAsTextSafe(fallbackCharset: Charset = kotlin.text.C
 
     return decoder.decode(input)
 }
+
+fun HttpStatusCode.isRedirect(): Boolean = when (value) {
+    HttpStatusCode.MovedPermanently.value,
+    HttpStatusCode.Found.value,
+    HttpStatusCode.TemporaryRedirect.value,
+    HttpStatusCode.PermanentRedirect.value,
+    HttpStatusCode.SeeOther.value -> true
+    else -> false
+}
