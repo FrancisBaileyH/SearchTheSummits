@@ -1,12 +1,14 @@
+var perPageResult = 20;
+
 $(document).ready(function() {
     var queries = new URLSearchParams(window.location.search)
 
     var urlQuery = queries.get("query")
-    var pagination = queries.get("next")
+    var page = queries.get("page")
 
     if (urlQuery != null && urlQuery != "") {
          $(".search-container").addClass("search-container-with-results")
-        updateSearchResults(urlQuery)
+        updateSearchResults(urlQuery, page)
     }
 
     $('#search-form').submit(function(e) {
@@ -14,20 +16,25 @@ $(document).ready(function() {
         query = $("#search-bar").val()
 
         if (query != urlQuery) {
-            var startTime = new Date().getTime();
             window.history.pushState(null, null, "/?query=" + query.replace(" ", "+"))
-            updateSearchResults(query)
+            updateSearchResults(query, page)
         }
     });
 });
 
 
-function updateSearchResults(query) {
-    var startTime = new Date().getTime();
-
+function updateSearchResults(query, page) {
     $("#search-bar").val(query)
+    $(".search-pagination-container").html("")
 
-    $.getJSON("api/summits?query=" + query)
+    var startTime = new Date().getTime();
+    var endpoint = "api/summits?query=" + query
+
+    if (page > 1) {
+        endpoint += "&next=" + ((page - 1) * perPageResult)
+    }
+
+    $.getJSON(endpoint)
      .fail(function(xhr, status, errorThrown) {
         $(".search-results-container").html(
             "<div class='search-result-error'><p>Unable to process query at this time :(</p></div>"
@@ -41,15 +48,15 @@ function updateSearchResults(query) {
          searchDetails += "</div>";
 
          $(".search-results-container").html(searchDetails)
-         $(".search-container").addClass("search-container-with-results")
+         $(".search-form-container").addClass("search-container-with-results")
 
          json.hits.forEach(function(hit) {
             var searchResult = "<div class=\"search-result\">"
             searchResult += "<div class=\"search-result-link\">"
-            searchResult += "<a href=\"" + hit.source + "\">" + hit.source + "</a>"
+            searchResult += "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
             searchResult += "</div>"
             searchResult += "<div class=\"search-result-title\">"
-            searchResult += "<h5><a href=\""+ hit.source + "\">" + hit.title + "</a></h5>"
+            searchResult += "<h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
             searchResult += "</div>"
             searchResult += "<div class=\"search-result-highlight\">"
             searchResult += "<p>" + hit.highlight + "...</p>"
@@ -58,12 +65,71 @@ function updateSearchResults(query) {
             $(".search-results-container").append(searchResult)
          });
 
-         console.log(json)
-         renderPagination(json)
-    });
+         if (json.totalHits > perPageResult && json.hits.length > 0) {
+             if (isNaN(page)) {
+                page = 1
+             }
+             renderPagination(json, page, query)
+         }
+     });
 }
 
-function renderPagination(response) {
-    // current page
-    // total to display
+function renderPagination(json, page, query) {
+    var paginationData = getPaginationDisplayData(json.totalHits, page, perPageResult)
+    $(".search-pagination-container").html("test")
+
+    var paginationHtml = "<ul><li>Pages: </li>"
+
+    for (i = paginationData.startPage; i <= paginationData.endPage; i++) {
+        var cssClass = ""
+        if (i == page) {
+            cssClass = "current-search-page"
+        }
+        paginationHtml += "<li><a class='" + cssClass + "' href=\"/?query=" + query.replace(" ", "+") + "&page=" + i + "\">" + i + "</a></li>"
+    }
+
+    paginationHtml += "</ul>"
+
+    $(".search-pagination-container").html(paginationHtml)
+}
+
+
+function getPaginationDisplayData(totalItems, currentPage, pageSize) {
+    // default to first page
+    currentPage = currentPage || 1;
+
+    // default page size is 10
+    pageSize = pageSize || 10;
+
+    // calculate total pages
+    var totalPages = Math.ceil(totalItems / pageSize);
+
+    var startPage, endPage;
+    if (totalPages <= 10) {
+        // less than 10 total pages so show all
+        startPage = 1;
+        endPage = totalPages;
+    } else {
+        // more than 10 total pages so calculate start and end pages
+        if (currentPage <= 6) {
+            startPage = 1;
+            endPage = 10;
+        } else if (currentPage + 4 >= totalPages) {
+            startPage = totalPages - 9;
+            endPage = totalPages;
+        } else {
+            startPage = currentPage - 5;
+            endPage = currentPage + 4;
+        }
+    }
+
+
+    // return object with all pager properties required by the view
+    return {
+        currentPage: currentPage,
+        pageSize: pageSize,
+        totalPages: totalPages,
+        startPage: startPage,
+        endPage: endPage
+    };
 }
