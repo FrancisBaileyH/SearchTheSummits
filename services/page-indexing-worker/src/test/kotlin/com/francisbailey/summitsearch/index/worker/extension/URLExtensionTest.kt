@@ -14,4 +14,12 @@ class URLExtensionTest {
 
         assertEquals(expectedUrl, url.normalize())
     }
+
+    @Test
+    fun `does not strip slashes`() {
+        val url = URL("https://francisbaileyh.com/test/test3/index.html/")
+        val expectedUrl = URL("https://francisbaileyh.com/test/test3/index.html/")
+
+        assertEquals(expectedUrl, url.normalize())
+    }
 }

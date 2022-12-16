@@ -69,5 +69,5 @@ class PageCrawlerService(
 
 open class NonRetryablePageException(message: String): RuntimeException(message)
 open class RetryablePageException(message: String): RuntimeException(message)
-open class UnparsablePageException(message: String): RuntimeException(message)
+open class UnparsablePageException(message: String): NonRetryablePageException(message)
 open class RedirectedPageException(val location: String?, message: String): RuntimeException(message)

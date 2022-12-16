@@ -1,6 +1,9 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.mapping.Property
+import co.elastic.clients.elasticsearch._types.mapping.PropertyBuilders
+import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.elasticsearch.core.DeleteRequest
@@ -50,7 +53,7 @@ class SummitSearchIndexService(
                         match.type(TextQueryType.PhrasePrefix)
                         match.fields(
                             HtmlMapping::rawTextContent.name,
-                            HtmlMapping::seoDescription.name,
+                            HtmlMapping::seoDescription.name.plus("^6"), // boost the SEO description score
                             HtmlMapping::paragraphContent.name
                         )
                     }
@@ -111,16 +114,7 @@ class SummitSearchIndexService(
         }
 
         val textOnly = request.htmlDocument.body().text()
-        val paragraphContent = StringBuffer()
-
-        request.htmlDocument.body().select(HTML.Tag.P.toString()).forEach {
-            it.text().run {
-                paragraphContent.append(this)
-                if (this.isNotBlank() && !this.hasPunctuation()) {
-                    paragraphContent.append(". ")
-                }
-            }
-        }
+        val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
 
         val paragraphContentBuffer = StringBuffer()
         paragraphContentBuffer.append(paragraphContent)
@@ -174,11 +168,19 @@ class SummitSearchIndexService(
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {
                 it.index(indexName)
                 it.mappings { mapping ->
-                    mapping.properties("host") { property ->
-                        property.keyword { keyword ->
-                            keyword.docValues(true)
+                    mapping.properties(mapOf(
+                        HtmlMapping::host.name to Property.of { property ->
+                            property.keyword { keyword ->
+                                keyword.docValues(true)
+                            }
+                        },
+                        HtmlMapping::paragraphContent.name to Property.of { property ->
+                            property.text(TextProperty.Builder().build())
+                        },
+                        HtmlMapping::rawTextContent.name to Property.of { property ->
+                            property.text(TextProperty.Builder().build())
                         }
-                    }
+                    ))
                 }
             })
 

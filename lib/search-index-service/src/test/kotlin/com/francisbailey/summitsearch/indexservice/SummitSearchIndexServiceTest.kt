@@ -221,28 +221,28 @@ class SummitSearchIndexServiceTest {
         assertEquals(0, result.hits.size)
     }
 
-    /**
-     * Sproatt HTML contains the text Rethel right before ill-formatted paragraph text. Ensure that our index
-     * call adds punctuation and spacing if there is none, so that the highlighter/query only picks up natural
-     * sentence bounds.
-     */
-    @Test
-    fun `paragraphs terminate with punctuation results in full sentence response only`() {
-        val index = "index-with-excluded-elements"
-        val page = "Sproatt"
-
-        val testIndexService = createIndex(index)
-        testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$page"), htmlDocument = loadHtml(page)))
-
-
-        refreshIndex(index)
-
-        val result = testIndexService.query(SummitSearchQueryRequest(
-            term = "Rethel"
-        ))
-
-        assertEquals("After two full on adventures up <em>Rethel</em> Mountain and Bryant Peak, I was looking to dial back the challenge and go for an easy fun summit somewhere.", result.hits.first().highlight)
-    }
+//    /**
+//     * Sproatt HTML contains the text Rethel right before ill-formatted paragraph text. Ensure that our index
+//     * call adds punctuation and spacing if there is none, so that the highlighter/query only picks up natural
+//     * sentence bounds.
+//     */
+//    @Test
+//    fun `paragraphs terminate with punctuation results in full sentence response only`() {
+//        val index = "index-with-excluded-elements"
+//        val page = "Sproatt"
+//
+//        val testIndexService = createIndex(index)
+//        testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$page"), htmlDocument = loadHtml(page)))
+//
+//
+//        refreshIndex(index)
+//
+//        val result = testIndexService.query(SummitSearchQueryRequest(
+//            term = "Rethel"
+//        ))
+//
+//        assertEquals("After two full on adventures up <em>Rethel</em> Mountain and Bryant Peak, I was looking to dial back the challenge and go for an easy fun summit somewhere.", result.hits.first().highlight)
+//    }
 
     @Test
     fun `deletes document from index when delete call made`() {
