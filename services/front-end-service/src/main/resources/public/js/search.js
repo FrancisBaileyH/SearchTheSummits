@@ -11,8 +11,10 @@ $(document).ready(function() {
     }
 
     if (urlQuery != null && urlQuery != "") {
-         $(".search-container").addClass("search-container-with-results")
+        $(".search-form-container").addClass("search-container-with-results")
         updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
+    } else {
+
     }
 
     $('#search-form').submit(function(e) {
@@ -51,7 +53,6 @@ function updateSearchResults(query, page) {
          searchDetails += "</div>";
 
          $(".search-results-container").html(searchDetails)
-         $(".search-form-container").addClass("search-container-with-results")
 
          json.hits.forEach(function(hit) {
             var searchResult = "<div class=\"search-result\">"

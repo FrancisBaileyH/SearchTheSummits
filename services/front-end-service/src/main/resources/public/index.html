@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600&display=swap" rel="stylesheet">  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/skeleton.css">
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap-grid.min.css">
   <link rel="stylesheet" href="css/search.css">
   <title>Search the Summits</title>
 </head>
 <body>
   <div class="container">
     <div class="row">
-      <div class="column">
+      <div class="col">
         <nav style="display: none;">
           <ul>
             <li><a href="/about">About</a></li>
@@ -22,31 +23,31 @@
         </nav>
       </div>
     </div>
-    <div class="row">
-      <div class="column">
-        <div class="search-form-container">
-          <h3>Search the Summits</h3>
-          <form id="search-form">
-            <input type="search" name="search" id="search-bar" />
-            <input id="search-button" type="submit" />
-          </form>
-        </div>
+    <div class="row search-form-container">
+      <div class="col-sm-4 search-logo-container">
+        <h3>Search the Summits</h3>
+      </div>
+      <div class="col-sm-8">
+        <form id="search-form">
+          <input type="search" name="search" id="search-bar" />
+          <input id="search-button" type="submit" />
+        </form>
       </div>
     </div>
     <div class="row">
-      <div class="column">
+      <div class="col">
         <div class="search-results-container">
         </div>
       </div>
     </div>
     <div class="row">
-      <div class="column">
+      <div class="col">
         <div class="search-pagination-container">
         </div>
       </div>
     </div>
   </div>
-  <footer>
+  <footer class="container-fluid">
     <div id="footer-image"></div>
   </footer>
   <script src="js/jquery.min.js"></script>
