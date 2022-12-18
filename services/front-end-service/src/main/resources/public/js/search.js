@@ -6,6 +6,10 @@ $(document).ready(function() {
     var urlQuery = queries.get("query")
     var page = queries.get("page")
 
+    if (page == null || isNaN(page)) {
+        page = 1
+    }
+
     if (urlQuery != null && urlQuery != "") {
          $(".search-container").addClass("search-container-with-results")
         updateSearchResults(urlQuery, page)
@@ -16,8 +20,7 @@ $(document).ready(function() {
         query = $("#search-bar").val()
 
         if (query != urlQuery) {
-            window.history.pushState(null, null, "/?query=" + query.replace(" ", "+"))
-            updateSearchResults(query, page)
+            window.location.href = "/?query=" + query.replace(" ", "+")
         }
     });
 });
@@ -66,9 +69,6 @@ function updateSearchResults(query, page) {
          });
 
          if (json.totalHits > perPageResult && json.hits.length > 0) {
-             if (isNaN(page)) {
-                page = 1
-             }
              renderPagination(json, page, query)
          }
      });
