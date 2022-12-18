@@ -12,7 +12,7 @@ $(document).ready(function() {
 
     if (urlQuery != null && urlQuery != "") {
          $(".search-container").addClass("search-container-with-results")
-        updateSearchResults(urlQuery, page)
+        updateSearchResults(urlQuery, Number(page))
     }
 
     $('#search-form').submit(function(e) {
@@ -122,7 +122,6 @@ function getPaginationDisplayData(totalItems, currentPage, pageSize) {
             endPage = currentPage + 4;
         }
     }
-
 
     // return object with all pager properties required by the view
     return {
