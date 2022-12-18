@@ -12,7 +12,7 @@ $(document).ready(function() {
 
     if (urlQuery != null && urlQuery != "") {
          $(".search-container").addClass("search-container-with-results")
-        updateSearchResults(urlQuery, Number(page))
+        updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
     }
 
     $('#search-form').submit(function(e) {
