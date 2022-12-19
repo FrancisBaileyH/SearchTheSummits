@@ -103,7 +103,8 @@ class CrawlerFilterTest {
         val expectedToSkip = listOf(
             "https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut-2.html",
             "https://forums.clubtread.com/newreply.php?do=newreply&p=476682",
-            "https://forums.clubtread.com/members/71772-losthiker.html"
+            "https://forums.clubtread.com/members/71772-losthiker.html",
+            "https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a-print.html"
         )
 
         expectedToSkip.forEach {

@@ -1,4 +1,5 @@
 var perPageResult = 20;
+var maxPaginatedResults = 1000;
 
 $(document).ready(function() {
     var queries = new URLSearchParams(window.location.search)
@@ -75,7 +76,7 @@ function updateSearchResults(query, page) {
 }
 
 function renderPagination(json, page, query) {
-    var paginationData = getPaginationDisplayData(json.totalHits, page, perPageResult)
+    var paginationData = getPaginationDisplayData(Math.min(json.totalHits, maxPaginatedResults), page, perPageResult)
     $(".search-pagination-container").html("test")
 
     var paginationHtml = "<ul><li>Pages: </li>"
