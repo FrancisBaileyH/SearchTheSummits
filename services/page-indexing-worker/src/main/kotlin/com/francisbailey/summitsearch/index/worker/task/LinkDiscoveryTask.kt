@@ -62,7 +62,7 @@ class LinkDiscoveryTask(
                 return
             }
 
-            val metadata = meterRegistry.timer("task.linkdiscovery.metadata.get.latency").recordCallable {
+            val metadata = meterRegistry.timer("$TASK_METRIC.metadata.get.latency").recordCallable {
                 pageMetadataStore.getMetadata(discoveryUrl)
             }
 
@@ -81,7 +81,7 @@ class LinkDiscoveryTask(
                     )
                 )
 
-                meterRegistry.timer("task.linkdiscovery.metadata.put.latency").recordCallable {
+                meterRegistry.timer("$TASK_METRIC.metadata.put.latency").recordCallable {
                     pageMetadataStore.saveMetadata(associatedTask.details.taskRunId, discoveryUrl)
                 }
                 log.info { "Successfully processed discovery" }
@@ -93,6 +93,7 @@ class LinkDiscoveryTask(
 
     companion object {
         const val MAX_LINK_SIZE = 255
+        const val TASK_METRIC = "task.linkdiscovery"
     }
 
 }
