@@ -2,6 +2,7 @@
 html {
     height: 100%;
 }
+
 body {
     height: 100%;
     display: flex;
@@ -9,8 +10,17 @@ body {
     font-family: "Mulish", "Arial";
 }
 
+a {
+   color: #2e86de;
+}
+
+.invisible {
+    display: none;
+}
+
 .container {
     flex: 1 0 auto;
+    max-width: 800px;
 }
 
 .search-form-container {
@@ -27,9 +37,82 @@ body {
     font-size: 16px;
 }
 
-#search-button {
+.search-form-container #search-button {
     display: none;
 }
+
+.search-form-container h3 {
+    font-size: 3.6rem;
+    color: #222;
+    margin-bottom: 2.0rem;
+    pointer-events: none;
+    text-decoration: none;
+}
+
+.search-form-container h3 a {
+    color: #222;
+    pointer-events: none;
+    text-decoration: none;
+}
+
+.search-form-container.has-query {
+    padding-top: 10%;
+    text-align: left;
+    margin-bottom: 2em;
+    max-width: 100%;
+    display: flex;
+    flex-flow: wrap;
+    align-items: center;
+}
+
+.search-form-container.has-query h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.search-form-container.has-query h3 a {
+    margin: 0;
+    pointer-events: all;
+    text-decoration: underline;
+}
+
+.search-form-container.has-query h3 a:hover {
+    margin: 0;
+    color: #5EA99C;
+}
+
+.search-form-container.has-query input,
+.search-form-container.has-query form {
+    margin: 0;
+}
+
+.search-form-container.has-query .search-logo-column {
+    /**flex: 0 0 auto;*/
+    padding-right: 1em;
+    position: absolute;
+    left: -12em;
+}
+
+.search-form-container.has-query .search-form-column {
+    flex: 1 1 auto;
+}
+
+@media(max-width: 1380px) {
+    .search-form-container.has-query .search-logo-column {
+        /**flex: 0 0 auto;*/
+        padding-right: 1em;
+        position: relative;
+        width: 100%;
+        left: 0;
+        text-align: center;
+        margin-bottom: 1em;
+    }
+
+    .search-form-container.has-query h3 a {
+        text-decoration: none;
+    }
+}
+
 .search-result {
     margin-top:
 }
@@ -71,26 +154,6 @@ body {
     text-align: center;
 }
 
-a {
-   color: #2e86de;
-}
-
-.search-container-with-results {
-    padding-top: 10%;
-    text-align: left;
-    margin: 0;
-}
-
-.search-container-with-results h3 {
-    display: inline-block;
-    padding-right: 1em;
-    font-size: 1.5em;
-}
-
-.search-container-with-results form {
-    display: inline-block;
-}
-
 .search-pagination-container {
     text-align: center;
     margin-bottom: 1em;
@@ -123,6 +186,7 @@ a {
 .search-pagination-container a.current-search-page {
     color: #45626e;
     text-decoration: underline;
+    pointer-events: none;
 }
 
 footer {

@@ -12,8 +12,11 @@ $(document).ready(function() {
     }
 
     if (urlQuery != null && urlQuery != "") {
-         $(".search-container").addClass("search-container-with-results")
+        $(".search-form-container").addClass("has-query");
+        $(".search-form-container").removeClass("invisible");
         updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
+    } else {
+         $(".search-form-container").removeClass("invisible");
     }
 
     $('#search-form').submit(function(e) {
@@ -52,7 +55,7 @@ function updateSearchResults(query, page) {
          searchDetails += "</div>";
 
          $(".search-results-container").html(searchDetails)
-         $(".search-form-container").addClass("search-container-with-results")
+         $(".search-form-container").addClass("has-query");
 
          json.hits.forEach(function(hit) {
             var searchResult = "<div class=\"search-result\">"
