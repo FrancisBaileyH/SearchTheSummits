@@ -34,8 +34,13 @@ open class TaskConfiguration {
             .build()
     )
 
+    /**
+     * Note with long polling and 100 threads, 2 threads can be pinned
+     * to empty queue very easily. Consider polling for more messages
+     * per task run or clearing assignments as soon as all tasks are done.
+     */
     @Bean
-    open fun taskPermitService() = TaskPermitService(permits = 1)
+    open fun taskPermitService() = TaskPermitService(permits = 2)
 
 
     companion object {
