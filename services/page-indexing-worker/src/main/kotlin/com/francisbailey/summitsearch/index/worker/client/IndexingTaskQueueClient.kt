@@ -49,6 +49,7 @@ class SQSIndexingTaskQueueClient(
                 .builder()
                 .queueUrl(queueName)
                 .maxNumberOfMessages(1)
+                .waitTimeSeconds(MAX_RECEIVE_WAIT_TIME)
                 .build()
         ).messages().firstOrNull()
 
@@ -73,6 +74,7 @@ class SQSIndexingTaskQueueClient(
 
     companion object {
         const val INDEXING_QUEUE_PREFIX = "IndexingQueue-"
+        const val MAX_RECEIVE_WAIT_TIME = 20
     }
 }
 

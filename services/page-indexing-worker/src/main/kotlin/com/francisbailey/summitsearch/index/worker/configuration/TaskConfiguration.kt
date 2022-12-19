@@ -35,7 +35,7 @@ open class TaskConfiguration {
     )
 
     @Bean
-    open fun taskPermitService() = TaskPermitService(permits = 2)
+    open fun taskPermitService() = TaskPermitService(permits = 1)
 
 
     companion object {
