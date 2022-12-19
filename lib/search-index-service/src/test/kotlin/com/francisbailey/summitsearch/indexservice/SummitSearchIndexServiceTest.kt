@@ -175,7 +175,45 @@ class SummitSearchIndexServiceTest {
         )
         assertTrue(document.found())
         assertEquals(URL(source).host, document.source()?.host)
-        assertEquals("In fact, there's a very high concentration of ", document.source()?.seoDescription)
+        assertEquals("In fact, there's a very high concentration of", document.source()?.seoDescription)
+    }
+
+    @Test
+    fun `malicious text stripped from content fields on indexing`() {
+        val source = URL("http://francisbaileyh.com/this-test")
+        val maliciousHtml = """
+            <html>
+                <head>
+                    <meta name="description" content="<script>alert('test')/</script>Hello <center>World!</center>">
+                </head>
+                <body>
+                    <p>There is some content here.</p>
+                    <p>Here <script>alert('test');</script>too.</p>
+                    <div>Here as well.
+                </body>
+            </html>
+        """.trimIndent()
+
+        val index = "test-index-malicious"
+        val testIndexService = createIndex(index)
+
+        testIndexService.indexPageContents(
+            SummitSearchIndexRequest(
+            source,
+            Jsoup.parse(maliciousHtml)
+        ))
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(source.toString())
+            },
+            HtmlMapping::class.java
+        )
+
+        assertEquals("Hello World!", document?.source()?.seoDescription)
+        assertEquals("There is some content here. Here too.", document?.source()?.paragraphContent)
+        assertEquals("There is some content here. Here too. Here as well.", document?.source()?.rawTextContent)
     }
 
     @Test

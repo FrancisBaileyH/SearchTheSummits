@@ -2,7 +2,6 @@ package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.mapping.Property
-import co.elastic.clients.elasticsearch._types.mapping.PropertyBuilders
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
@@ -14,7 +13,7 @@ import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
-import com.francisbailey.summitsearch.indexservice.extension.hasPunctuation
+import com.francisbailey.summitsearch.indexservice.extension.getSeoDescription
 import com.francisbailey.summitsearch.indexservice.extension.normalizeWithoutSlash
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
@@ -115,12 +114,8 @@ class SummitSearchIndexService(
 
         val textOnly = request.htmlDocument.body().text()
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
-
-        val paragraphContentBuffer = StringBuffer()
-        paragraphContentBuffer.append(paragraphContent)
-
         val title = request.htmlDocument.title()
-        val description = request.htmlDocument.selectFirst("meta[name=description]")
+        val description = request.htmlDocument.getSeoDescription() ?: ""
 
         val result = elasticSearchClient.index(
             IndexRequest.of {
@@ -131,8 +126,8 @@ class SummitSearchIndexService(
                     source = request.source,
                     host = request.source.host,
                     rawTextContent = textOnly,
-                    paragraphContent = paragraphContent.toString(),
-                    seoDescription = description?.attr("content") ?: ""
+                    paragraphContent = paragraphContent,
+                    seoDescription = description
                 ))
             }
         )
