@@ -55,11 +55,11 @@ class PageIndexingTaskCoordinator(
 
             when {
                 !taskDependencyCircuitBreaker.tryAcquirePermission() -> {
-                    meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
+                    meterRegistry.counter("$TASK_METRIC.cb.dependency.tripped").increment()
                     log.warn { "Skipping tasks because task Dependency circuit breaker has tripped" }
                 }
                 !perQueueCircuitBreaker.tryAcquirePermission() -> {
-                    meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
+                    meterRegistry.counter("$TASK_METRIC.cb.queue.tripped", "queue", queue).increment()
                     log.warn { "Skipping: $queue, because per queue circuit breaker has tripped" }
                 }
                 else -> {
@@ -81,7 +81,7 @@ class PageIndexingTaskCoordinator(
                             )
                         )
                     } else {
-                        meterRegistry.counter("task.indexing.dropped", "queue", queue).increment()
+                        meterRegistry.counter("$TASK_METRIC.skipped", "queue", queue).increment()
                         log.warn { "Skipping $queue because ${taskPermitService.permits} permits have been issue already" }
                     }
                 }
@@ -90,6 +90,7 @@ class PageIndexingTaskCoordinator(
     }
 
     companion object {
+        const val TASK_METRIC = "task.coordinating"
         const val DEPENDENCY_CB_KEY = "PageIndexingTaskDependencies"
     }
 }

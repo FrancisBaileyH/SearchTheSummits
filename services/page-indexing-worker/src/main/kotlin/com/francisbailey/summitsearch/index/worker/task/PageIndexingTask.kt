@@ -79,7 +79,7 @@ class PageIndexingTask(
             }
         }
         catch (e: Exception) {
-            meterRegistry.counter("$TASK_METRIC.exception.${e::javaClass.name}").increment()
+            meterRegistry.counter("$TASK_METRIC.exception.${e.javaClass.simpleName}").increment()
 
             when (e) {
                 is RedirectedPageException -> {
