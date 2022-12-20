@@ -49,8 +49,13 @@ class PageCrawlerService(
 
     private suspend fun getPage(pageUrl: URL): HttpResponse {
         val response = httpClient.get(pageUrl)
+        val contentType = response.contentType()
 
         if (response.status.value < 300) {
+            if (contentType == null || !contentType.match(ContentType.Text.Html)) {
+                throw UnparsablePageException("Can't process non HTML page from: $pageUrl")
+            }
+
             return response
         }
 

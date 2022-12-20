@@ -36,7 +36,7 @@ class PageCrawlerServiceTest {
             respond(
                 content = content.html(),
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, "text/html")
+                headers = headersOf(HttpHeaders.ContentType, "text/html; charset=UTF-8")
             )
         }), crawlerConfiguration)
 
@@ -145,7 +145,6 @@ class PageCrawlerServiceTest {
     @Test
     fun `throws NonRetryablePageException when status is between 400 and 499 except 429`() {
         (400..428).plus(430..499).forEach { errorCode ->
-            println(errorCode)
             val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
                 respondError(HttpStatusCode(errorCode, "Test Client Error"))
             }), crawlerConfiguration)
@@ -176,5 +175,20 @@ class PageCrawlerServiceTest {
         }), crawlerConfiguration)
 
         assertThrows<RetryablePageException> { service.getHtmlDocument(url) }
+    }
+
+    @Test
+    fun `throws UnparsablePageException when content type is not text html`() {
+        val content = Jsoup.parse("<html>Test</html>")
+        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { request ->
+            assertEquals(url.toURI(), request.url.toURI())
+            respond(
+                content = content.html(),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/rss+xml")
+            )
+        }), crawlerConfiguration)
+
+        assertThrows<UnparsablePageException> { service.getHtmlDocument(url) }
     }
 }

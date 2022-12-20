@@ -80,7 +80,7 @@ class LinkDiscoveryTask(
                         )
                     )
                 )
-
+                meterRegistry.counter("$TASK_METRIC.newlink", "queue", associatedTask.source).increment()
                 meterRegistry.timer("$TASK_METRIC.metadata.put.latency").recordCallable {
                     pageMetadataStore.saveMetadata(associatedTask.details.taskRunId, discoveryUrl)
                 }
