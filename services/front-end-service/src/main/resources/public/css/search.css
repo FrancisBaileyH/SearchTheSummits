@@ -193,6 +193,7 @@ a {
 .search-result-link a {
     color: #576574;
     font-size: 1.3rem;
+    overflow-wrap: anywhere;
 }
 
 .search-result-highlight {
