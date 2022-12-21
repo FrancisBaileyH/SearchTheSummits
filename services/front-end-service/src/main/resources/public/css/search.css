@@ -32,9 +32,29 @@ a {
 
 .search-form-container #search-bar {
     width: 100%;
+    border: none;
+    height: 45px;
+    font-size: 16px;
+    background: transparent;
+}
+
+.search-form-container #search-form {
+    width: 100%;
+    border: 1px solid rgb(187, 187, 187);
     border-radius: 20px;
     height: 45px;
     font-size: 16px;
+    display: flex;
+}
+
+.search-form-container #search-form .search-clear-button {
+    padding: 0;
+    border: none;
+    font-weight: 400;
+    font-size: 1.1em;
+    padding-right: 0.8em;
+    padding-top: 0.1em;
+    color: rgb(187, 187, 187);
 }
 
 .search-form-container #search-button {
@@ -47,6 +67,16 @@ a {
     margin-bottom: 2.0rem;
     pointer-events: none;
     text-decoration: none;
+    display: inline-block:
+    vertical-align: middle;
+}
+
+.search-logo-column .logo {
+    height: 36px;
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 8px;
+    padding-top: 1px;
 }
 
 .search-form-container h3 a {
@@ -56,9 +86,9 @@ a {
 }
 
 .search-form-container.has-query {
-    padding-top: 10%;
+    padding-top: 1.5em;
     text-align: left;
-    margin-bottom: 2em;
+    margin-bottom: 1.5em;
     max-width: 100%;
     display: flex;
     flex-flow: wrap;
@@ -73,12 +103,18 @@ a {
 .search-form-container.has-query h3 a {
     margin: 0;
     pointer-events: all;
-    text-decoration: underline;
 }
 
 .search-form-container.has-query h3 a:hover {
     margin: 0;
-    color: #5EA99C;
+}
+
+.search-form-container.has-query .search-logo-column .logo {
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 8px;
+    padding-top: 0px;
 }
 
 .search-form-container.has-query input,
@@ -90,7 +126,7 @@ a {
     /**flex: 0 0 auto;*/
     padding-right: 1em;
     position: absolute;
-    left: -12em;
+    left: -13em;
 }
 
 .search-form-container.has-query .search-form-column {
@@ -99,13 +135,16 @@ a {
 
 @media(max-width: 1380px) {
     .search-form-container.has-query .search-logo-column {
-        /**flex: 0 0 auto;*/
         padding-right: 1em;
         position: relative;
         width: 100%;
         left: 0;
         text-align: center;
         margin-bottom: 1em;
+    }
+
+    .search-form-container.has-query h3 {
+        font-size: 1.4em;
     }
 
     .search-form-container.has-query h3 a {
@@ -133,6 +172,10 @@ a {
 }
 
 .search-result h5 a:hover {
+    color: #45626e;
+}
+
+.search-result h5 a:visited {
     color: #45626e;
 }
 
