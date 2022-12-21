@@ -60,7 +60,7 @@ object CascadeClimbersFilter: LinkDiscoveryFilterChain(exclusive = false) {
             "52-the-rest-of-the-us-and-international"
         )
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[1-9]{1,10})$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[1-9]{1,10}/?|)$")))
         }
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
     }

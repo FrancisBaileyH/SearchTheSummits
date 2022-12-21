@@ -152,6 +152,16 @@ a {
     }
 }
 
+@media(max-width: 500px) {
+    .search-form-container h3 {
+        font-size: 2.8rem;
+    }
+
+    .search-logo-column .logo {
+        height: 30px;
+    }
+}
+
 .search-result {
     margin-top:
 }

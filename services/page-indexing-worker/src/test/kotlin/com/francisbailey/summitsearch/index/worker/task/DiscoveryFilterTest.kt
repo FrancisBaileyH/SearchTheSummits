@@ -51,6 +51,7 @@ class CrawlerFilterTest {
         val expectedNotToSkip = mutableListOf(
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/",
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010",
+            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2/",
             "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2"
         )
 
