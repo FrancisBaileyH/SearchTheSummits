@@ -9,21 +9,10 @@ class LinkDiscoveryFilterService(
 ) {
     private val hostFilterChainMap = hashMapOf<String, LinkDiscoveryFilterChain>()
 
-    private val hostFilterCacheChainMap = hashMapOf<String, LinkDiscoveryFilterChain>()
-
-    /**
-     * @TODO shouldCache?
-     */
     fun shouldFilter(url: URL): Boolean {
         val filterChain = hostFilterChainMap[url.host]
 
         return filterChain?.shouldFilter(url) ?: defaultChain.shouldFilter(url)
-    }
-
-    fun shouldCache(url: URL): Boolean {
-        val filterChain = hostFilterCacheChainMap[url.host]
-
-        return filterChain?.shouldFilter(url) ?: false
     }
 
     fun addFilterChain(url: URL, chain: LinkDiscoveryFilterChain) {
