@@ -26,19 +26,9 @@ class LinkDiscoveryTask(
      * Opportunity to do batch sends for the TaskQueueClient
      * Opportunity to forward external sources for adding as an indexable source
      */
-    /**
-     * How to handle redirects
-     *
-     *
-     * https://francisbaileyh.com/some-article -> https://francisbaileyh.com/some-article/
-     * https://francisbaileyh.com/some-article/ -> https://francisbaileyh.com/some-category/some-article/
-     *
-     * To normalize, we should add a suffix. Furthermore, we should only submit the original pre / into the queue.
-     * Strip the fragments of course.
-     */
     override fun run() {
         try {
-            val discoveryUrl = URL(discovery).normalize() // eliminates / but then causes redirect fail
+            val discoveryUrl = URL(discovery).normalize()
             val associatedTaskUrl = URL(associatedTask.details.pageUrl)
 
             if (discovery.length > MAX_LINK_SIZE) {
