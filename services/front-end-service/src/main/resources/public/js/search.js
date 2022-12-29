@@ -14,7 +14,6 @@ $(document).ready(function() {
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
-        $("#search-bar").val(query)
         updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
     } else {
          $(".search-form-container").removeClass("invisible");
@@ -48,6 +47,7 @@ function renderClearButton() {
 }
 
 function updateSearchResults(query, page) {
+    $("#search-bar").val(query)
     $(".search-pagination-container").html("")
 
     var startTime = new Date().getTime();

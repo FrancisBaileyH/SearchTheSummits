@@ -33,7 +33,7 @@ a {
 .search-form-container .search-form-ui-bar {
     width: 100%;
     border: 1px solid rgb(187, 187, 187);
-    border-radius: 20px;
+    border-radius: 30px;
     height: 45px;
     font-size: 16px;
     display: flex;
@@ -46,6 +46,13 @@ a {
     font-size: 16px;
     background: transparent;
     display: flex;
+    padding-left: 0.8em;
+}
+
+.search-form-container .search-form-ui-bar:focus-within,
+.search-form-container.has-query .search-form-ui-bar {
+    box-shadow: 0 2px 4px 1px rgba(64,60,67,.16);
+    border-color: rgba(187, 187, 187, 0.5);
 }
 
 .search-form-container .search-form-ui-bar .search-clear-button {
@@ -54,8 +61,7 @@ a {
     font-weight: 400;
     font-size: 1.1em;
     padding-right: 0.8em;
-    padding-top: 0.1em;
-    color: rgb(187, 187, 187);
+    color: #576574;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -132,7 +138,7 @@ a {
     flex: 1 1 auto;
 }
 
-@media(max-width: 1380px) {
+@media(max-width: 1300px) {
     .search-form-container.has-query .search-logo-column {
         padding-right: 1em;
         position: relative;
