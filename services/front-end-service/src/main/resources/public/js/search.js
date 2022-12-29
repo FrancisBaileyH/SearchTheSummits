@@ -14,10 +14,14 @@ $(document).ready(function() {
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
+        $("#search-bar").val(query)
         updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
     } else {
          $(".search-form-container").removeClass("invisible");
     }
+
+    renderClearButton();
+
 
     $('#search-form').submit(function(e) {
         e.preventDefault();
@@ -27,11 +31,23 @@ $(document).ready(function() {
             window.location.href = "/?query=" + query.replace(" ", "+")
         }
     });
+
+    $('#search-bar').on('input', function() {
+        renderClearButton();
+    });
+
+    $('.search-clear-button').on('click', function() {
+        $("#search-bar").val("");
+        renderClearButton();
+    });
 });
 
+function renderClearButton() {
+    var hasContent = $("#search-bar").val();
+    $('.search-clear-button').toggle(Boolean(hasContent));
+}
 
 function updateSearchResults(query, page) {
-    $("#search-bar").val(query)
     $(".search-pagination-container").html("")
 
     var startTime = new Date().getTime();
