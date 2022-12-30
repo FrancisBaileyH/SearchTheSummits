@@ -207,10 +207,15 @@ a {
     color: #45626e;
 }
 
+.search-result-link {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .search-result-link a {
     color: #576574;
     font-size: 1.3rem;
-    overflow-wrap: anywhere;
 }
 
 .search-result-highlight {
