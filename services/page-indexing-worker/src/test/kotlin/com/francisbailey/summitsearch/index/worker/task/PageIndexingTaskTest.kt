@@ -157,7 +157,7 @@ class PageIndexingTaskTest {
     }
 
     @Test
-    fun `only deletes task when retryable exceptions occur`() {
+    fun `does not delete task when retryable exceptions occur`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
         whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
@@ -165,7 +165,7 @@ class PageIndexingTaskTest {
         assertThrows<RetryablePageException> { task.run() }
 
         verifyNoInteractions(indexService)
-        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(indexingTaskQueuePollingClient, never()).deleteTask(any())
         verify(taskPermit).close()
     }
 

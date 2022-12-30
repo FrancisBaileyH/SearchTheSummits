@@ -31,6 +31,7 @@ class PageIndexingTask(
 
     private val log = KotlinLogging.logger { }
 
+    private var canDeleteTask = true
 
     override fun run() = taskPermit.use {
         log.info { "Running indexing task for: $queueName" }
@@ -53,7 +54,6 @@ class PageIndexingTask(
 
     private fun processTask(task: IndexTask) {
         val pageUrl = URL(task.details.pageUrl)
-        log.info { "Found indexing task for: $queueName. Fetching Page: $pageUrl" }
 
         try {
             val document = meterRegistry.timer("$TASK_METRIC.latency.page", "host", pageUrl.host).recordCallable {
@@ -79,11 +79,10 @@ class PageIndexingTask(
             }
         }
         catch (e: Exception) {
-            meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName).increment()
+            meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName, "queue", queueName).increment()
 
             when (e) {
                 is RedirectedPageException -> {
-                    log.info { "Found page redirect. Submitting to discovery service if value is present" }
                     e.location?.run {
                         meterRegistry.counter("$TASK_METRIC.redirects").increment()
                         linkDiscoveryService.submitDiscoveries(task, listOf(this))
@@ -91,18 +90,23 @@ class PageIndexingTask(
                 }
                 is NonRetryablePageException -> {
                     dependencyCircuitBreaker.executeCallable {
-                        log.error(e) { "Removing invalid content from index for: $pageUrl" }
                         indexService.deletePageContents(SummitSearchDeleteIndexRequest(pageUrl))
+                        meterRegistry.counter("$TASK_METRIC.indexservice.delete").increment()
                     }
                 }
                 else -> {
+                    canDeleteTask = false
                     throw e
                 }
             }
         }
         finally {
-            dependencyCircuitBreaker.executeCallable {
-                indexingTaskQueuePollingClient.deleteTask(task)
+            if (canDeleteTask) {
+                dependencyCircuitBreaker.executeCallable {
+                    indexingTaskQueuePollingClient.deleteTask(task)
+                }
+            } else {
+                log.info { "Returning task to queue: $queueName" }
             }
         }
     }

@@ -82,7 +82,7 @@ class PageIndexingTaskCoordinator(
                         )
                     } else {
                         meterRegistry.counter("$TASK_METRIC.skipped", "queue", queue).increment()
-                        log.warn { "Skipping $queue because ${taskPermitService.permits} permits have been issue already" }
+                        log.warn { "Skipping $queue because ${taskPermitService.permits} permits have been issued already" }
                     }
                 }
             }

@@ -1,13 +1,9 @@
 package com.francisbailey.summitsearch.frontend.throttling
 
-import io.github.resilience4j.ratelimiter.RateLimiterConfig
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Service
-import java.time.Duration
 import javax.servlet.Filter
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
