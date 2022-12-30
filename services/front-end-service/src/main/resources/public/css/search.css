@@ -171,6 +171,10 @@ a {
         font-size: 2.8rem;
     }
 
+    .search-form-container .search-form-tagline {
+        font-size: 1.35rem;
+    }
+
     .search-logo-column .logo {
         height: 30px;
     }
