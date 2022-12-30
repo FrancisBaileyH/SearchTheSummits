@@ -17,6 +17,8 @@ $(document).ready(function() {
         updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
     } else {
          $(".search-form-container").removeClass("invisible");
+         $(".search-form-tagline").removeClass("invisible");
+         runSearchAnimations();
     }
 
     renderClearButton();
@@ -38,6 +40,7 @@ $(document).ready(function() {
     $('.search-clear-button').on('click', function() {
         $("#search-bar").val("");
         renderClearButton();
+        $("#search-bar").focus();
     });
 });
 
@@ -151,4 +154,128 @@ function getPaginationDisplayData(totalItems, currentPage, pageSize) {
         startPage: startPage,
         endPage: endPage
     };
+}
+
+/**
+  Search Animations
+*/
+
+// Add something to given element placeholder
+function addToPlaceholder(toAdd, el) {
+    el.attr('placeholder', el.attr('placeholder') + toAdd);
+    // Delay between symbols "typing"
+    return new Promise(resolve => setTimeout(resolve, 75));
+}
+
+function deleteFromPlaceHolder(el) {
+    var placeHolder = el.attr('placeholder')
+    el.attr('placeholder', placeHolder.substring(0, placeHolder.length - 1));
+    return new Promise(resolve => setTimeout(resolve, 30));
+}
+
+// Clear placeholder attribute in given element
+function clearPlaceholder(el) {
+    el.attr("placeholder", "");
+}
+
+// Print one phrase
+function printPhrase(phrase, el) {
+    return new Promise(resolve => {
+        // Clear placeholder before typing next phrase
+        clearPlaceholder(el);
+        let letters = phrase.split('');
+        // For each letter in phrase
+        letters.reduce(
+            (promise, letter, index) => promise.then(_ => {
+                // Resolve promise when all letters are typed
+                if (index === letters.length - 1) {
+                    resolve()
+                }
+                return addToPlaceholder(letter, el);
+            }),
+            Promise.resolve()
+        );
+    });
+}
+
+function clearPhrase(phrase, el) {
+    return new Promise(resolve => {
+        let letters = phrase.split('');
+        letters.reduce(
+            (promise, letter, index) => promise.then(_ => {
+                // Resolve promise when all letters are typed
+                if (index === letters.length - 1) {
+                    resolve()
+                }
+                return deleteFromPlaceHolder(el);
+            }),
+            Promise.resolve()
+        )
+    });
+}
+
+function delay(timeout) {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
+// Print given phrases to element
+function printPhrases(phrases, el) {
+    clearPlaceholder(el);
+
+    // check for promise cancellation
+    // do not clear last search value
+    phrases.reduce(
+        (promise, phrase, index) => {
+            return promise
+                 .then(_ => delay(1000))
+                .then(_ => printPhrase(phrase, el))
+                .then(_ => delay(2000))
+                .then(_ => {
+                    if (index !== phrases.length - 1) {
+                        return clearPhrase(phrase, el)
+                    }
+                })
+        },
+        Promise.resolve()
+    );
+}
+
+// Start typing
+function runSearchAnimations() {
+    let firstPhrase = "Search for a summit..."
+    let finalPhrase = firstPhrase
+    let phrases = shuffle([
+        "Phyllis's Engine",
+        "South Early Winters Spire",
+        "Locomotive Mountain",
+        "Ember Mountain",
+        "Mount Baker",
+        "Liberty Bell",
+        "Mount Cayley",
+        "Nursery Peak",
+        "Mount Robson",
+        "Mount Bonnycastle",
+        "Nivalis"
+    ]);
+
+    var animatedPhrases = [firstPhrase]
+    animatedPhrases.push(...phrases.slice(0,3));
+    animatedPhrases.push(finalPhrase);
+
+    printPhrases(animatedPhrases, $('#search-bar'));
+}
+
+
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
 }
