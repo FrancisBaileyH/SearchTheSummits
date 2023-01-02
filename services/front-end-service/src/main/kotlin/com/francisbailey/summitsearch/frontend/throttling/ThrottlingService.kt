@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.frontend.throttling
 import com.francisbailey.summitsearch.frontend.configuration.RateLimiterFactory
 import com.francisbailey.summitsearch.frontend.configuration.ThrottlingConfiguration
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
+import mu.KotlinLogging
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
 import javax.servlet.http.HttpServletRequest
@@ -12,6 +13,8 @@ class ThrottlingService(
     private val rateLimiterFactory: RateLimiterFactory,
     throttlingConfiguration: ThrottlingConfiguration
 ) {
+    private val log = KotlinLogging.logger { }
+
     private val apiThrottleMap = hashMapOf<String, RateLimiterRegistry>()
 
     init {
@@ -26,7 +29,13 @@ class ThrottlingService(
 
         val rateLimiter = apiThrottleMap[apiRateLimitKey]?.rateLimiter(throttleKey)
 
-        return rateLimiter?.acquirePermission()?.not() ?: false
+        val shouldThrottle = rateLimiter?.acquirePermission()?.not() ?: false
+
+        return shouldThrottle.also {
+            if (it) {
+                log.warn { "Throttling on: $throttleKey" }
+            }
+        }
     }
 
     companion object {
