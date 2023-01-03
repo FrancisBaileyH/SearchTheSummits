@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch.core.DeleteRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
+import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
@@ -51,8 +52,9 @@ class SummitSearchIndexService(
                         match.query(queryRequest.term)
                         match.type(TextQueryType.PhrasePrefix)
                         match.fields(
+                            HtmlMapping::title.name.plus("^10"), // boost title the highest
                             HtmlMapping::rawTextContent.name,
-                            HtmlMapping::seoDescription.name.plus("^6"), // boost the SEO description score
+                            HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
                             HtmlMapping::paragraphContent.name
                         )
                     }
@@ -76,6 +78,7 @@ class SummitSearchIndexService(
                         HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
                         HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
                     ))
+                    highlight.order(HighlighterOrder.Score)
                 }
                 it.size(paginationResultSize)
                 it.from(queryRequest.from)
@@ -84,18 +87,20 @@ class SummitSearchIndexService(
         )
 
         return SummitSearchPaginatedResult(
-            hits = response.hits().hits().map {
-                // Order of precedence for matches
-                val seoHighlight = it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull()
-                val paragraphHighlight = it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull()
-                val rawTextHighlight = it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
+            hits = response.hits().hits()
+                .filterNot { it.highlight().isEmpty() }
+                .map {
+                    // Order of precedence for matches
+                    val seoHighlight = it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull()
+                    val paragraphHighlight = it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull()
+                    val rawTextHighlight = it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
 
-                SummitSearchHit(
-                    highlight = seoHighlight ?: paragraphHighlight ?: rawTextHighlight!!,
-                    source = it.stringField(HtmlMapping::source.name),
-                    title = it.stringField(HtmlMapping::title.name)
-                )
-            },
+                    SummitSearchHit(
+                        highlight = seoHighlight ?: paragraphHighlight ?: rawTextHighlight!!,
+                        source = it.stringField(HtmlMapping::source.name),
+                        title = it.stringField(HtmlMapping::title.name)
+                    )
+                },
             next = queryRequest.from + paginationResultSize,
             totalHits = response.hits().total()?.value() ?: 0
         )
