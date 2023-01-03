@@ -24,7 +24,6 @@ class LinkDiscoveryTask(
 
     /**
      * Opportunity to do batch sends for the TaskQueueClient
-     * Opportunity to forward external sources for adding as an indexable source
      */
     override fun run() {
         try {

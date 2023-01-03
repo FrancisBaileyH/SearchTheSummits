@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val ktorVersion = "2.2.2"
+val resilience4JVersion = "1.7.0"
+
 plugins {
     kotlin("jvm") version "1.7.21"
     kotlin("plugin.serialization") version "1.7.21"
@@ -30,12 +33,12 @@ dependencies {
 
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
 
-    implementation("io.ktor:ktor-client-core:2.1.3")
-    implementation("io.ktor:ktor-client-cio:2.1.3")
-    implementation("io.ktor:ktor-client-encoding:2.1.3")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-encoding:$ktorVersion")
 
-    implementation("io.github.resilience4j:resilience4j-circuitbreaker:1.7.0")
-    implementation("io.github.resilience4j:resilience4j-ratelimiter:1.7.0")
+    implementation("io.github.resilience4j:resilience4j-circuitbreaker:$resilience4JVersion")
+    implementation("io.github.resilience4j:resilience4j-ratelimiter:$resilience4JVersion")
 
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:search-index-service"))
@@ -46,7 +49,7 @@ dependencies {
 
     implementation("redis.clients:jedis:4.3.0")
 
-    testImplementation("io.ktor:ktor-client-mock:2.1.3")
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")
     testImplementation("org.mockito:mockito-core:4.8.0")
