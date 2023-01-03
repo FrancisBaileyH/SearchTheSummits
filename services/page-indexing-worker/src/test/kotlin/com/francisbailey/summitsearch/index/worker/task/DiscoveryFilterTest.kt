@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.configuration.CascadeClimbersFilter
 import com.francisbailey.summitsearch.index.worker.configuration.ClubTreadFilter
 import com.francisbailey.summitsearch.index.worker.configuration.DefaultFilterChain
+import com.francisbailey.summitsearch.index.worker.configuration.UBCVarsityOutdoorClubFilter
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -105,7 +106,8 @@ class CrawlerFilterTest {
             "https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut-2.html",
             "https://forums.clubtread.com/newreply.php?do=newreply&p=476682",
             "https://forums.clubtread.com/members/71772-losthiker.html",
-            "https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a-print.html"
+            "https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a-print.html",
+            "https://forums.clubtread.com/27-british-columbia/44397-corral-trail-memorial-lookout-mar-03-13-a-prev-thread.html"
         )
 
         expectedToSkip.forEach {
@@ -113,8 +115,32 @@ class CrawlerFilterTest {
         }
 
         expectedNotToSkip.forEach {
-            println(it)
             assertFalse(ClubTreadFilter.shouldFilter(URL(it)))
+        }
+    }
+
+    @Test
+    fun `voc filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://www.ubc-voc.com/2022/07/23/duffey-double-crown",
+            "https://www.ubc-voc.com/2022/11/02/climbing-skywalker-5-8-in-memory-of-will-ungar"
+        )
+
+
+        val expectedToSkip = listOf(
+            "https://www.ubc-voc.com/tag/first-snow",
+            "https://www.ubc-voc.com/phorum5/index.php",
+            "https://www.ubc-voc.com/gallery/main.php?g2_itemId=613635",
+            "https://www.ubc-voc.com/category/trip-reports/cycle,paddle",
+            "https://www.ubc-voc.com/wiki/Main_Page"
+        )
+
+        expectedToSkip.forEach {
+            assertTrue(UBCVarsityOutdoorClubFilter.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(UBCVarsityOutdoorClubFilter.shouldFilter(URL(it)))
         }
     }
 

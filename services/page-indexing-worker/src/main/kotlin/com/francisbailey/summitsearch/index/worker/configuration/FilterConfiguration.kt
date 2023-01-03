@@ -16,6 +16,7 @@ open class FilterConfiguration {
         return LinkDiscoveryFilterService(defaultChain = DefaultFilterChain).apply {
             addFilterChain(URL("https://cascadeclimbers.com"), CascadeClimbersFilter)
             addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
+            addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
         }
     }
 }
@@ -78,7 +79,22 @@ object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
 
         allowedTopics.forEach {
             addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/|/index[1-9]{1,10}.html)$")))
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print).html$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print|prev-thread).html$")))
         }
+    }
+}
+// https://www.ubc-voc.com/2022/10/21/sky-pilot-and-mt-habrich-traverse
+object UBCVarsityOutdoorClubFilter: LinkDiscoveryFilterChain(exclusive = true) {
+    init {
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/gallery/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/members/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/phorum5/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wiki.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*"))) // avoid query parameters in links
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/category/.*")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
     }
 }
