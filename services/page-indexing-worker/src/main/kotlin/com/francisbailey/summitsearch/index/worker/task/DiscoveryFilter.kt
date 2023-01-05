@@ -36,6 +36,10 @@ open class LinkDiscoveryFilterChain(
             chain.none { it.matches(url) }
         }
     }
+
+    fun merge(filterChain: LinkDiscoveryFilterChain) {
+        this.chain.addAll(filterChain.chain)
+    }
 }
 
 interface DiscoveryFilter {

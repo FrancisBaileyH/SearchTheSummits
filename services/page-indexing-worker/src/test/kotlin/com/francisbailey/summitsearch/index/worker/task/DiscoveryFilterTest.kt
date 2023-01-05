@@ -1,9 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.configuration.CascadeClimbersFilter
-import com.francisbailey.summitsearch.index.worker.configuration.ClubTreadFilter
-import com.francisbailey.summitsearch.index.worker.configuration.DefaultFilterChain
-import com.francisbailey.summitsearch.index.worker.configuration.UBCVarsityOutdoorClubFilter
+import com.francisbailey.summitsearch.index.worker.configuration.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -28,7 +25,15 @@ class CrawlerFilterTest {
             "/some-file.jpeg",
             "/some-file.png",
             "/some-file.jPeG",
-            "/some-file?query=x"
+            "/some-file?query=x",
+            "/2022",
+            "/2022/",
+            "/2022/06",
+            "/2022/06/",
+            "/2022/06/12",
+            "/2022/06/12/",
+            "/search/test",
+            "/search/label/skiing"
         )
 
         pathsToExclude.forEach {
@@ -145,6 +150,25 @@ class CrawlerFilterTest {
     }
 
     @Test
+    fun `drdirtbag skips expected links`() {
+        val expectedToSkip = listOf(
+            "https://www.drdirtbag.com/2015/08/04/primitive-canada/primitive-canada-2/"
+        )
+
+        val expectedNotToSkip = listOf(
+            "https://www.drdirtbag.com/2015/08/04/primitive-canada/"
+        )
+
+        expectedToSkip.forEach {
+            assertTrue(DrDirtbagFilter.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(DrDirtbagFilter.shouldFilter(URL(it)))
+        }
+    }
+
+    @Test
     fun `runs inclusive filter chain associated with host`() {
         val filterService = LinkDiscoveryFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
@@ -191,6 +215,21 @@ class CrawlerFilterTest {
         filterService.shouldFilter(URL("https://francisbaileyh.com/test"))
 
         verifyNoInteractions(defaultChain)
+    }
+
+    @Test
+    fun `merge adds rules to chain`() {
+        val url = URL("https://francisbailey.com/test")
+        val chain = LinkDiscoveryFilterChain(exclusive = true)
+
+        assertFalse(chain.shouldFilter(url))
+
+        val chainToMerge = LinkDiscoveryFilterChain(exclusive = true)
+        chainToMerge.addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/test$")))
+
+        chain.merge(chainToMerge)
+
+        assertTrue(chain.shouldFilter(url))
     }
 
 }

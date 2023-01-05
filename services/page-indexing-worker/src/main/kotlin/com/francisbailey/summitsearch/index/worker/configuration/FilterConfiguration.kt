@@ -17,17 +17,24 @@ open class FilterConfiguration {
             addFilterChain(URL("https://cascadeclimbers.com"), CascadeClimbersFilter)
             addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
             addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
+            addFilterChain(URL("https://www.drdirtbag.com"), DrDirtbagFilter)
         }
     }
 }
 
 object DefaultFilterChain: LinkDiscoveryFilterChain(exclusive = true) {
     init {
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*"))) // avoid query parameters in links
+        // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/search/.*$")))
+        // Exclude query parameters by default
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*")))
+        // Wordpress filters
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/category/.*")))
+        // Exclude images
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
     }
 }
@@ -83,18 +90,20 @@ object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
         }
     }
 }
-// https://www.ubc-voc.com/2022/10/21/sky-pilot-and-mt-habrich-traverse
+
 object UBCVarsityOutdoorClubFilter: LinkDiscoveryFilterChain(exclusive = true) {
     init {
+        merge(DefaultFilterChain)
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/gallery/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/members/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/phorum5/.*")))
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wiki.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*"))) // avoid query parameters in links
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/category/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
+    }
+}
+
+object DrDirtbagFilter: LinkDiscoveryFilterChain(exclusive = true) {
+    init {
+        merge(DefaultFilterChain)
+        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*[0-9]{1,2}/$"))) // exclude directory style images
     }
 }
