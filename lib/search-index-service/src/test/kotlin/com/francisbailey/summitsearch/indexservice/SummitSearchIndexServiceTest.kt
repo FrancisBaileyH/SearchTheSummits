@@ -287,6 +287,22 @@ class SummitSearchIndexServiceTest {
         assertFalse(result.found())
     }
 
+    @Test
+    fun `generate ID produces normalized ID from URL`() {
+        val expectations = mapOf(
+            "https://francisbailey.com" to "francisbailey.com",
+            "http://francisbailey.com/path/to/" to "francisbailey.com/path/to",
+            "http://francisbailey.com/path/to/?paramB=x&paramA=y" to "francisbailey.com/path/to?paramA=y&paramB=x",
+            "https://francisbailey.com/path/to/index.html" to "francisbailey.com/path/to/index.html",
+            "https://francisbailey.com/path/to/index.html?query=x&alpha=g" to "francisbailey.com/path/to/index.html?alpha=g&query=x",
+            "http://subdomain.francisbailey.com" to "subdomain.francisbailey.com"
+        )
+
+        expectations.forEach {
+            assertEquals(it.value, SummitSearchIndexService.generateId(URL(it.key)))
+        }
+    }
+
     private fun refreshIndex(index: String) {
         client.indices().refresh(RefreshRequest.of {
             it.index(index)

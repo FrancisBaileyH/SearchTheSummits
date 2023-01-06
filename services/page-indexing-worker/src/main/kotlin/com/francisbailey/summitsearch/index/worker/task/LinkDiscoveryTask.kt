@@ -8,6 +8,7 @@ import com.francisbailey.summitsearch.index.worker.extension.normalize
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.MalformedURLException
+import java.net.URISyntaxException
 import java.net.URL
 import java.time.Instant
 import java.util.UUID
@@ -76,11 +77,17 @@ class LinkDiscoveryTask(
                 }
                 log.info { "Successfully processed discovery" }
             }
-        } catch (e: MalformedURLException) {
-            log.debug { "Bad URL for discovery: $discovery" }
         } catch (e: Exception) {
-            meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName).increment()
-            log.error(e) { "Unable to process link: $discovery" }
+            when (e) {
+                is MalformedURLException,
+                is URISyntaxException ->
+                    log.debug { "Bad URL for discovery: $discovery" }
+                else -> {
+                    meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName).increment()
+                    log.error(e) { "Unable to process link: $discovery" }
+                }
+
+            }
         }
     }
 

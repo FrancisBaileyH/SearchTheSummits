@@ -186,9 +186,7 @@ class SummitSearchIndexService(
         }
     }
 
-    fun generateId(url: URL): String {
-        return url.toURI().schemeSpecificPart.removeSuffix("/").removePrefix("//")
-    }
+
 
 
    internal companion object {
@@ -205,6 +203,13 @@ class SummitSearchIndexService(
                 return excludedTags.contains(element.normalName())
             }
         }
+
+       fun generateId(url: URL): String {
+           val uri = url.toURI()
+           val query = uri.query?.split("&")?.sorted()?.joinToString(separator = "&", prefix = "?") ?: ""
+           val path = uri.path?.removeSuffix("/") ?: ""
+           return "${uri.host}$path$query"
+       }
    }
 }
 
