@@ -22,7 +22,9 @@ class SummitSearchIndexServiceTest {
 
     private val indexedPages = setOf("LibertyBell", "LilyRock", "TexasPeak", "ContentWithoutParagraphs")
 
-    private val source = "https://www.francisbaileyh.com"
+    private val source = "www.francisbaileyh.com"
+
+    private val sourceUrlString = "https://$source"
 
 
     @Test
@@ -87,7 +89,7 @@ class SummitSearchIndexServiceTest {
         val result = results.hits.first()
 
         assertEquals("<em>Lily</em> Rock is by no doubt one of the most historically significant summits in North America for climbers and mountaineers alike. It's origins start back in the", result.highlight)
-        assertEquals("$source/LilyRock", result.source)
+        assertEquals("$sourceUrlString/LilyRock", result.source)
         assertEquals("Lily Peak via White Maiden's Walkway", result.title)
     }
 
@@ -104,7 +106,7 @@ class SummitSearchIndexServiceTest {
         val result = results.hits.first()
 
         assertEquals("We only had a few days and needed an easy outing, so my family suggested a popular local summit called <em>Texas</em> <em>Peak</em>.", result.highlight)
-        assertEquals("$source/TexasPeak", result.source)
+        assertEquals("$sourceUrlString/TexasPeak", result.source)
         assertEquals("Texas Peak via Stenson Creek FSR", result.title)
     }
 
@@ -121,7 +123,7 @@ class SummitSearchIndexServiceTest {
         val result = results.hits.first()
 
         assertEquals("We had traversed so far to the right that we had reached the main uptrack leading into the <em>Connaught</em> Drainage. We couldn't believe it.", result.highlight)
-        assertEquals("$source/ContentWithoutParagraphs", result.source)
+        assertEquals("$sourceUrlString/ContentWithoutParagraphs", result.source)
         assertEquals("The blog formerly known as Trip Reports from the Okanagan: Little Sifton Col and Puff Daddy", result.title)
     }
 
@@ -143,7 +145,7 @@ class SummitSearchIndexServiceTest {
 
         assertEquals(2,  paginatedResults.size)
 
-        val sources = indexedPages.map { "$source/$it" }.toSet()
+        val sources = indexedPages.map { "$sourceUrlString/$it" }.toSet()
 
         paginatedResults.forEach {
             assertTrue(sources.contains(it.hits.first().source))
@@ -159,7 +161,7 @@ class SummitSearchIndexServiceTest {
         val page = loadHtml("LibertyBell")
 
         assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
-        testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/LibertyBell"), htmlDocument = page))
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$sourceUrlString/LibertyBell"), htmlDocument = page))
         refreshIndex(index)
 
         val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
@@ -169,18 +171,19 @@ class SummitSearchIndexServiceTest {
         val document = client.get(
             GetRequest.of {
                 it.index(index)
-                it.id(URL("$source/LibertyBell").toString())
+                it.id("$source/LibertyBell")
             },
             HtmlMapping::class.java
         )
         assertTrue(document.found())
-        assertEquals(URL(source).host, document.source()?.host)
+        assertEquals(URL(sourceUrlString).host, document.source()?.host)
         assertEquals("In fact, there's a very high concentration of", document.source()?.seoDescription)
     }
 
     @Test
     fun `malicious text stripped from content fields on indexing`() {
-        val source = URL("http://francisbaileyh.com/this-test")
+        val source = "francisbaileyh.com/this-test"
+        val sourceUrl = URL("http://$source")
         val maliciousHtml = """
             <html>
                 <head>
@@ -199,14 +202,14 @@ class SummitSearchIndexServiceTest {
 
         testIndexService.indexPageContents(
             SummitSearchIndexRequest(
-            source,
+            sourceUrl,
             Jsoup.parse(maliciousHtml)
         ))
 
         val document = client.get(
             GetRequest.of {
                 it.index(index)
-                it.id(source.toString())
+                it.id(source)
             },
             HtmlMapping::class.java
         )
@@ -224,7 +227,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
@@ -234,7 +237,7 @@ class SummitSearchIndexServiceTest {
         ))
 
         assertEquals(1, result.hits.size)
-        assertEquals("$source/TwinsTower", result.hits.first().source)
+        assertEquals("$sourceUrlString/TwinsTower", result.hits.first().source)
         assertEquals("Like Bill Corbett mentioned in this The 11,000ers book, \"the sudden view of <em>Twins</em> <em>Tower</em> from…", result.hits.first().highlight)
         assertEquals("Twins Tower | Steven's Peak-bagging Journey", result.hits.first().title)
     }
@@ -247,7 +250,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
@@ -259,36 +262,13 @@ class SummitSearchIndexServiceTest {
         assertEquals(0, result.hits.size)
     }
 
-//    /**
-//     * Sproatt HTML contains the text Rethel right before ill-formatted paragraph text. Ensure that our index
-//     * call adds punctuation and spacing if there is none, so that the highlighter/query only picks up natural
-//     * sentence bounds.
-//     */
-//    @Test
-//    fun `paragraphs terminate with punctuation results in full sentence response only`() {
-//        val index = "index-with-excluded-elements"
-//        val page = "Sproatt"
-//
-//        val testIndexService = createIndex(index)
-//        testIndexService.indexPageContents(SummitSearchIndexRequest(source = URL("$source/$page"), htmlDocument = loadHtml(page)))
-//
-//
-//        refreshIndex(index)
-//
-//        val result = testIndexService.query(SummitSearchQueryRequest(
-//            term = "Rethel"
-//        ))
-//
-//        assertEquals("After two full on adventures up <em>Rethel</em> Mountain and Bryant Peak, I was looking to dial back the challenge and go for an easy fun summit somewhere.", result.hits.first().highlight)
-//    }
-
     @Test
     fun `deletes document from index when delete call made`() {
         val index = "test-index-delete-test"
         val testIndexService = createIndex(index)
 
         val page = loadHtml("LibertyBell")
-        val url = URL("$source/LibertyBell")
+        val url = URL("$sourceUrlString/LibertyBell")
 
         testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
         refreshIndex(index)
@@ -325,7 +305,7 @@ class SummitSearchIndexServiceTest {
 
     private fun indexHtmlContent(indexService: SummitSearchIndexService) {
         indexedPages.forEach {
-            val sourceURL = URL("$source/$it")
+            val sourceURL = URL("$sourceUrlString/$it")
             val html = loadHtml(it)
             indexService.indexPageContents(SummitSearchIndexRequest(sourceURL, html))
         }

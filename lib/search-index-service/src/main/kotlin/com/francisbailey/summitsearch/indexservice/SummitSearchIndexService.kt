@@ -121,7 +121,7 @@ class SummitSearchIndexService(
         val result = elasticSearchClient.index(
             IndexRequest.of {
                 it.index(indexName)
-                it.id(request.source.normalizeWithoutSlash().toString())
+                it.id(generateId(request.source))
                 it.document(HtmlMapping(
                     title = title,
                     source = request.source,
@@ -184,6 +184,10 @@ class SummitSearchIndexService(
         } else {
             log.info { "Index: $indexName already exists. Skipping creation." }
         }
+    }
+
+    fun generateId(url: URL): String {
+        return url.toURI().schemeSpecificPart.removeSuffix("/").removePrefix("//")
     }
 
 
