@@ -9,3 +9,7 @@ fun URL.normalize(): URL {
     val uri = this.toURI().normalize()
     return URL("${uri.scheme}:${uri.schemeSpecificPart}")
 }
+
+fun URL.baseURL(): URL {
+    return URL(this.protocol + "://" + this.host + this.path.substringBeforeLast("/"))
+}

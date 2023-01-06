@@ -53,14 +53,18 @@ class PageCrawlerServiceTest {
             )
         }), crawlerConfiguration)
 
-        val documentA = service.getHtmlDocument(URL("https://francisbailey.com/test#abc"))
-        assertEquals("https://francisbailey.com", documentA.baseUri())
+        val expectations = mapOf(
+            "https://francisbailey.com/test#abc" to "https://francisbailey.com",
+            "https://francisbailey.com/test/test123/test.html" to "https://francisbailey.com/test/test123",
+            "https://francisbailey.com/test/test123?query=x#fragment" to "https://francisbailey.com/test",
+            "https://francisbailey.com" to "https://francisbailey.com",
+            "https://francisbailey.com/" to "https://francisbailey.com"
+        )
 
-        val documentB = service.getHtmlDocument(URL("https://francisbailey.com/test/test123/test.html"))
-        assertEquals("https://francisbailey.com/test/test123", documentB.baseUri())
-
-        val documentC = service.getHtmlDocument(URL("https://francisbailey.com/test/test123?query=x#fragment"))
-        assertEquals("https://francisbailey.com/test", documentC.baseUri())
+        expectations.forEach {
+            val document = service.getHtmlDocument(URL(it.key))
+            assertEquals(it.value, document.baseUri())
+        }
     }
 
     /** @TODO FIX NPE WHEN WE HAVE TIME

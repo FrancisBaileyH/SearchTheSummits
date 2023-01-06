@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
+import com.francisbailey.summitsearch.index.worker.extension.baseURL
 import com.francisbailey.summitsearch.index.worker.extension.isRedirect
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -40,7 +41,7 @@ class PageCrawlerService(
         try {
             htmlParser(response.bodyAsText(charset)).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
-                it.setBaseUri(pageUrl.toString().substringBeforeLast("/")) // need to fetch relative href links
+                it.setBaseUri(pageUrl.baseURL().toString()) // need to fetch relative href links
             }
         } catch (e: Exception) {
             throw UnparsablePageException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
