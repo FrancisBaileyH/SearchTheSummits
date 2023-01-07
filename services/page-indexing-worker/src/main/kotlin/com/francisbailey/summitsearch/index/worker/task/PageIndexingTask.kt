@@ -92,6 +92,7 @@ class PageIndexingTask(
                     dependencyCircuitBreaker.executeCallable {
                         indexService.deletePageContents(SummitSearchDeleteIndexRequest(pageUrl))
                         meterRegistry.counter("$TASK_METRIC.indexservice.delete").increment()
+                        log.error(e) { "Unable to index page: $pageUrl" }
                     }
                 }
                 else -> {

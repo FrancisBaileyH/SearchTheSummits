@@ -7,7 +7,8 @@ import kotlin.text.Charsets
 open class CrawlerConfiguration {
 
     val charsetOverride = hashMapOf(
-        "goldenscrambles.ca" to Charsets.ISO_8859_1
+        "goldenscrambles.ca" to Charsets.ISO_8859_1,
+        "sonnybou.ca" to Charsets.ISO_8859_1
     )
 
 }
