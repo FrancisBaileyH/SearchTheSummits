@@ -24,7 +24,10 @@ class QueueAssignmentController(
         try {
             queueAssignmentStore.assign(assignmentRequest.assignments)
 
-            return PutAssignmentResponse(status = STATUS.SUCCESS.name)
+            return PutAssignmentResponse(
+                status = STATUS.SUCCESS.name,
+                assignments = queueAssignmentStore.getAssignments()
+            )
         } catch (e: MalformedURLException) {
             log.error(e) { "Bad URL passed in as assignment" }
             throw ServletRequestBindingException("Invalid URL passed as assignment")
@@ -36,12 +39,17 @@ class QueueAssignmentController(
         log.info { "Clearing all assignments" }
         queueAssignmentStore.clearAssignments()
 
-        return DeleteAssignmentsResponse(status = STATUS.SUCCESS.name)
+        return DeleteAssignmentsResponse(
+            status = STATUS.SUCCESS.name,
+            assignments = queueAssignmentStore.getAssignments()
+        )
     }
 
     @GetMapping("/api/assignments")
     fun getAssignments(): GetAssignmentsResponse {
-        return GetAssignmentsResponse(assignments = queueAssignmentStore.getAssignments())
+        return GetAssignmentsResponse(
+            assignments = queueAssignmentStore.getAssignments()
+        )
     }
 
     enum class STATUS {

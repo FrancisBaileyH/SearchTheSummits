@@ -10,15 +10,17 @@ data class PutAssignmentRequest(
 
 @Serializable
 data class PutAssignmentResponse(
-    val status: String
+    val status: String,
+    val assignments: Set<String>
 )
 
 @Serializable
 data class DeleteAssignmentsResponse(
-    val status: String
+    val status: String,
+    val assignments: Set<String>
 )
 
 @Serializable
 data class GetAssignmentsResponse(
-    val assignments: Set<String>
+    val assignments: Set<String>,
 )
