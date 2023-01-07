@@ -15,7 +15,6 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
 import com.francisbailey.summitsearch.indexservice.extension.getSeoDescription
-import com.francisbailey.summitsearch.indexservice.extension.normalizeWithoutSlash
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

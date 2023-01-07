@@ -220,6 +220,45 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
+    fun `excluded tags are removed before text is indexed`() {
+        val source = "francisbaileyh.com/this-test"
+        val sourceUrl = URL("http://$source")
+        val htmlWithExcludedTags = """
+            <html>
+                <body>
+                    <header><p>Here is header</p></header>
+                    <nav><p>Some Nav Thing</p></nav>
+                    <p>Test content.</p>
+                    <ul>
+                      <li><a>Bad Content</a></li>
+                    </ul>
+                    <footer><h1>Footer</h1></footer>
+                </body>
+            </html>
+        """.trimIndent()
+
+        val index = "test-index-excluded-tags"
+        val testIndexService = createIndex(index)
+
+        testIndexService.indexPageContents(
+            SummitSearchIndexRequest(
+                sourceUrl,
+                Jsoup.parse(htmlWithExcludedTags)
+            ))
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(source)
+            },
+            HtmlMapping::class.java
+        )
+
+        assertEquals("Test content.", document?.source()?.paragraphContent)
+        assertEquals("Test content.", document?.source()?.rawTextContent)
+    }
+
+    @Test
     fun `pages without paragraphs or text are excluded`() {
         val index = "index-with-paragraph-free-text"
         val pages = setOf("NoParagraphs", "TwinsTower")
