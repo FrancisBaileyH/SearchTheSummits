@@ -58,7 +58,9 @@ class CrawlerFilterTest {
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/",
             "https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010",
             "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2/",
-            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2"
+            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/2",
+            "https://cascadeclimbers.com/forum/forum/16-british-columbiacanada/page/20",
+            "https://cascadeclimbers.com/forum/topic/53522-tr-mt-queen-bess-se-buttress-good-queen-bes/"
         )
 
         val allowedTopics = listOf(
@@ -106,13 +108,16 @@ class CrawlerFilterTest {
         expectedNotToSkip.add("https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a.html")
         expectedNotToSkip.add("https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut.html")
         expectedNotToSkip.add("https://forums.clubtread.com/130-canadian-rockies/index2.html") // paginated topic
+        expectedNotToSkip.add("https://forums.clubtread.com/130-canadian-rockies/index20.html") // paginated topic
+        expectedNotToSkip.add("https://forums.clubtread.com/27-british-columbia/43281-t-tower-t-tiara.html")
 
         val expectedToSkip = listOf(
             "https://forums.clubtread.com/27-british-columbia/40728-ain-t-elfin-lakes-cayoosh-creek-hut-2.html",
             "https://forums.clubtread.com/newreply.php?do=newreply&p=476682",
             "https://forums.clubtread.com/members/71772-losthiker.html",
             "https://forums.clubtread.com/27-british-columbia/95172-watersprite-lake-2022-09-25-a-print.html",
-            "https://forums.clubtread.com/27-british-columbia/44397-corral-trail-memorial-lookout-mar-03-13-a-prev-thread.html"
+            "https://forums.clubtread.com/27-british-columbia/44397-corral-trail-memorial-lookout-mar-03-13-a-prev-thread.html",
+            "https://forums.clubtread.com/27-british-columbia/44397-corral-trail-memorial-lookout-mar-03-13-a-next-thread.html"
         )
 
         expectedToSkip.forEach {

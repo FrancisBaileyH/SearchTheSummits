@@ -68,7 +68,7 @@ object CascadeClimbersFilter: LinkDiscoveryFilterChain(exclusive = false) {
             "52-the-rest-of-the-us-and-international"
         )
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[1-9]{1,10}/?|)$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[0-9]{1,10}/?|)$")))
         }
         addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
     }
@@ -85,8 +85,8 @@ object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
         )
 
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/|/index[1-9]{1,10}.html)$")))
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print|prev-thread).html$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/|/index[0-9]{1,10}.html)$")))
+            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print|prev-thread|next-thread).html$")))
         }
     }
 }
