@@ -1,8 +1,10 @@
 package com.francisbailey.summitsearch.indexservice.extension
 
+import java.util.regex.Pattern
 
-private val punctuation = setOf("?", ".", "!")
+val String.Companion.wordDelimiterPattern: Pattern
+    get() = Pattern.compile("\\s+")
 
-fun String.hasPunctuation(): Boolean {
-    return punctuation.contains(this.takeLast(1))
-}
+fun String.words(): List<String> = this.trim().split(regex = String.wordDelimiterPattern)
+
+fun String.wordCount(): Int = this.words().size

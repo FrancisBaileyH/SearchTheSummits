@@ -3,8 +3,7 @@ package com.francisbailey.summitsearch.indexservice
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
-import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
-import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
+import co.elastic.clients.elasticsearch._types.query_dsl.*
 import co.elastic.clients.elasticsearch.core.DeleteRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
@@ -15,6 +14,7 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 import co.elastic.clients.json.JsonpDeserializer
 import com.francisbailey.summitsearch.indexservice.extension.getSeoDescription
+import com.francisbailey.summitsearch.indexservice.extension.words
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -40,6 +40,13 @@ class SummitSearchIndexService(
 
         log.info { "Querying for: ${queryRequest.term}" }
 
+        val term = queryRequest.term.replace(QUERY_SANITIZATION_REGEX, "")
+        val words = term.words()
+        val sanitizedQuery = StringBuilder()
+
+        sanitizedQuery.append(words.take(PHRASE_TERM_THRESHOLD).joinToString(prefix = "\"", postfix = "\"", separator = " "))
+        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString { " \"$it\"" })
+
         val response = elasticSearchClient.search(
             SearchRequest.of {
                 it.index(indexName)
@@ -47,16 +54,17 @@ class SummitSearchIndexService(
                     track.enabled(true)
                 }
                 it.query { query ->
-                    query.multiMatch { match ->
-                        match.query(queryRequest.term)
-                        match.type(TextQueryType.PhrasePrefix)
+                    query.simpleQueryString { match ->
+                        match.query(sanitizedQuery.toString())
                         match.fields(
                             HtmlMapping::title.name.plus("^10"), // boost title the highest
                             HtmlMapping::rawTextContent.name,
                             HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
                             HtmlMapping::paragraphContent.name
                         )
+                        match.minimumShouldMatch("100%")
                         match.analyzer(ANALYZER_NAME)
+                        match.defaultOperator(Operator.And)
                     }
                 }
                 it.fields(listOf(
@@ -208,9 +216,6 @@ class SummitSearchIndexService(
         }
     }
 
-
-
-
    internal companion object {
        const val SUMMIT_INDEX_NAME = "summit-search-index"
        const val ANALYZER_NAME = "standard_with_synonyms"
@@ -219,6 +224,9 @@ class SummitSearchIndexService(
        const val MAX_QUERY_TERM_SIZE = 100
        const val HIGHLIGHT_FRAGMENT_SIZE = 200
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
+       const val PHRASE_TERM_THRESHOLD = 2
+
+       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9\\s]")
 
        private val DEFAULT_SYNONYMS = listOf(
            "mt., mt, mount",

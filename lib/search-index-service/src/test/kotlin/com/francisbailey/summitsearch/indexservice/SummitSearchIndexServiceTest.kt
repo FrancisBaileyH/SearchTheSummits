@@ -1,6 +1,14 @@
 package com.francisbailey.summitsearch.indexservice
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator
 import co.elastic.clients.elasticsearch.core.GetRequest
+import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.SearchResponse
+import co.elastic.clients.elasticsearch.core.search.HighlightField
+import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import org.jsoup.Jsoup
@@ -9,6 +17,11 @@ import org.junit.jupiter.api.Assertions.*
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.check
 import java.io.File
 import java.net.URL
 
@@ -26,6 +39,7 @@ class SummitSearchIndexServiceTest {
 
     private val sourceUrlString = "https://$source"
 
+    private val mockClient = mock<ElasticsearchClient>()
 
     @Test
     fun `returns false if index does not exist and true when it does`() {
@@ -312,7 +326,6 @@ class SummitSearchIndexServiceTest {
         testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
-
         assertEquals(url.toString(), testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.first().source)
 
         testIndexService.deletePageContents(SummitSearchDeleteIndexRequest(url))
@@ -339,6 +352,111 @@ class SummitSearchIndexServiceTest {
 
         expectations.forEach {
             assertEquals(it.value, SummitSearchIndexService.generateId(URL(it.key)))
+        }
+    }
+
+    @Test
+    fun `query uses phrase + term when term count is greater than 2`() {
+        val index = "phrase_term_test"
+        val bestFieldTerm = "three terms here"
+        val response = mock<SearchResponse<HtmlMapping>>()
+        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(response.hits()).thenReturn(hitsMetadata)
+        whenever(hitsMetadata.hits()).thenReturn(emptyList())
+
+        testIndexService.query(SummitSearchQueryRequest(bestFieldTerm))
+
+        val expectedQuery = buildExpectedSearchQuery("\"three terms\" \"here\"", index)
+
+       verify(mockClient).search(check<SearchRequest> { assertEquals(expectedQuery.toString(), it.toString()) }, any<Class<HtmlMapping>>())
+    }
+
+    @Test
+    fun `query switches to phrase when term count is equal to or less than 2`() {
+        val index = "phrase-match-test"
+        val phraseFieldTerm = "two terms"
+        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+
+        val response = mock<SearchResponse<HtmlMapping>>()
+        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(response.hits()).thenReturn(hitsMetadata)
+        whenever(hitsMetadata.hits()).thenReturn(emptyList())
+
+        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
+
+        val expectedQuery = buildExpectedSearchQuery("\"two terms\"", index)
+
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+    }
+
+    @Test
+    fun `escapes non-alphanumeric characters from query`() {
+        val index = "phrase-sanitization-test"
+        val phraseFieldTerm = "(two*) terms!<>||( \"test\""
+        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+
+        val response = mock<SearchResponse<HtmlMapping>>()
+        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(response.hits()).thenReturn(hitsMetadata)
+        whenever(hitsMetadata.hits()).thenReturn(emptyList())
+
+        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
+
+        val expectedQuery = buildExpectedSearchQuery("\"two terms\" \"test\"", index)
+
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+    }
+
+    private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {
+        return SearchRequest.of {
+            it.index(index)
+            it.trackTotalHits { track ->
+                track.enabled(true)
+            }
+            it.query { query ->
+                query.simpleQueryString { match ->
+                    match.query(term)
+                    match.fields(
+                        HtmlMapping::title.name.plus("^10"),
+                        HtmlMapping::rawTextContent.name,
+                        HtmlMapping::seoDescription.name.plus("^3"),
+                        HtmlMapping::paragraphContent.name
+                    )
+                    match.minimumShouldMatch("100%")
+                    match.analyzer(SummitSearchIndexService.ANALYZER_NAME)
+                    match.defaultOperator(Operator.And)
+                }
+            }
+            it.fields(listOf(
+                FieldAndFormat.of { field ->
+                    field.field(HtmlMapping::source.name)
+                },
+                FieldAndFormat.of { field ->
+                    field.field(HtmlMapping::title.name)
+                }
+            ))
+            it.source { sourceConfig ->
+                sourceConfig.fetch(false)
+            }
+            it.highlight { highlight ->
+                highlight.numberOfFragments(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_COUNT)
+                highlight.fragmentSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.fields(mapOf(
+                    HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
+                    HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
+                    HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                ))
+                highlight.order(HighlighterOrder.Score)
+            }
+            it.size(20)
+            it.from(0)
         }
     }
 
