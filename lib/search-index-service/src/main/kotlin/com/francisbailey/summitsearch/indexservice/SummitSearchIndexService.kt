@@ -56,6 +56,7 @@ class SummitSearchIndexService(
                             HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
                             HtmlMapping::paragraphContent.name
                         )
+                        match.analyzer(ANALYZER_NAME)
                     }
                 }
                 it.fields(listOf(
@@ -177,6 +178,28 @@ class SummitSearchIndexService(
                         }
                     ))
                 }
+                it.settings { settings ->
+                    settings.analysis { analysis ->
+                        analysis.analyzer(ANALYZER_NAME) { analyzer ->
+                            analyzer.custom { custom ->
+                                custom.tokenizer("standard")
+                                custom.filter(listOf(
+                                    "lowercase",
+                                    SYNONYM_FILTER_NAME
+                                ))
+                            }
+                        }
+                        analysis.filter(SYNONYM_FILTER_NAME) { tokenFilter ->
+                            tokenFilter.definition { definition ->
+                                definition.synonymGraph { synonymGraph ->
+                                    synonymGraph.expand(true)
+                                    synonymGraph.lenient(false)
+                                    synonymGraph.synonyms(DEFAULT_SYNONYMS)
+                                }
+                            }
+                        }
+                    }
+                }
             })
 
             log.info { "Result: ${response.acknowledged()}" }
@@ -189,19 +212,31 @@ class SummitSearchIndexService(
 
 
    internal companion object {
-        const val SUMMIT_INDEX_NAME = "summit-search-index"
-        const val MAX_FROM_VALUE = 1_000
-        const val MAX_QUERY_TERM_SIZE = 100
-        const val HIGHLIGHT_FRAGMENT_SIZE = 200
-        const val HIGHLIGHT_FRAGMENT_COUNT = 1
+       const val SUMMIT_INDEX_NAME = "summit-search-index"
+       const val ANALYZER_NAME = "standard_with_synonyms"
+       const val SYNONYM_FILTER_NAME = "synonym_graph"
+       const val MAX_FROM_VALUE = 1_000
+       const val MAX_QUERY_TERM_SIZE = 100
+       const val HIGHLIGHT_FRAGMENT_SIZE = 200
+       const val HIGHLIGHT_FRAGMENT_COUNT = 1
 
-        private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
-            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
+       private val DEFAULT_SYNONYMS = listOf(
+           "mt., mt, mount",
+           "mtn, mtn., mountain",
+           "se, south east, southeast",
+           "sw, south west, southwest",
+           "nw, north west, northwest",
+           "ne, north east, northeast",
+           "bc, british columbia"
+       )
 
-            override fun matches(root: Element, element: Element): Boolean {
-                return excludedTags.contains(element.normalName())
-            }
-        }
+       private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
+           private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
+
+           override fun matches(root: Element, element: Element): Boolean {
+               return excludedTags.contains(element.normalName())
+           }
+       }
 
        fun generateId(url: URL): String {
            val uri = url.toURI()
