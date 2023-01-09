@@ -25,6 +25,7 @@ class PageIndexingTask(
     private val dependencyCircuitBreaker: CircuitBreaker,
     private val perQueueCircuitBreaker: CircuitBreaker,
     private val linkDiscoveryService: LinkDiscoveryService,
+    private val documentIndexingFilterService: DocumentFilterService,
     private val taskPermit: TaskPermit,
     private val meterRegistry: MeterRegistry
 ): Runnable {
@@ -36,23 +37,26 @@ class PageIndexingTask(
     override fun run() = taskPermit.use {
         log.info { "Running indexing task for: $queueName" }
 
-        if (rateLimiterRegistry.rateLimiter(queueName).acquirePermission()) {
-            val indexTask: IndexTask? = dependencyCircuitBreaker.executeCallable { indexingTaskQueuePollingClient.pollTask(queueName) }
-
-            if (indexTask != null) {
-                try {
-                    perQueueCircuitBreaker.executeCallable { processTask(indexTask) }
-                } finally {
-                    if (canDeleteTask) {
-                        dependencyCircuitBreaker.executeCallable { indexingTaskQueuePollingClient.deleteTask(indexTask) }
-                    } else {
-                        log.info { "Returning task to queue: $queueName" }
-                    }
-                }
-            }
-        } else {
+        if (!rateLimiterRegistry.rateLimiter(queueName).acquirePermission()) {
             meterRegistry.counter("$TASK_METRIC.rate-limited").increment()
             log.warn { "Indexing rate exceeded for: $queueName. Backing off" }
+            return
+        }
+
+        val task: IndexTask? = dependencyCircuitBreaker.executeCallable {
+            indexingTaskQueuePollingClient.pollTask(queueName)
+        }
+
+        if (task != null) {
+            try {
+                perQueueCircuitBreaker.executeCallable { processTask(task) }
+            } finally {
+                if (canDeleteTask) {
+                    dependencyCircuitBreaker.executeCallable { indexingTaskQueuePollingClient.deleteTask(task) }
+                } else {
+                    log.info { "Returning task to queue: $queueName" }
+                }
+            }
         }
     }
 
@@ -60,14 +64,18 @@ class PageIndexingTask(
         val pageUrl = URL(task.details.pageUrl)
 
         try {
-            val document = meterRegistry.timer("$TASK_METRIC.latency.page", "host", pageUrl.host).recordCallable {
-                pageCrawlerService.getHtmlDocument(pageUrl)
-            }!!
-
+            val timer = meterRegistry.timer("$TASK_METRIC.latency.page", "host", pageUrl.host)
+            val document = timer.recordCallable { pageCrawlerService.getHtmlDocument(pageUrl) }!!
             val organicLinks = document.body().getLinks()
 
+            linkDiscoveryService.submitDiscoveries(task, organicLinks)
+
+            if (documentIndexingFilterService.shouldFilter(pageUrl)) {
+                log.warn { "Crawled, but did not index page: $pageUrl" }
+                return
+            }
+
             dependencyCircuitBreaker.executeCallable {
-                linkDiscoveryService.submitDiscoveries(task, organicLinks)
                 meterRegistry.timer("$TASK_METRIC.indexservice.add.latency").recordCallable {
                     indexService.indexPageContents(
                         SummitSearchIndexRequest(

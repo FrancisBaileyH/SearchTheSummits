@@ -12,6 +12,28 @@ import java.util.regex.Pattern
 class CrawlerFilterTest {
 
     @Test
+    fun `default index filter skips home pages`() {
+        val expectedToSkip = listOf(
+            "https://www.example.com/",
+            "https://www.example.com",
+            "https://www.example.com/index.html"
+        )
+
+        val expectedNotToSkip = listOf(
+            "https://www.example.com/2015/08/04/primitive-canada/"
+        )
+
+        expectedToSkip.forEach {
+            assertTrue(DefaultIndexFilterChain.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(DefaultIndexFilterChain.shouldFilter(URL(it)))
+        }
+    }
+
+
+    @Test
     fun `default filter skips wordpress uploads and page images`() {
         val urlString = "https://francisbaileyh.com"
 

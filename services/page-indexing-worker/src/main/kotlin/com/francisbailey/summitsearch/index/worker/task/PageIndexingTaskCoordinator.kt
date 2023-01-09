@@ -22,6 +22,7 @@ class PageIndexingTaskCoordinator(
     private val circuitBreakerRegistry: CircuitBreakerRegistry,
     private val taskRateLimiterRegistry: RateLimiterRegistry,
     private val taskPermitService: TaskPermitService,
+    private val documentIndexingFilterService: DocumentFilterService,
     private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger { }
@@ -77,6 +78,7 @@ class PageIndexingTaskCoordinator(
                                 perQueueCircuitBreaker = perQueueCircuitBreaker,
                                 linkDiscoveryService = linkDiscoveryService,
                                 taskPermit = permit,
+                                documentIndexingFilterService = documentIndexingFilterService,
                                 meterRegistry = meterRegistry
                             )
                         )

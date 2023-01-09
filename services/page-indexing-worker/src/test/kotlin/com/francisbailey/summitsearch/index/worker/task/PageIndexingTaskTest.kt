@@ -26,6 +26,9 @@ class PageIndexingTaskTest {
     private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
     private val indexService = mock<SummitSearchIndexService>()
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
+    private val documentIndexFilterService = mock<DocumentFilterService> {
+        on(mock.shouldFilter(any())).thenReturn(false)
+    }
 
     private val rateLimiter = mock<io.github.resilience4j.ratelimiter.RateLimiter>()
 
@@ -51,6 +54,7 @@ class PageIndexingTaskTest {
         depencencyCircuitBreaker,
         perQueuecircuitBreaker,
         linkDiscoveryService,
+        documentIndexFilterService,
         taskPermit,
         SimpleMeterRegistry()
     )
@@ -112,7 +116,28 @@ class PageIndexingTaskTest {
         verify(rateLimiterRegistry).rateLimiter(task.queueName)
         verify(indexingTaskQueuePollingClient).pollTask(queueName)
         verify(depencencyCircuitBreaker, times(3)).executeCallable<Unit>(any())
+        verify(documentIndexFilterService).shouldFilter(URL(defaultIndexTask.details.pageUrl))
         verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(defaultIndexTask.details.pageUrl), htmlContent))
+        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(taskPermit).close()
+    }
+
+    @Test
+    fun `crawl page but do not index contents if url matches filter`() {
+        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
+
+        whenever(rateLimiter.acquirePermission()).thenReturn(true)
+        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
+        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(documentIndexFilterService.shouldFilter(any())).thenReturn(true)
+
+        task.run()
+
+        verify(rateLimiterRegistry).rateLimiter(task.queueName)
+        verify(indexingTaskQueuePollingClient).pollTask(queueName)
+        verify(depencencyCircuitBreaker, times(2)).executeCallable<Unit>(any())
+        verify(documentIndexFilterService).shouldFilter(URL(defaultIndexTask.details.pageUrl))
+        verifyNoInteractions(indexService)
         verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
         verify(taskPermit).close()
     }

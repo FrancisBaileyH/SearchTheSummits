@@ -21,6 +21,7 @@ class PageIndexingTaskCoordinatorTest {
     private val searchIndexService = mock<SummitSearchIndexService>()
     private val pageCrawlerService = mock<PageCrawlerService>()
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
+    private val documentIndexFilterService = mock<DocumentFilterService>()
 
     private val taskDependenciesCircuitBreaker = mock<CircuitBreaker>()
     private val perQueueCircuitBreaker = mock<CircuitBreaker>()
@@ -43,6 +44,7 @@ class PageIndexingTaskCoordinatorTest {
         pageCrawlerService = pageCrawlerService,
         linkDiscoveryService = linkDiscoveryService,
         taskPermitService = taskPermitService,
+        documentIndexingFilterService = documentIndexFilterService,
         meterRegistry = SimpleMeterRegistry()
     )
 

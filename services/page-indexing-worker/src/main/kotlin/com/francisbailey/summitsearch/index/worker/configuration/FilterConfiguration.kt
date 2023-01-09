@@ -20,6 +20,18 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.drdirtbag.com"), DrDirtbagFilter)
         }
     }
+
+    @Bean
+    open fun documentIndexingFilterService(): DocumentFilterService {
+        return DocumentFilterService(defaultChain = DefaultIndexFilterChain)
+    }
+}
+
+object DefaultIndexFilterChain: DocumentFilterChain(exclusive = true) {
+    init {
+        // Skip indexing home pages as they're typically filled will previews or full feeds of the article
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^(?:/|/index.html|)$")))
+    }
 }
 
 object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
@@ -27,6 +39,7 @@ object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
         // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/search/.*$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/feed/.*$")))
         // Exclude query parameters by default
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*[?].*")))
         // Wordpress filters
