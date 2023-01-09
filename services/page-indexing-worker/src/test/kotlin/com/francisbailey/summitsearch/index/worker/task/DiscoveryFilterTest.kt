@@ -175,12 +175,12 @@ class CrawlerFilterTest {
 
     @Test
     fun `runs inclusive filter chain associated with host`() {
-        val filterService = LinkDiscoveryFilterService(DefaultFilterChain)
+        val filterService = DocumentFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
         val host = "www.francisbaileyh.com"
 
-        val inclusiveChain = LinkDiscoveryFilterChain(exclusive = false).apply {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^$path$")))
+        val inclusiveChain = DocumentFilterChain(exclusive = false).apply {
+            addFilter(PathMatchingDocumentFilter(Pattern.compile("^$path$")))
         }
 
         val url = URL("https://$host")
@@ -192,12 +192,12 @@ class CrawlerFilterTest {
 
     @Test
     fun `runs exclusive filter chain associated with host`() {
-        val filterService = LinkDiscoveryFilterService(DefaultFilterChain)
+        val filterService = DocumentFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
         val host = "www.francisbaileyh.com"
 
-        val inclusiveChain = LinkDiscoveryFilterChain(exclusive = true).apply {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^$path$")))
+        val inclusiveChain = DocumentFilterChain(exclusive = true).apply {
+            addFilter(PathMatchingDocumentFilter(Pattern.compile("^$path$")))
         }
 
         val url = URL("https://$host")
@@ -209,11 +209,11 @@ class CrawlerFilterTest {
 
     @Test
     fun `does not run default chain if chain exists for host`() {
-        val defaultChain = mock<LinkDiscoveryFilterChain>()
-        val filterService = LinkDiscoveryFilterService(defaultChain)
+        val defaultChain = mock<DocumentFilterChain>()
+        val filterService = DocumentFilterService(defaultChain)
 
-        val inclusiveChain = LinkDiscoveryFilterChain(exclusive = false).apply {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*")))
+        val inclusiveChain = DocumentFilterChain(exclusive = false).apply {
+            addFilter(PathMatchingDocumentFilter(Pattern.compile(".*")))
         }
 
         filterService.addFilterChain(URL("https://francisbaileyh.com"), inclusiveChain)
@@ -225,12 +225,12 @@ class CrawlerFilterTest {
     @Test
     fun `merge adds rules to chain`() {
         val url = URL("https://francisbailey.com/test")
-        val chain = LinkDiscoveryFilterChain(exclusive = true)
+        val chain = DocumentFilterChain(exclusive = true)
 
         assertFalse(chain.shouldFilter(url))
 
-        val chainToMerge = LinkDiscoveryFilterChain(exclusive = true)
-        chainToMerge.addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/test$")))
+        val chainToMerge = DocumentFilterChain(exclusive = true)
+        chainToMerge.addFilter(PathMatchingDocumentFilter(Pattern.compile("^/test$")))
 
         chain.merge(chainToMerge)
 

@@ -23,7 +23,7 @@ class LinkDiscoveryTaskTest {
         on(mock.source).thenReturn("some-queue")
     }
 
-    private val linkDiscoveryFilterService = mock<LinkDiscoveryFilterService> {
+    private val documentFilterService = mock<DocumentFilterService> {
         on(mock.shouldFilter(any())).thenReturn(false)
     }
 
@@ -46,7 +46,7 @@ class LinkDiscoveryTaskTest {
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
-        verifyNoInteractions(linkDiscoveryFilterService)
+        verifyNoInteractions(documentFilterService)
     }
 
     @Test
@@ -57,7 +57,7 @@ class LinkDiscoveryTaskTest {
 
         verify(pageMetadataStore).saveDiscoveryMetadata("some-other-page.com")
         verifyNoInteractions(taskQueueClient)
-        verifyNoInteractions(linkDiscoveryFilterService)
+        verifyNoInteractions(documentFilterService)
     }
 
     @Test
@@ -68,20 +68,20 @@ class LinkDiscoveryTaskTest {
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
-        verifyNoInteractions(linkDiscoveryFilterService)
+        verifyNoInteractions(documentFilterService)
     }
 
     @Test
     fun `ignores link if filter service returns true on should filter`() {
         val discovery = URL("https://francisbailey.com/wp-content/some-file.jpg")
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
-        whenever(linkDiscoveryFilterService.shouldFilter(any())).thenReturn(true)
+        whenever(documentFilterService.shouldFilter(any())).thenReturn(true)
 
         buildTask(discovery.toString()).run()
 
         verifyNoInteractions(taskQueueClient)
         verifyNoInteractions(pageMetadataStore)
-        verify(linkDiscoveryFilterService).shouldFilter(discovery)
+        verify(documentFilterService).shouldFilter(discovery)
     }
 
     @Test
@@ -137,7 +137,7 @@ class LinkDiscoveryTaskTest {
         taskQueueClient,
         pageMetadataStore,
         associatedTask,
-        linkDiscoveryFilterService,
+        documentFilterService,
         meterRegistry,
         discovery
     )

@@ -17,7 +17,7 @@ class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,
     private val pageMetadataStore: PageMetadataStore,
     private val associatedTask: IndexTask,
-    private val linkDiscoveryFilterService: LinkDiscoveryFilterService,
+    private val documentFilterService: DocumentFilterService,
     private val meterRegistry: MeterRegistry,
     val discovery: String
 ): Runnable {
@@ -48,7 +48,7 @@ class LinkDiscoveryTask(
                 return
             }
 
-            if (linkDiscoveryFilterService.shouldFilter(discoveryUrl)) {
+            if (documentFilterService.shouldFilter(discoveryUrl)) {
                 log.warn { "Skipping $discoveryUrl as it matches a filter" }
                 return
             }

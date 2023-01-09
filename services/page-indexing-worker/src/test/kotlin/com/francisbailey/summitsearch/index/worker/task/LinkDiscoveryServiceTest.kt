@@ -14,10 +14,10 @@ class LinkDiscoveryServiceTest {
     private val linkDiscoveryTaskExecutor = mock<Executor>()
     private val taskQueueClient = mock<IndexingTaskQueueClient>()
     private val pageMetadataStore = mock<PageMetadataStore>()
-    private val linkDiscoveryFilterService = mock<LinkDiscoveryFilterService>()
+    private val documentFilterService = mock<DocumentFilterService>()
     private val meterRegistry = SimpleMeterRegistry()
 
-    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, pageMetadataStore, linkDiscoveryFilterService, meterRegistry)
+    private val linkDiscoveryService = LinkDiscoveryService(linkDiscoveryTaskExecutor, taskQueueClient, pageMetadataStore, documentFilterService, meterRegistry)
 
     private val associatedTask = mock<IndexTask>()
 

@@ -4,10 +4,10 @@ import java.net.URL
 import java.util.regex.Pattern
 
 
-class LinkDiscoveryFilterService(
-    private val defaultChain: LinkDiscoveryFilterChain
+class DocumentFilterService(
+    private val defaultChain: DocumentFilterChain
 ) {
-    private val hostFilterChainMap = hashMapOf<String, LinkDiscoveryFilterChain>()
+    private val hostFilterChainMap = hashMapOf<String, DocumentFilterChain>()
 
     fun shouldFilter(url: URL): Boolean {
         val filterChain = hostFilterChainMap[url.host]
@@ -15,17 +15,17 @@ class LinkDiscoveryFilterService(
         return filterChain?.shouldFilter(url) ?: defaultChain.shouldFilter(url)
     }
 
-    fun addFilterChain(url: URL, chain: LinkDiscoveryFilterChain) {
+    fun addFilterChain(url: URL, chain: DocumentFilterChain) {
         hostFilterChainMap[url.host] = chain
     }
 }
 
-open class LinkDiscoveryFilterChain(
+open class DocumentFilterChain(
     private val exclusive: Boolean
 ) {
-    private val chain = mutableListOf<DiscoveryFilter>()
+    private val chain = mutableListOf<DocumentFilter>()
 
-    fun addFilter(filter: DiscoveryFilter) {
+    fun addFilter(filter: DocumentFilter) {
         chain.add(filter)
     }
 
@@ -37,18 +37,18 @@ open class LinkDiscoveryFilterChain(
         }
     }
 
-    fun merge(filterChain: LinkDiscoveryFilterChain) {
+    fun merge(filterChain: DocumentFilterChain) {
         this.chain.addAll(filterChain.chain)
     }
 }
 
-interface DiscoveryFilter {
+interface DocumentFilter {
     fun matches(url: URL): Boolean
 }
 
-class PathMatchingDiscoveryFilter(
+class PathMatchingDocumentFilter(
     pattern: Pattern
-): DiscoveryFilter {
+): DocumentFilter {
 
     private val regex = pattern.toRegex()
 

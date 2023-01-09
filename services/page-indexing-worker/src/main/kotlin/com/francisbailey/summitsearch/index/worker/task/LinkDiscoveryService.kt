@@ -18,7 +18,7 @@ class LinkDiscoveryService(
     private val linkDiscoveryTaskExecutor: Executor,
     private val taskQueueClient: IndexingTaskQueueClient,
     private val pageMetadataStore: PageMetadataStore,
-    private val linkDiscoveryFilterService: LinkDiscoveryFilterService,
+    private val documentFilterService: DocumentFilterService,
     private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger {  }
@@ -33,7 +33,7 @@ class LinkDiscoveryService(
                 taskQueueClient = taskQueueClient,
                 pageMetadataStore = pageMetadataStore,
                 associatedTask = associatedTask,
-                linkDiscoveryFilterService = linkDiscoveryFilterService,
+                documentFilterService = documentFilterService,
                 meterRegistry = meterRegistry,
                 discovery = it
             ))

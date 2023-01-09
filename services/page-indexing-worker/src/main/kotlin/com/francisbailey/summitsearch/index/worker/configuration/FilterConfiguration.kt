@@ -1,8 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
-import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryFilterChain
-import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryFilterService
-import com.francisbailey.summitsearch.index.worker.task.PathMatchingDiscoveryFilter
+import com.francisbailey.summitsearch.index.worker.task.DocumentFilterChain
+import com.francisbailey.summitsearch.index.worker.task.DocumentFilterService
+import com.francisbailey.summitsearch.index.worker.task.PathMatchingDocumentFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.net.URL
@@ -12,8 +12,8 @@ import java.util.regex.Pattern
 open class FilterConfiguration {
 
     @Bean
-    open fun linkDiscoveryFilterService(): LinkDiscoveryFilterService {
-        return LinkDiscoveryFilterService(defaultChain = DefaultFilterChain).apply {
+    open fun linkDiscoveryFilterService(): DocumentFilterService {
+        return DocumentFilterService(defaultChain = DefaultFilterChain).apply {
             addFilterChain(URL("https://cascadeclimbers.com"), CascadeClimbersFilter)
             addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
             addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
@@ -22,20 +22,20 @@ open class FilterConfiguration {
     }
 }
 
-object DefaultFilterChain: LinkDiscoveryFilterChain(exclusive = true) {
+object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
     init {
         // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/search/.*$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/search/.*$")))
         // Exclude query parameters by default
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/.*[?].*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*[?].*")))
         // Wordpress filters
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wp-content/.*" )))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/author/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/tag/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/category/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/.*" )))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/author/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/tag/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/category/.*")))
         // Exclude images
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
     }
 }
 
@@ -49,7 +49,7 @@ object DefaultFilterChain: LinkDiscoveryFilterChain(exclusive = true) {
  * https://cascadeclimbers.com/forum/topic/75809-tr-joffre-peak-flavelle-lane-8152010/?do=getLastComment
  * /forum/forum/16-british-columbiacanada/?sortby=title&sortdirection=asc&page=4
  */
-object CascadeClimbersFilter: LinkDiscoveryFilterChain(exclusive = false) {
+object CascadeClimbersFilter: DocumentFilterChain(exclusive = false) {
     init {
         val allowedTopics = listOf(
             "34-alaska",
@@ -68,13 +68,13 @@ object CascadeClimbersFilter: LinkDiscoveryFilterChain(exclusive = false) {
             "52-the-rest-of-the-us-and-international"
         )
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[0-9]{1,10}/?|)$")))
+            addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forum/forum/$it(?:|/|/page/[0-9]{1,10}/?|)$")))
         }
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forum/topic/[0-9]{1,7}-tr-[a-z0-9-]{1,250}(?:|/)$")))
     }
 }
 
-object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
+object ClubTreadFilter: DocumentFilterChain(exclusive = false) {
     init {
         val allowedTopics = listOf(
             "27-british-columbia",
@@ -85,25 +85,25 @@ object ClubTreadFilter: LinkDiscoveryFilterChain(exclusive = false) {
         )
 
         allowedTopics.forEach {
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it(?:|/|/index[0-9]{1,10}.html)$")))
-            addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print|prev-thread|next-thread).html$")))
+            addFilter(PathMatchingDocumentFilter(Pattern.compile("^/$it(?:|/|/index[0-9]{1,10}.html)$")))
+            addFilter(PathMatchingDocumentFilter(Pattern.compile("^/$it/[0-9]{1,7}[a-z0-9-]{1,250}[a-z](?<!print|prev-thread|next-thread).html$")))
         }
     }
 }
 
-object UBCVarsityOutdoorClubFilter: LinkDiscoveryFilterChain(exclusive = true) {
+object UBCVarsityOutdoorClubFilter: DocumentFilterChain(exclusive = true) {
     init {
         merge(DefaultFilterChain)
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/gallery/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/members/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/phorum5/.*")))
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile("^/wiki.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/gallery/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/members/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/phorum5/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wiki.*")))
     }
 }
 
-object DrDirtbagFilter: LinkDiscoveryFilterChain(exclusive = true) {
+object DrDirtbagFilter: DocumentFilterChain(exclusive = true) {
     init {
         merge(DefaultFilterChain)
-        addFilter(PathMatchingDiscoveryFilter(Pattern.compile(".*[0-9]{1,2}/$"))) // exclude directory style images
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*[0-9]{1,2}/$"))) // exclude directory style images
     }
 }
