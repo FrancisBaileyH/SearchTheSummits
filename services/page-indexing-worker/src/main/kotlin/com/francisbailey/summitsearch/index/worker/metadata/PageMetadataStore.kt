@@ -51,6 +51,10 @@ class PageMetadataStore(
         log.info { "Successfully added discovery" }
     }
 
+    fun getDiscoveryMetadata(): Set<String> {
+        return redisClient.smembers(DISCOVERY_METADATA_KEY)
+    }
+
     private fun buildKey(pageUrl: URL) = "Page-$pageUrl".take(MAX_KEY_LENGTH)
 
     companion object {
