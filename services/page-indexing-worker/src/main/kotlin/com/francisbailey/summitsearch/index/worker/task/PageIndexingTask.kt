@@ -37,13 +37,17 @@ class PageIndexingTask(
         log.info { "Running indexing task for: $queueName" }
 
         if (rateLimiterRegistry.rateLimiter(queueName).acquirePermission()) {
-            val indexTask: IndexTask? = dependencyCircuitBreaker.executeCallable {
-                indexingTaskQueuePollingClient.pollTask(queueName)
-            }
+            val indexTask: IndexTask? = dependencyCircuitBreaker.executeCallable { indexingTaskQueuePollingClient.pollTask(queueName) }
 
             if (indexTask != null) {
-                perQueueCircuitBreaker.executeCallable {
-                    processTask(indexTask)
+                try {
+                    perQueueCircuitBreaker.executeCallable { processTask(indexTask) }
+                } finally {
+                    if (canDeleteTask) {
+                        dependencyCircuitBreaker.executeCallable { indexingTaskQueuePollingClient.deleteTask(indexTask) }
+                    } else {
+                        log.info { "Returning task to queue: $queueName" }
+                    }
                 }
             }
         } else {
@@ -99,15 +103,6 @@ class PageIndexingTask(
                     canDeleteTask = false
                     throw e
                 }
-            }
-        }
-        finally {
-            if (canDeleteTask) {
-                dependencyCircuitBreaker.executeCallable {
-                    indexingTaskQueuePollingClient.deleteTask(task)
-                }
-            } else {
-                log.info { "Returning task to queue: $queueName" }
             }
         }
     }
