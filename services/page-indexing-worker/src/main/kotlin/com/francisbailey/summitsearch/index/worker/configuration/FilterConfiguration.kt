@@ -23,7 +23,9 @@ open class FilterConfiguration {
 
     @Bean
     open fun documentIndexingFilterService(): DocumentFilterService {
-        return DocumentFilterService(defaultChain = DefaultIndexFilterChain)
+        return DocumentFilterService(defaultChain = DefaultIndexFilterChain).apply {
+            addFilterChain(URL("http://sverdina.com"), SVerdinaIndexFilterChain)
+        }
     }
 }
 
@@ -31,6 +33,13 @@ object DefaultIndexFilterChain: DocumentFilterChain(exclusive = true) {
     init {
         // Skip indexing home pages as they're typically filled will previews or full feeds of the article
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^(?:/|/index.html|)$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/page/[0-9]{1,5}(?:/|)$")))
+    }
+}
+
+object SVerdinaIndexFilterChain: DocumentFilterChain(exclusive = true) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/climb.asp.*$")))
     }
 }
 

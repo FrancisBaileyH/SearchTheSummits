@@ -38,7 +38,7 @@ class PageMetadataStore(
         redisClient.set(key, Json.encodeToString(
             PageMetadataStoreItem(
             lastVisitTime = Instant.now().toEpochMilli(),
-            pageUrl = pageUrl.toString(),
+            pageUrl = pageUrl.toString().lowercase(),
             taskId = taskRunId
         )))
 
@@ -47,7 +47,7 @@ class PageMetadataStore(
 
     fun saveDiscoveryMetadata(discoveryHost: String) {
         log.info { "Adding discovery: $discoveryHost" }
-        redisClient.sadd(DISCOVERY_METADATA_KEY, discoveryHost)
+        redisClient.sadd(DISCOVERY_METADATA_KEY, discoveryHost.lowercase())
         log.info { "Successfully added discovery" }
     }
 

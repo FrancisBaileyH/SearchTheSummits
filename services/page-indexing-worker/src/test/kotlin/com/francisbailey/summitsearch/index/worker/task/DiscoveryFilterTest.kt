@@ -16,10 +16,13 @@ class CrawlerFilterTest {
         val expectedToSkip = listOf(
             "https://www.example.com/",
             "https://www.example.com",
-            "https://www.example.com/index.html"
+            "https://www.example.com/index.html",
+            "https://www.example.com/page/1",
+            "https://www.example.com/page/1/"
         )
 
         val expectedNotToSkip = listOf(
+            "https://www.example.com/page/1/some-article",
             "https://www.example.com/2015/08/04/primitive-canada/"
         )
 
