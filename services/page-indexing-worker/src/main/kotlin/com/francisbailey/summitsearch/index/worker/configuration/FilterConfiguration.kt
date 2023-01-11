@@ -39,7 +39,8 @@ object DefaultIndexFilterChain: DocumentFilterChain(exclusive = true) {
 
 object SVerdinaIndexFilterChain: DocumentFilterChain(exclusive = true) {
     init {
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/climb.asp.*$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/climb\\.asp.*$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*_SHORT\\.asp.*$")))
     }
 }
 

@@ -26,15 +26,22 @@ class CrawlerFilterTest {
             "https://www.example.com/2015/08/04/primitive-canada/"
         )
 
-        expectedToSkip.forEach {
-            assertTrue(DefaultIndexFilterChain.shouldFilter(URL(it)))
-        }
-
-        expectedNotToSkip.forEach {
-            assertFalse(DefaultIndexFilterChain.shouldFilter(URL(it)))
-        }
+        verifyFilter(DefaultIndexFilterChain, expectedToSkip, expectedNotToSkip)
     }
 
+    @Test
+    fun `sverdina filter skips short pages and main page`() {
+        val expectedToSkip = listOf(
+            "http://sverdina.com/middle_sister1_SHORT.asp",
+            "http://sverdina.com/climb.asp"
+        )
+
+        val expectedNotToSkip = listOf(
+            "http://sverdina.com/middle_sister1.asp"
+        )
+
+        verifyFilter(SVerdinaIndexFilterChain, expectedToSkip, expectedNotToSkip)
+    }
 
     @Test
     fun `default filter skips wordpress uploads and page images`() {
@@ -109,13 +116,7 @@ class CrawlerFilterTest {
 
         expectedNotToSkip.addAll(allowedTopics)
 
-        expectedToSkip.forEach {
-            assertTrue(CascadeClimbersFilter.shouldFilter(URL(it)))
-        }
-
-        expectedNotToSkip.forEach {
-            assertFalse(CascadeClimbersFilter.shouldFilter(URL(it)))
-        }
+        verifyFilter(CascadeClimbersFilter, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
@@ -145,13 +146,7 @@ class CrawlerFilterTest {
             "https://forums.clubtread.com/27-british-columbia/44397-corral-trail-memorial-lookout-mar-03-13-a-next-thread.html"
         )
 
-        expectedToSkip.forEach {
-            assertTrue(ClubTreadFilter.shouldFilter(URL(it)))
-        }
-
-        expectedNotToSkip.forEach {
-            assertFalse(ClubTreadFilter.shouldFilter(URL(it)))
-        }
+        verifyFilter(ClubTreadFilter, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
@@ -170,13 +165,7 @@ class CrawlerFilterTest {
             "https://www.ubc-voc.com/wiki/Main_Page"
         )
 
-        expectedToSkip.forEach {
-            assertTrue(UBCVarsityOutdoorClubFilter.shouldFilter(URL(it)))
-        }
-
-        expectedNotToSkip.forEach {
-            assertFalse(UBCVarsityOutdoorClubFilter.shouldFilter(URL(it)))
-        }
+        verifyFilter(UBCVarsityOutdoorClubFilter, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
@@ -189,13 +178,7 @@ class CrawlerFilterTest {
             "https://www.drdirtbag.com/2015/08/04/primitive-canada/"
         )
 
-        expectedToSkip.forEach {
-            assertTrue(DrDirtbagFilter.shouldFilter(URL(it)))
-        }
-
-        expectedNotToSkip.forEach {
-            assertFalse(DrDirtbagFilter.shouldFilter(URL(it)))
-        }
+        verifyFilter(DrDirtbagFilter, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
@@ -260,6 +243,17 @@ class CrawlerFilterTest {
         chain.merge(chainToMerge)
 
         assertTrue(chain.shouldFilter(url))
+    }
+
+
+    private fun verifyFilter(filter: DocumentFilterChain, expectedToSkip: List<String>, expectedNotToSkip: List<String>) {
+        expectedToSkip.forEach {
+            assertTrue(filter.shouldFilter(URL(it)))
+        }
+
+        expectedNotToSkip.forEach {
+            assertFalse(filter.shouldFilter(URL(it)))
+        }
     }
 
 }
