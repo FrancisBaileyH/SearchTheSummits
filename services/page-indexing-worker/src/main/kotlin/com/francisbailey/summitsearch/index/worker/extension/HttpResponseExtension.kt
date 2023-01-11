@@ -1,18 +1,23 @@
 package com.francisbailey.summitsearch.index.worker.extension
 
-import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.charsets.*
-import io.ktor.utils.io.core.*
-import java.nio.charset.CodingErrorAction
+import mu.KotlinLogging
 
-suspend fun HttpResponse.bodyAsTextSafe(fallbackCharset: Charset = kotlin.text.Charsets.UTF_8): String {
-    val originCharset = charset() ?: fallbackCharset
-    val decoder = originCharset.newDecoder().onMalformedInput(CodingErrorAction.REPLACE)
-    val input = body<Input>()
+private val log = KotlinLogging.logger { }
 
-    return decoder.decode(input)
+/**
+ * Note that bodyAsText() only uses the fallback charset if there isn't a charset
+ * supplied in the response header. For now, this is okay.
+ */
+suspend fun HttpResponse.bodyAsTextWithFallback(fallbackCharset: Charset): String {
+    return try {
+        this.bodyAsText()
+    } catch (e: MalformedInputException) {
+        log.warn { "Failed to decode response from ${this.request.url}. Attempting to fallback with: $fallbackCharset" }
+        this.bodyAsText(fallbackCharset)
+    }
 }
 
 fun HttpStatusCode.isRedirect(): Boolean = when (value) {

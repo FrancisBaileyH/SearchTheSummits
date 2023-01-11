@@ -1,11 +1,11 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
-import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.*
 import io.ktor.http.*
+import org.apache.tomcat.util.buf.HexUtils
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -19,10 +19,6 @@ class PageCrawlerServiceTest {
     private val url = URL("https://francisbailey.com")
 
     private val environment = mock<Environment>()
-
-    private val crawlerConfiguration = mock<CrawlerConfiguration> {
-        on(mock.charsetOverride).thenReturn(hashMapOf())
-    }
 
     private val regionConfig = mock<RegionConfig>()
 
@@ -38,7 +34,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html; charset=UTF-8")
             )
-        }), crawlerConfiguration)
+        }))
 
         assertEquals(content.html(), service.getHtmlDocument(url).html())
     }
@@ -51,7 +47,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }), crawlerConfiguration)
+        }))
 
         val expectations = mapOf(
             "https://francisbailey.com/test#abc" to "https://francisbailey.com",
@@ -67,31 +63,22 @@ class PageCrawlerServiceTest {
         }
     }
 
-    /** @TODO FIX NPE WHEN WE HAVE TIME
     @Test
-    fun `uses charset override if one is present`() {
-        whenever(crawlerConfiguration.charsetOverride).thenReturn(hashMapOf(url.host to Charsets.ISO_8859_1))
-        val content = Jsoup.parse("<html>Test</html>")
-        val response = mock<HttpResponse>()
-//        val client = mock<HttpClient>()
-//
-//        response.stub {
-//            onBlocking { bodyAsText(Charsets.ISO_8859_1) }.doReturn(content.html())
-//            onBlocking { bodyAsText() }.doReturn(content.html())
-//        }
-//        client.stub {
-//            onBlocking { get(any<String>()) }.doReturn(response)
-//        }
+    fun `fallsback to ISO_8859_1 charset on MalformedInputException`() {
+        val invalidUTF8ByteSequence: ByteArray = HexUtils.fromHexString("ff")
 
-        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { request ->
-            assertEquals(url.toURI(), request.url.toURI())
-            mockResponse(response)
-        }), crawlerConfiguration)
+        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { _ ->
+            respond(
+                content = invalidUTF8ByteSequence,
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "text/html")
+            )
+        }))
 
-        assertEquals(content.html(), service.getHtmlDocument(url).html())
-        verifyBlocking(response) { bodyAsText(Charsets.ISO_8859_1) }
+        val text = service.getHtmlDocument(URL("http://test.com"))
+        assertEquals("ÿ", text.text())
     }
-  */
+
     @Test
     fun `throws redirected page exception with location on redirect errors`() {
         val redirectCodes = setOf(
@@ -110,7 +97,7 @@ class PageCrawlerServiceTest {
                     status = code,
                     headers = headersOf(HttpHeaders.Location, location)
                 )
-            }), crawlerConfiguration)
+            }))
 
             assertThrows<RedirectedPageException> { service.getHtmlDocument(url) }.also {
                 assertEquals(location, it.location)
@@ -126,7 +113,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }), crawlerConfiguration) {
+        })) {
            throw RuntimeException("Couldn't Parse Test")
         }
 
@@ -134,14 +121,14 @@ class PageCrawlerServiceTest {
     }
 
     @Test
-    fun `throws UnparsableContentException when bodyAsText call fails`() {
+    fun `throws UnparsableContentException when parsing fails`() {
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
             respond(
                 content = byteArrayOf(Byte.MAX_VALUE.plus(1).toByte()), // Create a malformed ByteArray
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
-        }), crawlerConfiguration)
+        })) { throw RuntimeException("Failed to Parse") }
 
         assertThrows<UnparsablePageException> { service.getHtmlDocument(url) }
     }
@@ -151,7 +138,7 @@ class PageCrawlerServiceTest {
         (400..428).plus(430..499).forEach { errorCode ->
             val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
                 respondError(HttpStatusCode(errorCode, "Test Client Error"))
-            }), crawlerConfiguration)
+            }))
 
             assertThrows<NonRetryablePageException> { service.getHtmlDocument(url) }
         }
@@ -166,7 +153,7 @@ class PageCrawlerServiceTest {
                 install(HttpRequestRetry) {
                     noRetry() // disable for 50X errors to speed up tests
                 }
-            }, crawlerConfiguration)
+            })
 
             assertThrows<RetryablePageException> { service.getHtmlDocument(url) }
         }
@@ -176,7 +163,7 @@ class PageCrawlerServiceTest {
     fun `throws RetryablePageException on 429 error code`() {
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine {
             respondError(HttpStatusCode(429, "Server Error"))
-        }), crawlerConfiguration)
+        }))
 
         assertThrows<RetryablePageException> { service.getHtmlDocument(url) }
     }
@@ -191,7 +178,7 @@ class PageCrawlerServiceTest {
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "application/rss+xml")
             )
-        }), crawlerConfiguration)
+        }))
 
         assertThrows<UnparsablePageException> { service.getHtmlDocument(url) }
     }

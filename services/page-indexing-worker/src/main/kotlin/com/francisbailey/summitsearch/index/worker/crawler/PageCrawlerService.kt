@@ -1,13 +1,13 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
-import com.francisbailey.summitsearch.index.worker.configuration.CrawlerConfiguration
 import com.francisbailey.summitsearch.index.worker.extension.baseURL
+import com.francisbailey.summitsearch.index.worker.extension.bodyAsTextWithFallback
 import com.francisbailey.summitsearch.index.worker.extension.isRedirect
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.charsets.*
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jsoup.Jsoup
@@ -20,15 +20,13 @@ import java.net.URL
 @Service
 class PageCrawlerService(
     private val httpClient: HttpClient,
-    private val crawlerConfiguration: CrawlerConfiguration,
     private val htmlParser: (String) -> Document
 ) {
     private val log = KotlinLogging.logger { }
 
     @Autowired
-    constructor(httpClient: HttpClient, crawlerConfiguration: CrawlerConfiguration): this(
+    constructor(httpClient: HttpClient): this(
         httpClient,
-        crawlerConfiguration,
         { Jsoup.parse(it) }
     )
 
@@ -36,12 +34,11 @@ class PageCrawlerService(
         log.info { "Fetching HTML content from: $pageUrl" }
 
         val response = getPage(pageUrl)
-        val charset = crawlerConfiguration.charsetOverride[pageUrl.host] ?: response.charset() ?: Charsets.UTF_8
 
         try {
-            htmlParser(response.bodyAsText(charset)).also {
+            htmlParser(response.bodyAsTextWithFallback(FALLBACK_CHARSET)).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
-                it.setBaseUri(pageUrl.baseURL().toString()) // need to fetch relative href links
+                it.setBaseUri(pageUrl.baseURL().toString()) // needed to fetch relative href links
             }
         } catch (e: Exception) {
             throw UnparsablePageException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
@@ -70,6 +67,10 @@ class PageCrawlerService(
             in 500 .. 599 -> throw RetryablePageException("Status: ${response.status} when retrieving: $pageUrl")
             else -> throw NonRetryablePageException("Unknown status: ${response.status} when retrieving: $pageUrl")
         }
+    }
+
+    companion object {
+        val FALLBACK_CHARSET = Charsets.ISO_8859_1
     }
 }
 
