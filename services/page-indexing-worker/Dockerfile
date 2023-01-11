@@ -1,4 +1,4 @@
-FROM amazoncorretto
+FROM amazoncorretto:8u352
 VOLUME /tmp
 EXPOSE 8080
 EXPOSE 9090

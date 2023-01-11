@@ -32,11 +32,11 @@ class PageCrawlerService(
 
     fun getHtmlDocument(pageUrl: URL): Document = runBlocking {
         log.info { "Fetching HTML content from: $pageUrl" }
-
         val response = getPage(pageUrl)
 
         try {
-            htmlParser(response.bodyAsTextWithFallback(FALLBACK_CHARSET)).also {
+            val responseText = runBlocking { response.bodyAsTextWithFallback(FALLBACK_CHARSET) }
+            htmlParser(responseText).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
                 it.setBaseUri(pageUrl.baseURL().toString()) // needed to fetch relative href links
             }
@@ -45,8 +45,8 @@ class PageCrawlerService(
         }
     }
 
-    private suspend fun getPage(pageUrl: URL): HttpResponse {
-        val response = httpClient.get(pageUrl)
+    private fun getPage(pageUrl: URL): HttpResponse {
+        val response = runBlocking { httpClient.get(pageUrl) }
         val contentType = response.contentType()
 
         if (response.status.value < 300) {
