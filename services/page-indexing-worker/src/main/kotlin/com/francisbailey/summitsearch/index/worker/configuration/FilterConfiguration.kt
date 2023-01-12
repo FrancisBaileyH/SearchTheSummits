@@ -19,6 +19,8 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
             addFilterChain(URL("https://www.drdirtbag.com"), DrDirtbagFilter)
             addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalFilter)
+            addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsFilter)
+            addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideFilter)
         }
     }
 
@@ -27,6 +29,8 @@ open class FilterConfiguration {
         return DocumentFilterService(defaultChain = DefaultIndexFilterChain).apply {
             addFilterChain(URL("http://sverdina.com"), SVerdinaIndexFilterChain)
             addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalIndexFilter)
+            addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsIndexFilter)
+            addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideIndexFilter)
         }
     }
 }
@@ -46,21 +50,40 @@ object SVerdinaIndexFilterChain: DocumentFilterChain(exclusive = true) {
     }
 }
 
-object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
+object WordPressFilterChain: DocumentFilterChain(exclusive = true) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/.*" )))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/author/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/tag/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/category/.*")))
+    }
+}
+
+object BlogSpotFilterchain: DocumentFilterChain(exclusive = true) {
     init {
         // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/search/.*$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/feeds/.*$")))
+    }
+}
+
+object ImageFilterChain: DocumentFilterChain(exclusive = true) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
+    }
+}
+
+object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
+    init {
+        // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
+        merge(BlogSpotFilterchain)
         // Exclude query parameters by default
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*[?].*")))
         // Wordpress filters
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/.*" )))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/author/.*")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/tag/.*")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/category/.*")))
+        merge(WordPressFilterChain)
         // Exclude images
-        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*(?:jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE)))
+        merge(ImageFilterChain)
     }
 }
 
@@ -143,5 +166,32 @@ object AmericanAlpineJournalFilter: DocumentFilterChain(exclusive = false) {
     init {
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/articles/[0-9]{1,20}.?$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/articles\\?page=[0-9]{1,20}$")))
+    }
+}
+
+object RockyMountainSummitsFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*/.*\\.htm$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/trip_reports/trip_report.php\\?trip_id=[0-9]{1,10}$")))
+    }
+}
+
+object RockyMountainSummitsIndexFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        merge(RockyMountainSummitsFilter)
+    }
+}
+
+// Empty Filter, crawl anything
+object IdahoClimbingGuideFilter: DocumentFilterChain(exclusive = true) {
+    init {
+        merge(WordPressFilterChain)
+        merge(ImageFilterChain)
+    }
+}
+
+object IdahoClimbingGuideIndexFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/bookupdates/.*")))
     }
 }

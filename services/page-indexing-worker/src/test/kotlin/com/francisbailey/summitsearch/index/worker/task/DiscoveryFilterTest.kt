@@ -212,6 +212,51 @@ class CrawlerFilterTest {
     }
 
     @Test
+    fun `rocky mountain summits filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://rockymountainsummits.com/co_spring_break_05/co2005.htm#snik",
+            "https://rockymountainsummits.com/trip_reports/trip_report.php?trip_id=285",
+            "https://rockymountainsummits.com/whitney/whitney.htm"
+        )
+
+        val expectedToSkip = listOf(
+            "http://rockymountainsummits.com/idaho_best.htm",
+            "https://rockymountainsummits.com/year_recap.php?year=2022"
+        )
+
+        verifyFilter(RockyMountainSummitsFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `idaho climbing guides index filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://www.idahoaclimbingguide.com/bookupdates/peak-7623-by-mike-hays/",
+            "https://www.idahoaclimbingguide.com/bookupdates/peak-7623-by-mike-hays"
+        )
+
+        val expectedToSkip = listOf(
+            "https://www.idahoaclimbingguide.com/wp-content/uploads/PICT000144-350x370.jpg"
+        )
+
+        verifyFilter(IdahoClimbingGuideIndexFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `idaho climbing guides filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://www.idahoaclimbingguide.com/peak-lists/",
+            "https://www.idahoaclimbingguide.com/peak-index/?fcoby=elevd&alpha=0&ecomp=6000"
+        )
+
+        val expectedToSkip = listOf(
+            "https://www.idahoaclimbingguide.com/wp-content/uploads/PICT000144-350x370.jpg"
+        )
+
+        verifyFilter(IdahoClimbingGuideFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+
+    @Test
     fun `runs inclusive filter chain associated with host`() {
         val filterService = DocumentFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
