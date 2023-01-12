@@ -79,7 +79,7 @@ object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
         // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
         merge(BlogSpotFilterchain)
         // Exclude query parameters by default
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*[?].*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*[?].*")))
         // Wordpress filters
         merge(WordPressFilterChain)
         // Exclude images
@@ -172,7 +172,7 @@ object AmericanAlpineJournalFilter: DocumentFilterChain(exclusive = false) {
 object RockyMountainSummitsFilter: DocumentFilterChain(exclusive = false) {
     init {
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/.*/.*\\.htm$")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/trip_reports/trip_report.php\\?trip_id=[0-9]{1,10}$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/(?:trip_reports/|)trip_report.php\\?trip_id=[0-9]{1,10}$")))
     }
 }
 

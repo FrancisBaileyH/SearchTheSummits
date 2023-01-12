@@ -216,7 +216,9 @@ class CrawlerFilterTest {
         val expectedNotToSkip = listOf(
             "https://rockymountainsummits.com/co_spring_break_05/co2005.htm#snik",
             "https://rockymountainsummits.com/trip_reports/trip_report.php?trip_id=285",
-            "https://rockymountainsummits.com/whitney/whitney.htm"
+            "https://rockymountainsummits.com/whitney/whitney.htm",
+            "https://rockymountainsummits.com/trip_reports/trip_report.php?trip_id=52",
+            "https://rockymountainsummits.com/trip_report.php?trip_id=115"
         )
 
         val expectedToSkip = listOf(
@@ -225,6 +227,24 @@ class CrawlerFilterTest {
         )
 
         verifyFilter(RockyMountainSummitsFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `rocky mountain summits index filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://rockymountainsummits.com/co_spring_break_05/co2005.htm#snik",
+            "https://rockymountainsummits.com/trip_reports/trip_report.php?trip_id=285",
+            "https://rockymountainsummits.com/whitney/whitney.htm",
+            "https://rockymountainsummits.com/trip_reports/trip_report.php?trip_id=52",
+            "https://rockymountainsummits.com/trip_report.php?trip_id=115"
+        )
+
+        val expectedToSkip = listOf(
+            "http://rockymountainsummits.com/idaho_best.htm",
+            "https://rockymountainsummits.com/year_recap.php?year=2022"
+        )
+
+        verifyFilter(RockyMountainSummitsIndexFilter, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
