@@ -226,7 +226,7 @@ class SummitSearchIndexService(
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
        const val PHRASE_TERM_THRESHOLD = 2
 
-       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9\\s]")
+       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9'\\s]")
 
        private val DEFAULT_SYNONYMS = listOf(
            "mt., mt, mount",
