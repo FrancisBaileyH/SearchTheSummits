@@ -18,6 +18,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
             addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
             addFilterChain(URL("https://www.drdirtbag.com"), DrDirtbagFilter)
+            addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalFilter)
         }
     }
 
@@ -25,6 +26,7 @@ open class FilterConfiguration {
     open fun documentIndexingFilterService(): DocumentFilterService {
         return DocumentFilterService(defaultChain = DefaultIndexFilterChain).apply {
             addFilterChain(URL("http://sverdina.com"), SVerdinaIndexFilterChain)
+            addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalIndexFilter)
         }
     }
 }
@@ -128,5 +130,18 @@ object DrDirtbagFilter: DocumentFilterChain(exclusive = true) {
     init {
         merge(DefaultFilterChain)
         addFilter(PathMatchingDocumentFilter(Pattern.compile(".*[0-9]{1,2}/$"))) // exclude directory style images
+    }
+}
+
+object AmericanAlpineJournalIndexFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/articles/[0-9]{1,20}.?$")))
+    }
+}
+
+object AmericanAlpineJournalFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/articles/[0-9]{1,20}.?$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/articles\\?page=[0-9]{1,20}$")))
     }
 }

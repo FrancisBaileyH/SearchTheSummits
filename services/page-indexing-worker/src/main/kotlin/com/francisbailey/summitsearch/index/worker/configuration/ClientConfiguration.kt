@@ -25,7 +25,8 @@ open class HttpEngineConfiguration {
 
     @Bean
     open fun httpClientEngine() = CIO.create {
-        requestTimeout = Duration.ofSeconds(3).toMillis()
+        requestTimeout = Duration.ofSeconds(30).toMillis()
+        endpoint.socketTimeout = Duration.ofSeconds(30).toMillis()
     }
 }
 

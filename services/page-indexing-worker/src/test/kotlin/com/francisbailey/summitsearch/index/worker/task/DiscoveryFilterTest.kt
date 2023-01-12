@@ -182,6 +182,36 @@ class CrawlerFilterTest {
     }
 
     @Test
+    fun `american alpine journal skips expected links on indexing`() {
+        val expectedToSkip = listOf(
+            "https://publications.americanalpineclub.org/test",
+            "https://publications.americanalpineclub.org/articles?page=4"
+        )
+
+        val expectedNotToSkip = listOf(
+            "https://publications.americanalpineclub.org/articles/12196347903",
+            "https://publications.americanalpineclub.org/articles/12196347903/"
+        )
+
+        verifyFilter(AmericanAlpineJournalIndexFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `american alpine journal skips expected links on discovery`() {
+        val expectedToSkip = listOf(
+            "https://publications.americanalpineclub.org/test"
+        )
+
+        val expectedNotToSkip = listOf(
+            "https://publications.americanalpineclub.org/articles/12196347903",
+            "https://publications.americanalpineclub.org/articles/12196347903/",
+            "https://publications.americanalpineclub.org/articles?page=40"
+        )
+
+        verifyFilter(AmericanAlpineJournalFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
     fun `runs inclusive filter chain associated with host`() {
         val filterService = DocumentFilterService(DefaultFilterChain)
         val path = "/include/this/path/only"
