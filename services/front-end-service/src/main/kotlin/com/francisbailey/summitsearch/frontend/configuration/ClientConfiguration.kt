@@ -25,14 +25,16 @@ open class ClientConfiguration(
                     fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    paginationResultSize = 10
                 ))
             else -> SummitSearchIndexServiceFactory.buildInsecureLocal(
                 SearchIndexServiceConfiguration(
                     fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    paginationResultSize = 10
                 ))
         }
 

@@ -1,4 +1,4 @@
-var perPageResult = 20;
+var perPageResult = 10;
 var maxPaginatedResults = 1000;
 
 // I'm not a front-end dev so please don't judge :(
