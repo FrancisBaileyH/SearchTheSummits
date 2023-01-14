@@ -256,14 +256,6 @@ nav.header-menu ul > li a.current-nav-page {
     margin-bottom: 2rem;
 }
 
-.search-result-group {
-    padding-bottom: 1rem;
-}
-
-.search-results-container .search-result-group:last-child {
-    padding-bottom: 0;
-}
-
 .search-result a {
     text-decoration: none;
 }
