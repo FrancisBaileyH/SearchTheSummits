@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.net.URL
 
 @RestController
 class SearchController(
@@ -43,7 +44,7 @@ class SearchController(
                         source = it.source,
                         title = it.title
                     )
-                },
+                }.groupBy { URL(it.source).host }.values,
                 totalHits = response.totalHits,
                 next = response.next
             )))
@@ -62,7 +63,7 @@ class SearchController(
 
 @Serializable
 data class SummitSearchResponse(
-    val hits: List<SummitSearchHitResponse>,
+    val hits: Collection<List<SummitSearchHitResponse>>,
     val totalHits: Long,
     val next: Int
 )

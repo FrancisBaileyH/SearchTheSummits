@@ -1,6 +1,7 @@
 var perPageResult = 20;
 var maxPaginatedResults = 1000;
 
+// I'm not a front-end dev so please don't judge :(
 $(document).ready(function() {
     var queries = new URLSearchParams(window.location.search)
 
@@ -14,7 +15,7 @@ $(document).ready(function() {
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
-        updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104...
+        updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104... why javascript?!
     } else {
          $(".search-form-container").removeClass("invisible");
          $(".search-form-tagline").removeClass("invisible");
@@ -76,19 +77,23 @@ function updateSearchResults(query, page) {
          $(".search-results-container").html(searchDetails)
          $(".search-form-container").addClass("has-query");
 
-         json.hits.forEach(function(hit) {
-            var searchResult = "<div class=\"search-result\">"
-            searchResult += "<div class=\"search-result-link\">"
-            searchResult += "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
-            searchResult += "</div>"
-            searchResult += "<div class=\"search-result-title\">"
-            searchResult += "<h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
-            searchResult += "</div>"
-            searchResult += "<div class=\"search-result-highlight\">"
-            searchResult += "<p>" + hit.highlight + "...</p>"
-            searchResult += "</div>"
-            searchResult += "</div>"
-            $(".search-results-container").append(searchResult)
+         json.hits.forEach(function(hitGroup) {
+            var searchResult = "<div class=\"search-result-group\">"
+            hitGroup.forEach(function(hit, index) {
+                searchResult += "<div class=\"search-result\">"
+                searchResult += "<div class=\"search-result-link\">"
+                searchResult += "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+                searchResult += "</div>"
+                searchResult += "<div class=\"search-result-title\">"
+                searchResult += "<h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
+                searchResult += "</div>"
+                searchResult += "<div class=\"search-result-highlight\">"
+                searchResult += "<p>" + hit.highlight + "...</p>"
+                searchResult += "</div>"
+                searchResult += "</div>"
+             });
+             searchResult += "</div>"
+             $(".search-results-container").append(searchResult)
          });
 
          if (json.totalHits > perPageResult && json.hits.length > 0) {
@@ -245,6 +250,9 @@ function runSearchAnimations() {
     let firstPhrase = "Search for a summit..."
     let finalPhrase = firstPhrase
     let phrases = shuffle([
+        "Mendenhall Towers",
+        "Lincoln Peak",
+        "Devils Throne",
         "Phyllis's Engine",
         "South Early Winters Spire",
         "Locomotive Mountain",
@@ -255,7 +263,8 @@ function runSearchAnimations() {
         "Nursery Peak",
         "Mount Robson",
         "Mount Bonnycastle",
-        "Nivalis"
+        "Nivalis",
+        "Sinister Peak"
     ]);
 
     var animatedPhrases = [firstPhrase]

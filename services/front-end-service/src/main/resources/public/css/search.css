@@ -248,6 +248,22 @@ nav.header-menu ul > li a.current-nav-page {
     }
 }
 
+.search-result-group .search-result:nth-child(n+2) {
+    padding-left: 1em;
+}
+
+.search-result-group .search-result .search-result-highlight p {
+    margin-bottom: 2rem;
+}
+
+.search-result-group {
+    padding-bottom: 1rem;
+}
+
+.search-results-container .search-result-group:last-child {
+    padding-bottom: 0;
+}
+
 .search-result a {
     text-decoration: none;
 }
@@ -265,6 +281,7 @@ nav.header-menu ul > li a.current-nav-page {
 
 .search-result h5 a:hover {
     color: #45626e;
+    text-decoration: underline;
 }
 
 .search-result h5 a:visited {
