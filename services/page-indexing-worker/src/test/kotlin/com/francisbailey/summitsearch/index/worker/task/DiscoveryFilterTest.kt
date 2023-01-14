@@ -18,7 +18,8 @@ class CrawlerFilterTest {
             "https://www.example.com",
             "https://www.example.com/index.html",
             "https://www.example.com/page/1",
-            "https://www.example.com/page/1/"
+            "https://www.example.com/page/1/",
+            "https://www.example.com/nested-page/page/1/"
         )
 
         val expectedNotToSkip = listOf(

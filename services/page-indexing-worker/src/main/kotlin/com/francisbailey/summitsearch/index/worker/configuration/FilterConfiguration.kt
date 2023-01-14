@@ -39,7 +39,7 @@ object DefaultIndexFilterChain: DocumentFilterChain(exclusive = true) {
     init {
         // Skip indexing home pages as they're typically filled will previews or full feeds of the article
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^(?:/|/index.html|)$")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/page/[0-9]{1,5}(?:/|)$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*page/[0-9]{1,5}(?:/|)$")))
     }
 }
 
