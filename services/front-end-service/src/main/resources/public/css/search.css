@@ -249,7 +249,7 @@ nav.header-menu ul > li a.current-nav-page {
 }
 
 .search-result-group .search-result:nth-child(n+2) {
-    padding-left: 1em;
+   /* padding-left: 1em; */
 }
 
 .search-result-group .search-result .search-result-highlight p {
