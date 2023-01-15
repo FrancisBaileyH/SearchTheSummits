@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.frontend.controller
 
 
-import com.francisbailey.summitsearch.frontend.FaviconServicePrototype
+import com.francisbailey.summitsearch.frontend.service.FaviconServicePrototype
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
 import io.micrometer.core.instrument.MeterRegistry

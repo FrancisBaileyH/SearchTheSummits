@@ -11,7 +11,7 @@ open class FaviconServiceConfiguration {
     @Bean
     open fun fallbackFaviconData(): String {
         val resource = ClassPathResource("private/images/fallbackFavicon.png")
-        return Base64.getEncoder().encodeToString(resource.file.readBytes())
+        return Base64.getEncoder().encodeToString(resource.inputStream.readBytes())
     }
 
 }
