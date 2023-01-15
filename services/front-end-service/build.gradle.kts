@@ -11,6 +11,8 @@ plugins {
 group = "com.francisbailey"
 version = "1.0-SNAPSHOT"
 
+val ktorVersion = "2.2.2"
+
 repositories {
     mavenCentral()
 }
@@ -31,6 +33,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
+
+    implementation("redis.clients:jedis:4.3.0")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")

@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.frontend.controller
 
 
+import com.francisbailey.summitsearch.frontend.FaviconServicePrototype
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
 import io.micrometer.core.instrument.MeterRegistry
@@ -18,7 +19,8 @@ import java.net.URL
 @RestController
 class SearchController(
     private val summitSearchIndexService: SummitSearchIndexService,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
+    private val faviconServicePrototype: FaviconServicePrototype
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -42,7 +44,8 @@ class SearchController(
                     SummitSearchHitResponse(
                         highlight = it.highlight,
                         source = it.source,
-                        title = it.title
+                        title = it.title,
+                        favicon = faviconServicePrototype.getFavicon(URL(it.source)).imageData
                     )
                 }.groupBy { URL(it.source).host }.values,
                 totalHits = response.totalHits,
@@ -72,7 +75,8 @@ data class SummitSearchResponse(
 data class SummitSearchHitResponse(
     val highlight: String,
     val source: String,
-    val title: String
+    val title: String,
+    val favicon: String
 )
 
 @Serializable

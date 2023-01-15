@@ -4,10 +4,27 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import com.francisbailey.summitsearch.services.common.RegionConfig
+import io.ktor.client.*
+import io.ktor.client.engine.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.UnifiedJedis
+import java.time.Duration
+
+@Configuration
+open class HttpEngineConfiguration {
+    @Bean
+    open fun httpClientEngine() = CIO.create {
+        requestTimeout = Duration.ofSeconds(1).toMillis()
+        endpoint.socketTimeout = Duration.ofSeconds(1).toMillis()
+    }
+}
+
 
 @Configuration
 open class ClientConfiguration(
@@ -38,5 +55,26 @@ open class ClientConfiguration(
                 ))
         }
 
+    }
+
+    @Bean
+    open fun redisClient(): UnifiedJedis {
+        return JedisPooled(
+            environment.getRequiredProperty("REDIS_ENDPOINT"),
+            environment.getRequiredProperty("REDIS_PORT").toInt(),
+            environment.getRequiredProperty("REDIS_USERNAME"),
+            environment.getRequiredProperty("REDIS_PASSWORD")
+        )
+    }
+
+    @Bean
+    open fun httpClient(httpClientEngine: HttpClientEngine): HttpClient {
+        return HttpClient(httpClientEngine) {
+            install(HttpRequestRetry) {
+                noRetry()
+            }
+            followRedirects = false
+            expectSuccess = true
+        }
     }
 }
