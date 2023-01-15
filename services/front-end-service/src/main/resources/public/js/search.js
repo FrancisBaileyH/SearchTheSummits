@@ -84,10 +84,10 @@ function updateSearchResults(query, page) {
 
                 searchResult += "<div class=\"search-result\">"
                 searchResult += "<div class=\"search-result-link\">"
-                searchResult += "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+                searchResult += faviconHtml + "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
                 searchResult += "</div>"
                 searchResult += "<div class=\"search-result-title\">"
-                searchResult += "<h5>" + faviconHtml + "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
+                searchResult += "<h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
                 searchResult += "</div>"
                 searchResult += "<div class=\"search-result-highlight\">"
                 searchResult += "<p>" + hit.highlight + "...</p>"
