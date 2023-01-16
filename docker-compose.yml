@@ -10,6 +10,8 @@ services:
     build:
       context: ./services/front-end-service
       dockerfile: Dockerfile
+    volumes:
+      - front-end-volume:/service/var/logs
 
   elasticsearch:
     profiles: ["frontend", "backend"]
@@ -52,6 +54,8 @@ services:
     build:
       context: ./services/page-indexing-worker
       dockerfile: Dockerfile
+    volumes:
+      - page-indexing-volume:/service/var/logs
 
   prometheus:
     profiles: ["monitoring"]
@@ -79,6 +83,10 @@ volumes:
   grafana-volume:
     external: false
   kibana-volume:
+    external: false
+  page-indexing-volume:
+    external: false
+  front-end-volume:
     external: false
 
 
