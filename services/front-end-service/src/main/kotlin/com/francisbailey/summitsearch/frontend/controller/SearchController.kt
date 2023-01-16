@@ -25,7 +25,7 @@ class SearchController(
 
     @GetMapping(path = [SEARCH_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun search(@RequestParam(name = "query") requestQuery: String, @RequestParam(name = "next", required = false) next: Int?): ResponseEntity<String> {
-        log.info { "Querying search service for: $requestQuery" }
+        log.info { "Querying search service for: $requestQuery and next value: $next" }
 
         return try {
             val response = meterRegistry.timer("api.searchindex.query.latency").recordCallable {
