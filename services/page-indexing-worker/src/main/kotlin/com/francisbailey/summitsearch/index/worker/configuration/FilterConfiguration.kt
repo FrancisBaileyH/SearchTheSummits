@@ -52,17 +52,17 @@ object SVerdinaIndexFilterChain: DocumentFilterChain(exclusive = true) {
 
 object WordPressFilterChain: DocumentFilterChain(exclusive = true) {
     init {
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/.*" )))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/author/.*")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/tag/.*")))
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/category/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*/wp-content/.*" )))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*/author/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*/tag/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*/category/.*")))
     }
 }
 
 object BlogSpotFilterchain: DocumentFilterChain(exclusive = true) {
     init {
         // Exclude Blogspot archives e.g. /2022 or /2022/12 or /2022/10/12
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^.*/(?:[0-9]{4}|[0-9]{4}/[0-9]{2}|[0-9]{4}/[0-9]{2}/[0-9]{2})(?:/|)\$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/search/.*$")))
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/feeds/.*$")))
     }

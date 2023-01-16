@@ -48,7 +48,7 @@ class CrawlerFilterTest {
     fun `default filter skips wordpress uploads and page images`() {
         val urlString = "https://francisbaileyh.com"
 
-        val pathsToExclude = listOf(
+        val expectedToSkip = listOf(
             "/wp-content/test",
             "/author/francis",
             "/tag/some-tag",
@@ -65,17 +65,25 @@ class CrawlerFilterTest {
             "/2022/06/",
             "/2022/06/12",
             "/2022/06/12/",
+            "/blog/2022/06/12/",
             "/search/test",
-            "/search/label/skiing"
-        )
-
-        pathsToExclude.forEach {
-            val url = URL("$urlString$it")
-            assertTrue(DefaultFilterChain.shouldFilter(url))
+            "/search/label/skiing",
+            "/blog/tag/test",
+            "/blog/category/test",
+            "/blog/author/test",
+            "/blog/wp-content/test"
+        ).map {
+            urlString + it
         }
 
-        val url = URL("$urlString/some-normal-page")
-        assertFalse(DefaultFilterChain.shouldFilter(url))
+        val expectedNotToSkip = listOf(
+            "/some-normal-page",
+            "/2022/06/12/some-page"
+        ).map {
+            urlString + it
+        }
+
+        verifyFilter(DefaultFilterChain, expectedToSkip, expectedNotToSkip)
     }
 
     @Test
