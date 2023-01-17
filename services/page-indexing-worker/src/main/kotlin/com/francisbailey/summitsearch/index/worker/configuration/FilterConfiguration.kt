@@ -21,6 +21,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalFilter)
             addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsFilter)
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideFilter)
+            addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationFilter)
         }
     }
 
@@ -31,6 +32,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalIndexFilter)
             addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsIndexFilter)
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideIndexFilter)
+            addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationIndexFilter)
         }
     }
 }
@@ -193,5 +195,20 @@ object IdahoClimbingGuideFilter: DocumentFilterChain(exclusive = true) {
 object IdahoClimbingGuideIndexFilter: DocumentFilterChain(exclusive = false) {
     init {
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/bookupdates/.*")))
+    }
+}
+
+/**
+ * Mount Everest Foundation Filters
+ */
+object MountEverestFoundationFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/expeditions/.*")))
+    }
+}
+
+object MountEverestFoundationIndexFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/expeditions/[0-9a-zA-Z-]{5,250}(?:/|)")))
     }
 }
