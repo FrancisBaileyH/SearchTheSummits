@@ -29,9 +29,12 @@ dependencies {
 
     implementation(platform("software.amazon.awssdk:bom:2.18.19"))
     implementation("software.amazon.awssdk:sqs")
+    implementation("software.amazon.awssdk:s3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+
+    implementation("com.sksamuel.scrimage:scrimage-core:4.0.33")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
