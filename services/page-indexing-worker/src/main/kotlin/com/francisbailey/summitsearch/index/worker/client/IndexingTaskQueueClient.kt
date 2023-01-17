@@ -92,9 +92,18 @@ data class IndexTaskDetails(
     val taskRunId: String,
     val pageUrl: String,
     val submitTime: Long,
+    val taskType: IndexTaskType,
     val refreshIntervalSeconds: Long // 0 represents never refresh
 ) {
     fun refreshDuration(): Duration = Duration.ofSeconds(refreshIntervalSeconds)
+}
+
+@Serializable
+enum class IndexTaskType {
+    HTML,
+    THUMBNAIL,
+    PDF,
+    IMAGE
 }
 
 

@@ -118,6 +118,7 @@ class LinkDiscoveryTaskTest {
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
         whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
         whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(indexTaskDetails.taskType).thenReturn(IndexTaskType.HTML)
         whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(true)
 
         buildTask(discovery.toString()).run()

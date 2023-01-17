@@ -67,6 +67,7 @@ class LinkDiscoveryTask(
                             taskRunId = associatedTask.details.taskRunId,
                             pageUrl = discoveryUrl.toString(),
                             submitTime = Instant.now().toEpochMilli(),
+                            taskType = associatedTask.details.taskType,
                             refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds
                         )
                     )

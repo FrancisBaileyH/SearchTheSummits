@@ -67,6 +67,7 @@ class PageIndexingTaskTest {
             pageUrl = "https://www.francisbaileyh.com",
             submitTime = Date().time,
             taskRunId = "test123",
+            taskType = IndexTaskType.HTML,
             refreshIntervalSeconds = Duration.ofMinutes(60).seconds
         )
     )
