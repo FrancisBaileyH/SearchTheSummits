@@ -22,6 +22,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsFilter)
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideFilter)
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationFilter)
+            addFilterChain(URL("https://www.nwhikers.net"), NWHikersFilter)
         }
     }
 
@@ -33,6 +34,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsIndexFilter)
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideIndexFilter)
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationIndexFilter)
+            addFilterChain(URL("https://www.nwhikers.net"), NWHikersIndexFilter)
         }
     }
 }
@@ -210,5 +212,24 @@ object MountEverestFoundationFilter: DocumentFilterChain(exclusive = false) {
 object MountEverestFoundationIndexFilter: DocumentFilterChain(exclusive = false) {
     init {
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/expeditions/[0-9a-zA-Z-]{5,250}(?:/|)")))
+    }
+}
+
+/**
+ * NWHikers.net
+ *
+ * https://www.nwhikers.net/forums/viewforum.php?f=3
+ */
+object NWHikersFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forums/viewforum\\.php\\?f=3$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forums/viewtopic\\.php\\?t=[0-9]{1,10}$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forums/viewforum\\.php\\?f=3&topicdays=0&start=[0-9]{1,10}$")))
+    }
+}
+
+object NWHikersIndexFilter: DocumentFilterChain(exclusive = false) {
+    init {
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/forums/viewtopic\\.php\\?t=[0-9]{1,10}$")))
     }
 }

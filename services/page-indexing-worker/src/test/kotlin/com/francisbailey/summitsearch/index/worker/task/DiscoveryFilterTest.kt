@@ -284,7 +284,6 @@ class CrawlerFilterTest {
         verifyFilter(IdahoClimbingGuideFilter, expectedToSkip, expectedNotToSkip)
     }
 
-    // https://www.mef.org.uk/expeditions/british-western-hajar-traverse-2003-4
     @Test
     fun `mef org index filter skips expected links`() {
         val expectedNotToSkip = listOf(
@@ -314,6 +313,40 @@ class CrawlerFilterTest {
         )
 
         verifyFilter(MountEverestFoundationFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `NWHikers index filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://www.nwhikers.net/forums/viewtopic.php?t=8030039"
+        )
+
+        val expectedToSkip = listOf(
+            "https://www.nwhikers.net/forums/viewforum.php?f=3&topicdays=0&start=50",
+            "https://www.nwhikers.net/forums/viewforum.php?f=3",
+            "https://www.nwhikers.net/forums/viewforum.php?f=1",
+            "https://www.nwhikers.net/forums/viewforum.php?f=1&topicdays=0&start=50",
+            "https://www.nwhikers.net/forums/profile.php?mode=viewprofile&u=5300"
+        )
+
+        verifyFilter(NWHikersIndexFilter, expectedToSkip, expectedNotToSkip)
+    }
+
+    @Test
+    fun `NWHikers filter skips expected links`() {
+        val expectedNotToSkip = listOf(
+            "https://www.nwhikers.net/forums/viewforum.php?f=3&topicdays=0&start=50",
+            "https://www.nwhikers.net/forums/viewforum.php?f=3",
+            "https://www.nwhikers.net/forums/viewtopic.php?t=8030039"
+        )
+
+        val expectedToSkip = listOf(
+            "https://www.nwhikers.net/forums/viewforum.php?f=1",
+            "https://www.nwhikers.net/forums/viewforum.php?f=1&topicdays=0&start=50",
+            "https://www.nwhikers.net/forums/profile.php?mode=viewprofile&u=5300"
+        )
+
+        verifyFilter(NWHikersFilter, expectedToSkip, expectedNotToSkip)
     }
 
 
