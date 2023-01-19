@@ -1,12 +1,14 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
+import com.francisbailey.summitsearch.index.worker.extension.getLinks
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.*
 import io.ktor.http.*
 import org.apache.tomcat.util.buf.HexUtils
 import org.jsoup.Jsoup
+import org.jsoup.internal.StringUtil
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -40,27 +42,59 @@ class PageCrawlerServiceTest {
     }
 
     @Test
-    fun `sets base URI correctly`() {
+    fun `relative urls resolve correctly`() {
+        val url = URL("https://test.com/forums/?test=3")
+
+        val html = """
+            <html>
+                <body>
+                    <a href="viewforum.php?f=5">Test</a>
+                </body>
+            </html>
+        """
+
         val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { _ ->
             respond(
-                content = "<html>Test</html>",
+                content = html,
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "text/html")
             )
         }))
 
-        val expectations = mapOf(
-            "https://francisbailey.com/test#abc" to "https://francisbailey.com",
-            "https://francisbailey.com/test/test123/test.html" to "https://francisbailey.com/test/test123",
-            "https://francisbailey.com/test/test123?query=x#fragment" to "https://francisbailey.com/test",
-            "https://francisbailey.com" to "https://francisbailey.com",
-            "https://francisbailey.com/" to "https://francisbailey.com"
-        )
+        val document = service.getHtmlDocument(url)
 
-        expectations.forEach {
-            val document = service.getHtmlDocument(URL(it.key))
-            assertEquals(it.value, document.baseUri())
-        }
+        val links = document.getLinks()
+
+        assertEquals(1, links.size)
+        assertEquals("https://test.com/forums/viewforum.php?f=5", links.first())
+    }
+
+    @Test
+    fun `relative urls with parent reference resolve correctly`() {
+        val url = URL("https://test.com/OtherScrambles/index.html")
+
+        val html = """
+            <html>
+                <body>
+                    <a href="../NugaraScrambles/Anderson/AndersonPeak.html">Test</a>
+                </body>
+            </html>
+        """
+
+        val service = PageCrawlerService(clientConfiguration.httpClient(MockEngine { _ ->
+            respond(
+                content = html,
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "text/html")
+            )
+        }))
+
+        val document = service.getHtmlDocument(url)
+
+        val links = document.getLinks()
+
+        assertEquals(1, links.size)
+        assertEquals("https://test.com/NugaraScrambles/Anderson/AndersonPeak.html", links.first())
     }
 
     @Test

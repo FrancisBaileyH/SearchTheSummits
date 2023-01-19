@@ -1,6 +1,5 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
-import com.francisbailey.summitsearch.index.worker.extension.baseURL
 import com.francisbailey.summitsearch.index.worker.extension.bodyAsTextWithFallback
 import com.francisbailey.summitsearch.index.worker.extension.isRedirect
 import io.ktor.client.*
@@ -38,7 +37,9 @@ class PageCrawlerService(
             val responseText = runBlocking { response.bodyAsTextWithFallback(FALLBACK_CHARSET) }
             htmlParser(responseText).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
-                it.setBaseUri(pageUrl.baseURL().toString()) // needed to fetch relative href links
+                if (it.baseUri().isNullOrBlank()) {
+                    it.setBaseUri(pageUrl.toString()) // needed to fetch relative href links
+                }
             }
         } catch (e: Exception) {
             throw UnparsablePageException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
