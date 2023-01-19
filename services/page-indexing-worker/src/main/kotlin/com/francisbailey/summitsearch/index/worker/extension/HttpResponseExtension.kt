@@ -1,8 +1,11 @@
 package com.francisbailey.summitsearch.index.worker.extension
 
+import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.core.*
 import mu.KotlinLogging
 
 private val log = KotlinLogging.logger { }
@@ -12,11 +15,14 @@ private val log = KotlinLogging.logger { }
  * supplied in the response header. For now, this is okay.
  */
 suspend fun HttpResponse.bodyAsTextWithFallback(fallbackCharset: Charset): String {
+    val input = body<Input>()
+    val originCharset = charset() ?: Charsets.UTF_8
+
     return try {
-        this.bodyAsText()
+        originCharset.newDecoder().decode(input)
     } catch (e: MalformedInputException) {
         log.warn { "Failed to decode response from ${this.request.url}. Attempting to fallback with: $fallbackCharset" }
-        this.bodyAsText(fallbackCharset)
+        fallbackCharset.newDecoder().decode(input)
     }
 }
 

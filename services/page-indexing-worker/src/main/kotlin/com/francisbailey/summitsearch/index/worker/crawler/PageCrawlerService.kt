@@ -29,11 +29,11 @@ class PageCrawlerService(
         { Jsoup.parse(it) }
     )
 
-    fun getHtmlDocument(pageUrl: URL): Document = runBlocking {
+    fun getHtmlDocument(pageUrl: URL): Document {
         log.info { "Fetching HTML content from: $pageUrl" }
         val response = getPage(pageUrl)
 
-        try {
+        return try {
             val responseText = runBlocking { response.bodyAsTextWithFallback(FALLBACK_CHARSET) }
             htmlParser(responseText).also {
                 log.info { "Successfully retrieved HTML content from: $pageUrl" }
