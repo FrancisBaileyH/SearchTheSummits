@@ -11,8 +11,8 @@ import mu.KotlinLogging
 private val log = KotlinLogging.logger { }
 
 /**
- * Note that bodyAsText() only uses the fallback charset if there isn't a charset
- * supplied in the response header. For now, this is okay.
+ * Fixes bug where receiving body twice results in ParentJobCompleted exception
+ * and allows a fallback to if decoding fails
  */
 suspend fun HttpResponse.bodyAsTextWithFallback(fallbackCharset: Charset): String {
     val input = body<Input>()
