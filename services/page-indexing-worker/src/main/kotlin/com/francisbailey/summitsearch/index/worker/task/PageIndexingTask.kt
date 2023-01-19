@@ -1,9 +1,9 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.crawler.NonRetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.RedirectedPageException
+import com.francisbailey.summitsearch.index.worker.crawler.RedirectedEntityException
 import com.francisbailey.summitsearch.index.worker.extension.getLinks
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
@@ -60,16 +60,24 @@ class PageIndexingTask(
         }
     }
 
+    /**
+     * IndexingPipeline
+     * - fetch
+     * - filter
+     * - transform
+     * - index
+     *
+     */
     private fun processTask(task: IndexTask) {
         val pageUrl = URL(task.details.pageUrl)
 
         try {
             val timer = meterRegistry.timer("$TASK_METRIC.latency.page", "host", pageUrl.host)
-            val document = timer.recordCallable { pageCrawlerService.getHtmlDocument(pageUrl) }!!
+            val document = timer.recordCallable { pageCrawlerService.get(pageUrl) }!!
             val organicLinks = document.body().getLinks()
 
             linkDiscoveryService.submitDiscoveries(task, organicLinks)
-
+            // should filter entity
             if (documentIndexingFilterService.shouldFilter(pageUrl)) {
                 log.warn { "Crawled, but did not index page: $pageUrl" }
                 return
@@ -94,13 +102,13 @@ class PageIndexingTask(
             meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName, "queue", queueName).increment()
 
             when (e) {
-                is RedirectedPageException -> {
+                is RedirectedEntityException -> {
                     e.location?.run {
                         meterRegistry.counter("$TASK_METRIC.redirects").increment()
                         linkDiscoveryService.submitDiscoveries(task, listOf(this))
                     }
                 }
-                is NonRetryablePageException -> {
+                is NonRetryableEntityException -> {
                     dependencyCircuitBreaker.executeCallable {
                         indexService.deletePageContents(SummitSearchDeleteIndexRequest(pageUrl))
                         meterRegistry.counter("$TASK_METRIC.indexservice.delete").increment()
