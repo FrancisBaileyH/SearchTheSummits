@@ -1,10 +1,10 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.crawler.NonRetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.RedirectedPageException
-import com.francisbailey.summitsearch.index.worker.crawler.RetryablePageException
+import com.francisbailey.summitsearch.index.worker.crawler.RedirectedEntityException
+import com.francisbailey.summitsearch.index.worker.crawler.RetryableEntityException
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -110,7 +110,7 @@ class PageIndexingTaskTest {
 
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
 
         task.run()
 
@@ -129,7 +129,7 @@ class PageIndexingTaskTest {
 
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
         whenever(documentIndexFilterService.shouldFilter(any())).thenReturn(true)
 
         task.run()
@@ -156,7 +156,7 @@ class PageIndexingTaskTest {
 
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
 
         task.run()
 
@@ -172,7 +172,7 @@ class PageIndexingTaskTest {
     fun `deletes page contents from index when 40X error is encountered`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(NonRetryablePageException("test"))
+        whenever(pageCrawlerService.get(any())).thenThrow(NonRetryableEntityException("test"))
 
         task.run()
 
@@ -186,9 +186,9 @@ class PageIndexingTaskTest {
     fun `does not delete task when retryable exceptions occur`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RetryablePageException("test"))
+        whenever(pageCrawlerService.get(any())).thenThrow(RetryableEntityException("test"))
 
-        assertThrows<RetryablePageException> { task.run() }
+        assertThrows<RetryableEntityException> { task.run() }
 
         verifyNoInteractions(indexService)
         verify(indexingTaskQueuePollingClient, never()).deleteTask(any())
@@ -200,7 +200,7 @@ class PageIndexingTaskTest {
         val location = "https://some-site.com/redirect/here"
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.getHtmlDocument(any())).thenThrow(RedirectedPageException(location, "test"))
+        whenever(pageCrawlerService.get(any())).thenThrow(RedirectedEntityException(location, "test"))
 
         task.run()
 
