@@ -9,12 +9,9 @@ import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
-import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import co.elastic.clients.elasticsearch.indices.ExistsRequest
-import co.elastic.clients.json.JsonpDeserializer
-import com.francisbailey.summitsearch.indexservice.extension.getSeoDescription
-import com.francisbailey.summitsearch.indexservice.extension.words
+import com.francisbailey.summitsearch.indexservice.extension.*
+import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -129,7 +126,7 @@ class SummitSearchIndexService(
         val result = elasticSearchClient.index(
             IndexRequest.of {
                 it.index(indexName)
-                it.id(generateId(request.source))
+                it.id(generateIdFromUrl(request.source))
                 it.document(HtmlMapping(
                     title = title,
                     source = request.source,
@@ -154,19 +151,8 @@ class SummitSearchIndexService(
         log.info { "Result: ${response.result()}" }
     }
 
-    fun indexExists(): Boolean {
-        log.info { "Checking if index: $indexName exists" }
-        val indexExistsResponse = elasticSearchClient.indices().exists(ExistsRequest.of{
-            it.index(indexName)
-        })
-
-        return indexExistsResponse.value().also {
-            log.info { "Index found result: $it" }
-        }
-    }
-
-    fun createIndexIfNotExists() {
-        if (!indexExists()) {
+    fun createIfNotExists() {
+        if (!elasticSearchClient.indexExists(indexName)) {
             log.info { "Index: $indexName not found. Attempting to create it now" }
 
             val response = elasticSearchClient.indices().create(CreateIndexRequest.of {
@@ -245,13 +231,6 @@ class SummitSearchIndexService(
                return excludedTags.contains(element.normalName())
            }
        }
-
-       fun generateId(url: URL): String {
-           val uri = url.toURI()
-           val query = uri.query?.split("&")?.sorted()?.joinToString(separator = "&", prefix = "?") ?: ""
-           val path = uri.path?.removeSuffix("/") ?: ""
-           return "${uri.host}$path$query"
-       }
    }
 }
 
@@ -289,10 +268,3 @@ internal data class HtmlMapping(
     val paragraphContent: String,
     val rawTextContent: String
 )
-
-internal fun Hit<HtmlMapping>.stringField(name: String): String {
-    return this.fields()[name]!!.deserialize(
-        JsonpDeserializer.arrayDeserializer(
-            JsonpDeserializer.stringDeserializer()
-        )).first()
-}

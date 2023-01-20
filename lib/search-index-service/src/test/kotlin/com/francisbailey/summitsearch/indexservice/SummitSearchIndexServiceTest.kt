@@ -11,6 +11,7 @@ import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
+import com.francisbailey.summitsearch.indexservice.extension.indexExists
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions.*
@@ -44,26 +45,24 @@ class SummitSearchIndexServiceTest {
     @Test
     fun `returns false if index does not exist and true when it does`() {
         val index = "non-existent-index"
-        val testIndexService = SummitSearchIndexService(client, 10, index)
-
-        assertFalse(testIndexService.indexExists())
+        assertFalse(client.indexExists(index))
 
         client.indices().create(CreateIndexRequest.of {
             it.index(index)
         })
 
-        assertTrue(testIndexService.indexExists())
+        assertTrue(client.indexExists(index))
     }
 
     @Test
     fun `creates index with html analyzer if index does not exist yet`() {
         val index = "create-index-not-exist"
         val testIndexService = SummitSearchIndexService(client, 10, index)
-        assertFalse(testIndexService.indexExists())
+        assertFalse(client.indexExists(index))
 
-        testIndexService.createIndexIfNotExists()
+        testIndexService.createIfNotExists()
 
-        assertTrue(testIndexService.indexExists())
+        assertTrue(client.indexExists(index))
     }
 
     @Test
@@ -340,22 +339,6 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
-    fun `generate ID produces normalized ID from URL`() {
-        val expectations = mapOf(
-            "https://francisbailey.com" to "francisbailey.com",
-            "http://francisbailey.com/path/to/" to "francisbailey.com/path/to",
-            "http://francisbailey.com/path/to/?paramB=x&paramA=y" to "francisbailey.com/path/to?paramA=y&paramB=x",
-            "https://francisbailey.com/path/to/index.html" to "francisbailey.com/path/to/index.html",
-            "https://francisbailey.com/path/to/index.html?query=x&alpha=g" to "francisbailey.com/path/to/index.html?alpha=g&query=x",
-            "http://subdomain.francisbailey.com" to "subdomain.francisbailey.com"
-        )
-
-        expectations.forEach {
-            assertEquals(it.value, SummitSearchIndexService.generateId(URL(it.key)))
-        }
-    }
-
-    @Test
     fun `query uses phrase + term when term count is greater than 2`() {
         val index = "phrase_term_test"
         val bestFieldTerm = "three terms here"
@@ -468,7 +451,7 @@ class SummitSearchIndexServiceTest {
 
     private fun createIndex(index: String, pagination: Int = 10): SummitSearchIndexService {
         return SummitSearchIndexService(client, pagination, index).also {
-            it.createIndexIfNotExists()
+            it.createIfNotExists()
         }
     }
 

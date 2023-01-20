@@ -86,7 +86,7 @@ open class ClientConfiguration(
                 )
             )
         }.also {
-            it.createIndexIfNotExists()
+            it.createIfNotExists()
         }
     }
 
