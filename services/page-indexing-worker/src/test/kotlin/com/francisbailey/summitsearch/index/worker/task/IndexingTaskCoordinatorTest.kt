@@ -6,14 +6,12 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
-import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.util.concurrent.Executor
 
-class PageIndexingTaskCoordinatorTest {
+class IndexingTaskCoordinatorTest {
 
     private val queueAssignmentStore = mock<QueueAssignmentStore>()
     private val executor = mock<Executor>()
@@ -75,7 +73,7 @@ class PageIndexingTaskCoordinatorTest {
             }
         }
 
-        verify(executor, times(queues.size)).execute(any<PageIndexingTask>())
+        verify(executor, times(queues.size)).execute(any<IndexingTask>())
     }
 
     @Test
@@ -131,7 +129,7 @@ class PageIndexingTaskCoordinatorTest {
                 verify(taskDependenciesCircuitBreaker).tryAcquirePermission()
                 verify(perQueueCircuitBreaker).tryAcquirePermission()
                 verify(taskPermitService).tryAcquirePermit(it)
-                verify(executor).execute(any<PageIndexingTask>())
+                verify(executor).execute(any<IndexingTask>())
             }
         }
 
@@ -164,7 +162,7 @@ class PageIndexingTaskCoordinatorTest {
                 verify(taskDependenciesCircuitBreaker).tryAcquirePermission()
                 verify(perQueueCircuitBreaker).tryAcquirePermission()
                 verify(taskPermitService).tryAcquirePermit(it)
-                verify(executor).execute(any<PageIndexingTask>())
+                verify(executor).execute(any<IndexingTask>())
             }
         }
 

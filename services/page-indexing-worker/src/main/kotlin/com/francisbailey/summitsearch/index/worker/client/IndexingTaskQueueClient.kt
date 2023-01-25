@@ -1,12 +1,14 @@
 package com.francisbailey.summitsearch.index.worker.client
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.*
+import java.net.URL
 import java.time.Duration
 
 
@@ -90,7 +92,8 @@ data class IndexTask(
 data class IndexTaskDetails(
     val id: String,
     val taskRunId: String,
-    val pageUrl: String,
+    @Serializable(with = URLSerializer::class)
+    val pageUrl: URL,
     val submitTime: Long,
     val taskType: IndexTaskType,
     val refreshIntervalSeconds: Long // 0 represents never refresh
@@ -104,6 +107,16 @@ enum class IndexTaskType {
     THUMBNAIL,
     PDF,
     IMAGE
+}
+
+class URLSerializer(override val descriptor: SerialDescriptor) : KSerializer<URL> {
+    override fun deserialize(decoder: Decoder): URL {
+        return URL(decoder.decodeString())
+    }
+
+    override fun serialize(encoder: Encoder, value: URL) {
+        encoder.encodeString(value.toString())
+    }
 }
 
 
