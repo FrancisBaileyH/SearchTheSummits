@@ -19,7 +19,7 @@ import java.net.URL
 import java.time.Duration
 import java.util.*
 
-class PageIndexingTaskTest {
+class IndexingTaskTest {
 
     private val queueName = "IndexQueue-Test1"
     private val pageCrawlerService = mock<PageCrawlerService>()
@@ -45,7 +45,7 @@ class PageIndexingTaskTest {
 
     private val taskPermit = mock<TaskPermit>()
 
-    private val task = PageIndexingTask(
+    private val task = IndexingTask(
         queueName,
         pageCrawlerService,
         indexingTaskQueuePollingClient,

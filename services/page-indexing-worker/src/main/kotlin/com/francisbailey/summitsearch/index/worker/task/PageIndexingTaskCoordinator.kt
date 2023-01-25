@@ -1,8 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry
@@ -16,13 +15,10 @@ class PageIndexingTaskCoordinator(
     private val queueAssignmentStore: QueueAssignmentStore,
     private val indexingTaskExecutor: Executor,
     private val indexingTaskQueuePollingClient: IndexingTaskQueuePollingClient,
-    private val summitSearchIndexService: SummitSearchIndexService,
-    private val pageCrawlerService: PageCrawlerService,
-    private val linkDiscoveryService: LinkDiscoveryService,
+    private val indexingPipeline: Pipeline,
     private val circuitBreakerRegistry: CircuitBreakerRegistry,
     private val taskRateLimiterRegistry: RateLimiterRegistry,
     private val taskPermitService: TaskPermitService,
-    private val documentIndexingFilterService: DocumentFilterService,
     private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger { }
@@ -68,18 +64,15 @@ class PageIndexingTaskCoordinator(
 
                     if (permit != null) {
                         indexingTaskExecutor.execute(
-                            PageIndexingTask(
+                            IndexingTask(
                                 queueName = queue,
-                                pageCrawlerService = pageCrawlerService,
-                                indexingTaskQueuePollingClient = indexingTaskQueuePollingClient,
-                                indexService = summitSearchIndexService,
-                                rateLimiterRegistry = taskRateLimiterRegistry,
-                                dependencyCircuitBreaker = taskDependencyCircuitBreaker,
-                                perQueueCircuitBreaker = perQueueCircuitBreaker,
-                                linkDiscoveryService = linkDiscoveryService,
                                 taskPermit = permit,
-                                documentIndexingFilterService = documentIndexingFilterService,
-                                meterRegistry = meterRegistry
+                                meterRegistry = meterRegistry,
+                                indexingPipeline = indexingPipeline,
+                                rateLimiterRegistry = taskRateLimiterRegistry,
+                                perQueueCircuitBreaker = perQueueCircuitBreaker,
+                                dependencyCircuitBreaker = taskDependencyCircuitBreaker,
+                                indexingTaskQueuePollingClient = indexingTaskQueuePollingClient
                             )
                         )
                     } else {
