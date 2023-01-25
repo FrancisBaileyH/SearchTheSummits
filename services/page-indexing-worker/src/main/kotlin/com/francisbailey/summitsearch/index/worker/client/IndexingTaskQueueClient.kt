@@ -1,6 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.client
 
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -109,7 +111,9 @@ enum class IndexTaskType {
     IMAGE
 }
 
-class URLSerializer(override val descriptor: SerialDescriptor) : KSerializer<URL> {
+class URLSerializer : KSerializer<URL> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("URL", PrimitiveKind.STRING)
+
     override fun deserialize(decoder: Decoder): URL {
         return URL(decoder.decodeString())
     }

@@ -18,7 +18,7 @@ import java.lang.Exception
 class FetchHtmlPageStep(
     private val pageCrawlerService: PageCrawlerService,
     private val linkDiscoveryService: LinkDiscoveryService,
-    private val summitSearchIndexService: SummitSearchIndexService
+    private val indexService: SummitSearchIndexService
 ): Step<Document> {
 
     override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
@@ -40,7 +40,7 @@ class FetchHtmlPageStep(
                 }
                 is NonRetryableEntityException -> {
                     monitor.dependencyCircuitBreaker.executeCallable {
-                        summitSearchIndexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
+                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
                         monitor.meter.counter("$metricPrefix.indexservice.delete").increment()
                         log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
                     }

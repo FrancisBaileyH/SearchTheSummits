@@ -1,19 +1,13 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.RedirectedEntityException
-import com.francisbailey.summitsearch.index.worker.crawler.RetryableEntityException
-import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
+import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import java.net.URL
 import java.time.Duration
@@ -25,10 +19,6 @@ class IndexingTaskTest {
     private val pageCrawlerService = mock<PageCrawlerService>()
     private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
     private val indexService = mock<SummitSearchIndexService>()
-    private val linkDiscoveryService = mock<LinkDiscoveryService>()
-    private val documentIndexFilterService = mock<DocumentFilterService> {
-        on(mock.shouldFilter(any())).thenReturn(false)
-    }
 
     private val rateLimiter = mock<io.github.resilience4j.ratelimiter.RateLimiter>()
 
@@ -43,18 +33,17 @@ class IndexingTaskTest {
         on(mock.executeCallable<Unit>(any())).thenCallRealMethod()
     }
 
+    private val indexingPipeline = mock<Pipeline>()
+
     private val taskPermit = mock<TaskPermit>()
 
     private val task = IndexingTask(
         queueName,
-        pageCrawlerService,
         indexingTaskQueuePollingClient,
-        indexService,
+        indexingPipeline,
         rateLimiterRegistry,
         depencencyCircuitBreaker,
         perQueuecircuitBreaker,
-        linkDiscoveryService,
-        documentIndexFilterService,
         taskPermit,
         SimpleMeterRegistry()
     )
@@ -64,7 +53,7 @@ class IndexingTaskTest {
         source = "some-queue-name",
         details = IndexTaskDetails(
             id = "123456",
-            pageUrl = "https://www.francisbaileyh.com",
+            pageUrl = URL("https://www.francisbaileyh.com"),
             submitTime = Date().time,
             taskRunId = "test123",
             taskType = IndexTaskType.HTML,
@@ -105,109 +94,34 @@ class IndexingTaskTest {
     }
 
     @Test
-    fun `crawl page and index contents if rate limit not exceeded and task is present on queue`() {
-        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
-
+    fun `run indexing pipeline if rate limit not exceeded and task is present on queue`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
-
-        task.run()
-
-        verify(rateLimiterRegistry).rateLimiter(task.queueName)
-        verify(indexingTaskQueuePollingClient).pollTask(queueName)
-        verify(depencencyCircuitBreaker, times(3)).executeCallable<Unit>(any())
-        verify(documentIndexFilterService).shouldFilter(URL(defaultIndexTask.details.pageUrl))
-        verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(defaultIndexTask.details.pageUrl), htmlContent))
-        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
-        verify(taskPermit).close()
-    }
-
-    @Test
-    fun `crawl page but do not index contents if url matches filter`() {
-        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
-
-        whenever(rateLimiter.acquirePermission()).thenReturn(true)
-        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
-        whenever(documentIndexFilterService.shouldFilter(any())).thenReturn(true)
+        whenever(indexingPipeline.process(any(), any())).thenReturn(false)
 
         task.run()
 
         verify(rateLimiterRegistry).rateLimiter(task.queueName)
         verify(indexingTaskQueuePollingClient).pollTask(queueName)
         verify(depencencyCircuitBreaker, times(2)).executeCallable<Unit>(any())
-        verify(documentIndexFilterService).shouldFilter(URL(defaultIndexTask.details.pageUrl))
-        verifyNoInteractions(indexService)
+        verify(indexingPipeline).process(eq(defaultIndexTask), any())
         verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
         verify(taskPermit).close()
     }
 
     @Test
-    fun `submit new links for discovery if any are found`() {
-        val links = listOf("https://francisbailey.com/test", "https://francisbailey.com/test2")
-        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
-
-        links.forEach {
-            htmlContent.body().appendElement("a")
-                .attr("href", it)
-                .text(it)
-        }
-
+    fun `does not delete task if should retry is true`() {
         whenever(rateLimiter.acquirePermission()).thenReturn(true)
         whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(URL(defaultIndexTask.details.pageUrl))).thenReturn(htmlContent)
+        whenever(indexingPipeline.process(any(), any())).thenReturn(true)
 
         task.run()
 
-        verify(rateLimiter).acquirePermission()
+        verify(rateLimiterRegistry).rateLimiter(task.queueName)
         verify(indexingTaskQueuePollingClient).pollTask(queueName)
-        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, links)
-        verify(indexService).indexPageContents(SummitSearchIndexRequest(URL(defaultIndexTask.details.pageUrl), htmlContent))
-        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
+        verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
+        verify(indexingPipeline).process(eq(defaultIndexTask), any())
+        verifyNoMoreInteractions(indexingTaskQueuePollingClient)
         verify(taskPermit).close()
     }
-
-    @Test
-    fun `deletes page contents from index when 40X error is encountered`() {
-        whenever(rateLimiter.acquirePermission()).thenReturn(true)
-        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(any())).thenThrow(NonRetryableEntityException("test"))
-
-        task.run()
-
-        verify(indexService, never()).indexPageContents(any())
-        verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = URL(defaultIndexTask.details.pageUrl))))
-        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
-        verify(taskPermit).close()
-    }
-
-    @Test
-    fun `does not delete task when retryable exceptions occur`() {
-        whenever(rateLimiter.acquirePermission()).thenReturn(true)
-        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(any())).thenThrow(RetryableEntityException("test"))
-
-        assertThrows<RetryableEntityException> { task.run() }
-
-        verifyNoInteractions(indexService)
-        verify(indexingTaskQueuePollingClient, never()).deleteTask(any())
-        verify(taskPermit).close()
-    }
-
-    @Test
-    fun `submits discovery on page redirected exception`() {
-        val location = "https://some-site.com/redirect/here"
-        whenever(rateLimiter.acquirePermission()).thenReturn(true)
-        whenever(indexingTaskQueuePollingClient.pollTask(queueName)).thenReturn(defaultIndexTask)
-        whenever(pageCrawlerService.get(any())).thenThrow(RedirectedEntityException(location, "test"))
-
-        task.run()
-
-        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(location))
-        verifyNoInteractions(indexService)
-        verify(indexingTaskQueuePollingClient).deleteTask(defaultIndexTask)
-        verify(taskPermit).close()
-    }
-
 }

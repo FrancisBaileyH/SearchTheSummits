@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
@@ -16,8 +17,8 @@ open class PipelineConfiguration(
 ) {
 
     @Bean
-    open fun indexingPipeline() {
-        pipeline {
+    open fun indexingPipeline(): Pipeline {
+        return pipeline {
             route(IndexTaskType.HTML) {
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
