@@ -30,7 +30,7 @@ class LinkDiscoveryTask(
     override fun run() {
         try {
             val discoveryUrl = URL(discovery).normalize()
-            val associatedTaskUrl = URL(associatedTask.details.pageUrl)
+            val associatedTaskUrl = associatedTask.details.pageUrl
 
             if (discovery.length > MAX_LINK_SIZE) {
                 log.warn { "Link: ${discovery.take(MAX_LINK_SIZE)} is too large to be processed" }
@@ -65,7 +65,7 @@ class LinkDiscoveryTask(
                         details = IndexTaskDetails(
                             id = UUID.randomUUID().toString(),
                             taskRunId = associatedTask.details.taskRunId,
-                            pageUrl = discoveryUrl.toString(),
+                            pageUrl = discoveryUrl,
                             submitTime = Instant.now().toEpochMilli(),
                             taskType = associatedTask.details.taskType,
                             refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds

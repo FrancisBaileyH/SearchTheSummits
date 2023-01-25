@@ -22,9 +22,7 @@ class HttpCrawlerClient(
         val response = getContent(pageUrl, responseValidationInterceptor)
 
         return try {
-            runBlocking {
-                transformer(response.body())
-            }
+            transformer(response)
         } catch (e: Exception) {
             throw UnparsableEntityException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
         }

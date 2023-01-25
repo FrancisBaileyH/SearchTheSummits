@@ -8,7 +8,6 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
-import java.net.URL
 
 @Component
 class IndexHtmlPageStep(
@@ -23,7 +22,7 @@ class IndexHtmlPageStep(
                 monitor.dependencyCircuitBreaker.executeCallable {
                     summitSearchIndexService.indexPageContents(
                         SummitSearchIndexRequest(
-                            source = URL(entity.task.source),
+                            source = entity.task.details.pageUrl,
                             htmlDocument = entity.payload!!
                         )
                     )

@@ -11,11 +11,14 @@ import kotlin.reflect.KClass
 
 interface ChainedRoute<T> {
     fun then(step: Step<T>): ChainedRoute<T>
+    fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
 }
 
 interface ChainableRoute<T> {
     fun firstRun(step: Step<T>): ChainedRoute<T>
+    fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
 }
+
 
 interface Step<T> {
     fun process(entity: PipelineItem<T>, monitor: PipelineMonitor): PipelineItem<T>
@@ -29,7 +32,7 @@ interface Step<T> {
 data class PipelineItem<T> (
     val task: IndexTask,
     var payload: T?,
-    var continueProcessing: Boolean = false,
+    var continueProcessing: Boolean = true,
     var canRetry: Boolean = false
 )
 
@@ -74,12 +77,13 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
         return this
     }
 
-    fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>) {
+    override fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T> {
         val mappedOverride = hostOverrides.getOrPut(host) {
             mutableMapOf()
         }
 
         mappedOverride[targetStep] = override
+        return this
     }
 
     /**
@@ -109,14 +113,14 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
         } ?: step
 
         return try {
-            monitor.meter.timer("${step.metricPrefix}.latency").recordCallable {
+            monitor.meter.timer("${stepToRun.metricPrefix}.latency").recordCallable {
                 stepToRun.process(pipelineItem, monitor).also {
-                    monitor.meter.counter("${step.metricPrefix}.success").increment()
+                    monitor.meter.counter("${stepToRun.metricPrefix}.success").increment()
                 }
             }!!
         } catch (e: Exception) {
-            monitor.meter.counter("${step.metricPrefix}.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source).increment()
-            log.error(e) { "Failed to run step: ${step::class.simpleName}" }
+            monitor.meter.counter("${stepToRun.metricPrefix}.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source).increment()
+            log.error(e) { "Failed to run step: ${stepToRun::class.simpleName}" }
             pipelineItem
         }
     }

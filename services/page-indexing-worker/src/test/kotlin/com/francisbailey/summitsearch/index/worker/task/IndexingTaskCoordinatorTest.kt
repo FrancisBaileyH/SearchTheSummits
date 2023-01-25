@@ -1,8 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
-import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
@@ -16,10 +15,7 @@ class IndexingTaskCoordinatorTest {
     private val queueAssignmentStore = mock<QueueAssignmentStore>()
     private val executor = mock<Executor>()
     private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
-    private val searchIndexService = mock<SummitSearchIndexService>()
-    private val pageCrawlerService = mock<PageCrawlerService>()
-    private val linkDiscoveryService = mock<LinkDiscoveryService>()
-    private val documentIndexFilterService = mock<DocumentFilterService>()
+    private val indexingPipeline = mock<Pipeline>()
 
     private val taskDependenciesCircuitBreaker = mock<CircuitBreaker>()
     private val perQueueCircuitBreaker = mock<CircuitBreaker>()
@@ -38,11 +34,8 @@ class IndexingTaskCoordinatorTest {
         taskRateLimiterRegistry = rateLimiterRegistry,
         circuitBreakerRegistry = circuitBreakerRegistry,
         indexingTaskQueuePollingClient = indexingTaskQueuePollingClient,
-        summitSearchIndexService = searchIndexService,
-        pageCrawlerService = pageCrawlerService,
-        linkDiscoveryService = linkDiscoveryService,
         taskPermitService = taskPermitService,
-        documentIndexingFilterService = documentIndexFilterService,
+        indexingPipeline = indexingPipeline,
         meterRegistry = SimpleMeterRegistry()
     )
 

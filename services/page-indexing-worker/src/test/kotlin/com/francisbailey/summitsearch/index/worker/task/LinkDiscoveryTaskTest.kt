@@ -31,6 +31,8 @@ class LinkDiscoveryTaskTest {
 
     private val meterRegistry = SimpleMeterRegistry()
 
+    private val defaultURL = URL("https://francisbailey.com")
+
 
     @Test
     fun `ignores links beyond max links size`() {
@@ -51,7 +53,7 @@ class LinkDiscoveryTaskTest {
 
     @Test
     fun `ignores external links`() {
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
 
         buildTask("https://some-other-page.com").run()
 
@@ -62,7 +64,7 @@ class LinkDiscoveryTaskTest {
 
     @Test
     fun `ignores link if it is the same as the associated task`() {
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
 
         buildTask("https://francisbailey.com").run()
 
@@ -74,7 +76,7 @@ class LinkDiscoveryTaskTest {
     @Test
     fun `ignores link if filter service returns true on should filter`() {
         val discovery = URL("https://francisbailey.com/wp-content/some-file.jpg")
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
         whenever(documentFilterService.shouldFilter(any())).thenReturn(true)
 
         buildTask(discovery.toString()).run()
@@ -87,7 +89,7 @@ class LinkDiscoveryTaskTest {
     @Test
     fun `skips link if metadata is too new`() {
         val discovery = URL("https://francisbailey.com/test")
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
         whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
         whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
@@ -101,7 +103,7 @@ class LinkDiscoveryTaskTest {
     @Test
     fun `normalizes links before consulting the store`() {
         val discovery = URL("https://francisbailey.com/test/test2?query=x#someFragment")
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
         whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
         whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
@@ -116,7 +118,7 @@ class LinkDiscoveryTaskTest {
     fun `if all conditions met then link is added to task queue and saved to task store`() {
         val discovery = URL("https://francisbailey.com/test")
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
-        whenever(indexTaskDetails.pageUrl).thenReturn("https://francisbailey.com")
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
         whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
         whenever(indexTaskDetails.taskType).thenReturn(IndexTaskType.HTML)
         whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(true)
@@ -126,7 +128,7 @@ class LinkDiscoveryTaskTest {
         verify(pageMetadataStore).getMetadata(discovery)
         verify(pageMetadataStoreItem).canRefresh(indexTaskDetails.refreshDuration())
         verify(taskQueueClient).addTask(check {
-            assertEquals(it.details.pageUrl, discovery.toString())
+            assertEquals(it.details.pageUrl, discovery)
             assertEquals(it.source, associatedTask.source)
             assertEquals(it.details.taskRunId, indexTaskDetails.taskRunId)
         })
