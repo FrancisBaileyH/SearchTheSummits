@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.controller
 
 import com.francisbailey.summitsearch.index.worker.api.GetDiscoveriesResponse
-import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
+import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 

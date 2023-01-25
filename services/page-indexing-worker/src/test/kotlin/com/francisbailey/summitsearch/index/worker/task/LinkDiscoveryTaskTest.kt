@@ -1,8 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
-import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStoreItem
+import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
+import com.francisbailey.summitsearch.index.worker.store.PageMetadataStoreItem
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

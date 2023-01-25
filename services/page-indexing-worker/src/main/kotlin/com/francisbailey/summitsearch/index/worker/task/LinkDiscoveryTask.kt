@@ -3,7 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.index.worker.metadata.PageMetadataStore
+import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging

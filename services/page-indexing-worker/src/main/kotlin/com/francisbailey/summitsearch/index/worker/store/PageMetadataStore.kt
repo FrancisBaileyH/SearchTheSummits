@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.metadata
+package com.francisbailey.summitsearch.index.worker.store
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -40,7 +40,8 @@ class PageMetadataStore(
             lastVisitTime = Instant.now().toEpochMilli(),
             pageUrl = pageUrl.toString().lowercase(),
             taskId = taskRunId
-        )))
+        )
+        ))
 
         log.info { "Successfully saved $taskRunId and $pageUrl to $key" }
     }

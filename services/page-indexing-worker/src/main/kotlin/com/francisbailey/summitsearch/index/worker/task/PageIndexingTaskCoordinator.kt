@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
+import com.francisbailey.summitsearch.index.worker.store.QueueAssignmentStore
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry

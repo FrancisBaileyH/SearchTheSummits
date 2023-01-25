@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.task
+package com.francisbailey.summitsearch.index.worker.store
 
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry

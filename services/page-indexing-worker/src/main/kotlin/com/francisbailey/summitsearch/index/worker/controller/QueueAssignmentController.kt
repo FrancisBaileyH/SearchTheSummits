@@ -4,7 +4,7 @@ import com.francisbailey.summitsearch.index.worker.api.DeleteAssignmentsResponse
 import com.francisbailey.summitsearch.index.worker.api.GetAssignmentsResponse
 import com.francisbailey.summitsearch.index.worker.api.PutAssignmentRequest
 import com.francisbailey.summitsearch.index.worker.api.PutAssignmentResponse
-import com.francisbailey.summitsearch.index.worker.task.QueueAssignmentStore
+import com.francisbailey.summitsearch.index.worker.store.QueueAssignmentStore
 import mu.KotlinLogging
 import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.bind.annotation.*

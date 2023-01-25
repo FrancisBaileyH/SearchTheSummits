@@ -1,5 +1,6 @@
-package com.francisbailey.summitsearch.index.worker.metadata
+package com.francisbailey.summitsearch.index.worker.store
 
+import com.francisbailey.summitsearch.index.worker.store.PageMetadataStoreItem
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
