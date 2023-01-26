@@ -23,16 +23,17 @@ class SaveThumbnailStep(
             val context = entity.task.details.getContext<ImageTaskContext>()!!
 
             monitor.dependencyCircuitBreaker.executeCallable {
-                monitor.meter.timer("$metricPrefix.imagestore.latency").recordCallable {
+                val reference = monitor.meter.timer("$metricPrefix.imagestore.latency").recordCallable {
                     imageWriterStore.save(path, entity.payload!!.bytes(imageWriter))
-                }
+                }!!
+
                 monitor.meter.timer("$metricPrefix.imageindex.latency").recordCallable {
                     imageIndexService.indexThumbnail(
                         SummitSearchImagePutRequest(
                             source = entity.task.details.pageUrl,
                             referencingDocument = context.referencingURL,
                             description = context.description,
-                            dataStoreReference = path
+                            dataStoreReference = reference.toString()
                         )
                     )
                 }!!

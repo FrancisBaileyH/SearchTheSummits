@@ -21,12 +21,14 @@ class ImageWriterStoreTest {
 
     private val storeName = "TestThumbnailStore"
 
-    private val writerStore = ImageWriterStore(storageClient, storeName)
+    private val endpoint = URL("https://some-endpoint.com")
+
+    private val writerStore = ImageWriterStore(storageClient, storeName, endpoint)
 
     @Test
     fun `generates expected id from URL`() {
         val url = URL("https://www.francisbaileyh.com/some/path/!with/illegal/chars.png")
-        val expectedId = "www-francisbaileyh-com/some-path-with-illegal-chars.png"
+        val expectedId = "www-francisbaileyh-com/0883ca0daac933ec53bae7701bc7be92d1f73410.png"
 
         assertEquals(expectedId, ImageWriterStore.buildPathFromUrl(url))
     }
@@ -65,12 +67,22 @@ class ImageWriterStoreTest {
     @Test
     fun `saves object to store`() {
         val path = "some-path"
-        writerStore.save(path, ByteArray(1))
+        val reference = writerStore.save(path, ByteArray(1))
 
+        assertEquals("https://TestThumbnailStore.some-endpoint.com/some-path", reference.toString())
         verify(storageClient).putObject(org.mockito.kotlin.check<PutObjectRequest> {
             assertEquals(storeName, it.bucket())
             assertEquals(path, it.key())
             assertEquals(ObjectCannedACL.PUBLIC_READ, it.acl())
         }, any<RequestBody>())
+    }
+
+    @Test
+    fun `resolve returns full endpoint from path`() {
+        val testPath = "www-francisbailey-com/abc123.png"
+
+        val url = writerStore.resolve(testPath)
+
+        assertEquals("https://$storeName.${endpoint.host}/$testPath", url.toString())
     }
 }

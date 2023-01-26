@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.store
 
+import com.francisbailey.summitsearch.index.worker.extension.toSha1
 import mu.KotlinLogging
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -9,11 +10,12 @@ import java.net.URL
 
 class ImageWriterStore(
     private val storageClient: S3Client,
-    private val storeName: String
+    private val storeName: String,
+    private val endpoint: URL
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun save(path: String, imageData: ByteArray) {
+    fun save(path: String, imageData: ByteArray): URL {
         log.info { "Saving image with path: $path to store $storeName" }
 
         storageClient.putObject(PutObjectRequest.builder()
@@ -23,6 +25,8 @@ class ImageWriterStore(
             .build(),
             RequestBody.fromBytes(imageData)
         )
+
+        return resolve(path)
     }
 
     fun exists(): Boolean {
@@ -48,17 +52,16 @@ class ImageWriterStore(
         }
     }
 
-    /**
-     * @TODO generate UUID with .png extension
-     */
-    companion object {
-        private val CHARACTER_FILTER = Regex("[^a-zA-Z0-9-/.]")
+    fun resolve(path: String): URL {
+        return URL("${endpoint.protocol}://$storeName.${endpoint.host}/$path")
+    }
 
-        fun buildPathFromUrl(url: URL): String {
+    companion object {
+        fun buildPathFromUrl(url: URL, extension: String = "png"): String {
             val basePath = url.host.replace(".", "-")
             val name = url.path.substringAfter("/").replace("/", "-")
 
-            return "$basePath/$name".replace(CHARACTER_FILTER, "")
+            return "$basePath/${name.toSha1()}.$extension"
         }
     }
 }

@@ -41,6 +41,8 @@ class SaveThumbnailStepTest: StepTest() {
         val imageCaption = "This is an image"
         val imageSrc = URL("https://www.test.com/some/path/here/image.jpeg")
 
+        val referenceStoreUrl = URL("https://www.test-store.com/abc1234")
+
         val context = ImageTaskContext(
             referencingURL = URL("https://www.francisbaileyh.com"),
             description = imageCaption
@@ -65,15 +67,16 @@ class SaveThumbnailStepTest: StepTest() {
         )
 
         whenever(image.bytes(any())).thenReturn(imageData)
+        whenever(imageStore.save(any(), any())).thenReturn(referenceStoreUrl)
 
         step.process(item, monitor)
 
-        verify(imageStore).save("www-test-com/some-path-here-image.jpeg", imageData)
+        verify(imageStore).save("www-test-com/b61099ca356b498764aa91614001bb297e514572.png", imageData)
         verify(imageIndex).indexThumbnail(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.referencingDocument)
             assertEquals(context.description, it.description)
             assertEquals(task.details.pageUrl, it.source)
-            assertEquals("www-test-com/some-path-here-image.jpeg", it.dataStoreReference)
+            assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
         })
 
     }

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import software.amazon.awssdk.services.s3.S3Client
+import java.net.URL
 
 @Configuration
 open class ImageConfiguration(
@@ -21,6 +22,10 @@ open class ImageConfiguration(
     open fun imageWriter() = PngWriter()
 
     @Bean
-    open fun imageWriterStore() = ImageWriterStore(s3Client, environment.getRequiredProperty("S3_STORE_NAME"))
+    open fun imageWriterStore() = ImageWriterStore(
+        s3Client,
+        environment.getRequiredProperty("S3_STORE_NAME"),
+        URL(environment.getRequiredProperty("S3_ENDPOINT"))
+    )
 
 }
