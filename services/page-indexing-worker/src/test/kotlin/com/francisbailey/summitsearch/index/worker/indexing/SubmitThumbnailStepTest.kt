@@ -3,16 +3,13 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
-import com.francisbailey.summitsearch.index.worker.extension.getOGImage
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitThumbnailStep
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
 
 class SubmitThumbnailStepTest: StepTest() {
 
@@ -23,8 +20,7 @@ class SubmitThumbnailStepTest: StepTest() {
 
     @Test
     fun `does not submit task if thumbnail is not present`() {
-        val document = mock<Document>()
-        whenever(document.getOGImage()).thenReturn(null)
+        val document = Jsoup.parse("<html><body></body></html>")
 
         val item = PipelineItem(
             payload = document,

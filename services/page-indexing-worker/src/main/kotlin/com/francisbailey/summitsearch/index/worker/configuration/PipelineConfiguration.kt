@@ -14,7 +14,8 @@ open class PipelineConfiguration(
     private val indexHtmlPageStep: IndexHtmlPageStep,
     private val fetchImageStep: FetchImageStep,
     private val generateThumbnailStep: GenerateThumbnailStep,
-    private val saveThumbnailStep: SaveThumbnailStep
+    private val saveThumbnailStep: SaveThumbnailStep,
+    private val submitThumbnailStep: SubmitThumbnailStep
 ) {
 
     @Bean
@@ -24,6 +25,7 @@ open class PipelineConfiguration(
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
                     .then(indexHtmlPageStep)
+                    .then(submitThumbnailStep)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(fetchImageStep)

@@ -18,13 +18,13 @@ class HttpCrawlerClient(
     private val log = KotlinLogging.logger { }
 
     fun <T> getContent(pageUrl: URL, responseValidationInterceptor: (HttpResponse) -> Unit, transformer: (HttpResponse) -> T): T {
-        log.info { "Fetching HTML content from: $pageUrl" }
+        log.info { "Fetching content from: $pageUrl" }
         val response = getContent(pageUrl, responseValidationInterceptor)
 
         return try {
             transformer(response)
         } catch (e: Exception) {
-            throw UnparsableEntityException("Unable to parse content as text from: $pageUrl. Reason: ${e.message}")
+            throw UnparsableEntityException("Unable to parse content from: $pageUrl. Reason: ${e.message}")
         }
     }
 

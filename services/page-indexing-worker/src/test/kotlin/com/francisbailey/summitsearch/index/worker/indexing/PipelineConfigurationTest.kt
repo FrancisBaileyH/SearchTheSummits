@@ -24,6 +24,7 @@ class PipelineConfigurationTest: StepTest() {
     private val fetchImageStep = mock<FetchImageStep>()
     private val generateThumbnailStep = mock<GenerateThumbnailStep>()
     private val saveThumbnailStep = mock<SaveThumbnailStep>()
+    private val submitThumbnailStep = mock<SubmitThumbnailStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -31,7 +32,8 @@ class PipelineConfigurationTest: StepTest() {
         indexHtmlPageStep = indexHtmlPageStep,
         fetchImageStep = fetchImageStep,
         generateThumbnailStep = generateThumbnailStep,
-        saveThumbnailStep = saveThumbnailStep
+        saveThumbnailStep = saveThumbnailStep,
+        submitThumbnailStep = submitThumbnailStep
     )
 
     @Test
@@ -54,15 +56,17 @@ class PipelineConfigurationTest: StepTest() {
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep) {
+        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep) {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
+            verify(submitThumbnailStep).process(any(), any())
         }
     }
 
