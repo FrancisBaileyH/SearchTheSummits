@@ -246,6 +246,26 @@ nav.header-menu ul > li a.current-nav-page {
     .search-logo-column .logo {
         height: 30px;
     }
+
+    .search-highlight-image-group {
+        display: none;
+    }
+}
+
+.search-result-highlight-group {
+    display: flex;
+}
+
+.search-highlight-image-group {
+    padding-left: 8px;
+    padding-top: 12px;
+}
+
+.search-highlight-image-group .search-highlight-thumbnail {
+    object-fit: cover;
+    width: 92px;
+    height: 92px;
+    border-radius: 16px;
 }
 
 .search-result-group .search-result:nth-child(n+2) {

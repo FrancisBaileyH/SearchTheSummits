@@ -80,16 +80,29 @@ function updateSearchResults(query, page) {
          json.hits.forEach(function(hitGroup) {
             var searchResult = "<div class=\"search-result-group\">"
             hitGroup.forEach(function(hit, index) {
+                var thumbnailHtml = ""
+
+                if (hit.thumbnail != null) {
+                    thumbnailHtml += "<div class=\"search-highlight-image-group\">"
+                    thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+                    thumbnailHtml += "</div>"
+                }
+
                 searchResult += "<div class=\"search-result\">"
-                searchResult += "<div class=\"search-result-link\">"
-                searchResult += "<a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
-                searchResult += "</div>"
-                searchResult += "<div class=\"search-result-title\">"
-                searchResult += "<h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
-                searchResult += "</div>"
-                searchResult += "<div class=\"search-result-highlight\">"
-                searchResult += "<p>" + hit.highlight + "...</p>"
-                searchResult += "</div>"
+                searchResult += "  <div class=\"search-result-link\">"
+                searchResult += "    <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+                searchResult += "  </div>"
+                searchResult += "  <div class=\"search-result-highlight-group\">"
+                searchResult += "    <div class=\"search-result-highlight-text-group\">"
+                searchResult += "      <div class=\"search-result-title\">"
+                searchResult += "        <h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
+                searchResult += "      </div>"
+                searchResult += "      <div class=\"search-result-highlight\">"
+                searchResult += "        <p>" + hit.highlight + "...</p>"
+                searchResult += "      </div>"
+                searchResult += "    </div>"
+                searchResult += thumbnailHtml
+                searchResult += "  </div>"
                 searchResult += "</div>"
              });
              searchResult += "</div>"
