@@ -3,9 +3,7 @@ package com.francisbailey.summitsearch.index.worker.configuration
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.pipeline
-import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitLinksStep
+import com.francisbailey.summitsearch.index.worker.indexing.step.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -13,7 +11,10 @@ import org.springframework.context.annotation.Configuration
 open class PipelineConfiguration(
     private val fetchHtmlPageStep: FetchHtmlPageStep,
     private val submitLinksStep: SubmitLinksStep,
-    private val indexHtmlPageStep: IndexHtmlPageStep
+    private val indexHtmlPageStep: IndexHtmlPageStep,
+    private val fetchImageStep: FetchImageStep,
+    private val generateThumbnailStep: GenerateThumbnailStep,
+    private val saveThumbnailStep: SaveThumbnailStep
 ) {
 
     @Bean
@@ -23,6 +24,11 @@ open class PipelineConfiguration(
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
                     .then(indexHtmlPageStep)
+            }
+            route(IndexTaskType.THUMBNAIL) {
+                firstRun(fetchImageStep)
+                    .then(generateThumbnailStep)
+                    .then(saveThumbnailStep)
             }
         }
     }

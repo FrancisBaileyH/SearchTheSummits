@@ -98,10 +98,25 @@ data class IndexTaskDetails(
     val pageUrl: URL,
     val submitTime: Long,
     val taskType: IndexTaskType,
-    val refreshIntervalSeconds: Long // 0 represents never refresh
+    val refreshIntervalSeconds: Long, // 0 represents never refresh
+    val context: String? = null
 ) {
     fun refreshDuration(): Duration = Duration.ofSeconds(refreshIntervalSeconds)
+
+    inline fun <reified T> getContext(): T? {
+        return context?.let {
+            Json.decodeFromString<T>(context)
+        }
+    }
 }
+
+@Serializable
+data class ImageTaskContext(
+    @Serializable(with = URLSerializer::class)
+    val referencingURL: URL,
+    val description: String
+)
+
 
 @Serializable
 enum class IndexTaskType {

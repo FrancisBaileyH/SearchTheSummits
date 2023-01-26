@@ -10,6 +10,18 @@ fun Element.src(): String? {
     return this.attr("src")
 }
 
+fun Element.getOGImage(): CaptionedImage? {
+    val imageUrl = this.selectFirst("meta[property=og:image]")?.attr("content")
+    val imageCaption = this.selectFirst("meta[property=og:image:alt]")?.attr("content")
+
+    return imageUrl?.let {
+        CaptionedImage(
+            imageSrc = imageUrl,
+            caption = imageCaption ?: ""
+        )
+    }
+}
+
 fun Element.getCaptionedImages(): List<CaptionedImage> {
     val figures = this.select("figure") as List<Element>
 

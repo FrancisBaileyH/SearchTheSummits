@@ -51,4 +51,26 @@ class ElementExtensionTest {
         assertTrue(images.isEmpty())
     }
 
+    @Test
+    fun `fetches og image`() {
+        val html = """
+            <html>
+            <head>
+            <meta property="og:image" content="https://www.somesite.com/image.jpeg" />
+            <meta property="og:image:alt" content="Test Caption" />
+            </head>
+            <body>
+                <p>YEP</p>
+            </body>
+            </html>
+        """
+
+        val document = Jsoup.parse(html)
+
+        val captionedImage = document.getOGImage()
+
+        assertEquals("https://www.somesite.com/image.jpeg", captionedImage?.imageSrc)
+        assertEquals("Test Caption", captionedImage?.caption)
+    }
+
 }

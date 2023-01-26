@@ -48,6 +48,9 @@ class ImageWriterStore(
         }
     }
 
+    /**
+     * @TODO generate UUID with .png extension
+     */
     companion object {
         private val CHARACTER_FILTER = Regex("[^a-zA-Z0-9-/.]")
 
