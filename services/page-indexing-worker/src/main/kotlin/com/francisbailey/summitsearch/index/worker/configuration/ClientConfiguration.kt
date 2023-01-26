@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
+import com.francisbailey.summitsearch.indexservice.ImageIndexService
 import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
@@ -14,9 +15,13 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import redis.clients.jedis.JedisPooled
 import redis.clients.jedis.UnifiedJedis
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsClient
+import java.net.URI
 import java.time.Duration
 
 
@@ -77,12 +82,38 @@ open class ClientConfiguration(
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
                 )
             )
-            else -> SummitSearchIndexServiceFactory.buildInsecureLocal(
+            else -> SummitSearchIndexServiceFactory.build(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    scheme = "http"
+                )
+            )
+        }.also {
+            it.createIfNotExists()
+        }
+    }
+
+    @Bean
+    open fun imageIndexService(): ImageIndexService {
+        return when {
+            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildImageIndex(
                 SearchIndexServiceConfiguration(
                     fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                )
+            )
+            else -> SummitSearchIndexServiceFactory.buildImageIndex(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    scheme = "http"
                 )
             )
         }.also {
@@ -98,6 +129,20 @@ open class ClientConfiguration(
             environment.getRequiredProperty("REDIS_USERNAME"),
             environment.getRequiredProperty("REDIS_PASSWORD")
         )
+    }
+
+    @Bean
+    open fun s3Client(): S3Client {
+        return S3Client.builder()
+            .region(Region.of(environment.getRequiredProperty("S3_REGION")))
+            .endpointOverride(URI(environment.getRequiredProperty("S3_ENDPOINT")))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create(
+                    environment.getRequiredProperty("S3_ACCESS_KEY"),
+                    environment.getRequiredProperty("S3_SECRET_KEY")
+                ))
+            )
+            .build()
     }
 
     companion object {

@@ -15,53 +15,46 @@ class SummitSearchIndexServiceFactory {
 
     companion object {
 
-        fun buildInsecureLocal(configuration: SearchIndexServiceConfiguration): SummitSearchIndexService {
-            val elasticSearchClient = ElasticsearchClient(
-                RestClientTransport(
-                    RestClient.builder(
-                        HttpHost(
-                            configuration.endpoint,
-                            configuration.port,
-                            "http"
-                        )
-                    ).build(),
-                    JacksonJsonpMapper().apply {
-                        this.objectMapper().registerModule(KotlinModule())
-                    }
-                )
-            )
-
-            return SummitSearchIndexService(elasticSearchClient, configuration.paginationResultSize)
+        fun buildImageIndex(configuration: SearchIndexServiceConfiguration): ImageIndexService {
+            return ImageIndexService(buildESClient(configuration), configuration.paginationResultSize)
         }
 
         fun build(configuration: SearchIndexServiceConfiguration): SummitSearchIndexService {
-            val sslContext = TransportUtils.sslContextFromCaFingerprint(configuration.fingerprint)
-            val credentialsProvider = BasicCredentialsProvider().apply {
-                this.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(
-                    configuration.username,
-                    configuration.password
-                ))
+            return SummitSearchIndexService(buildESClient(configuration), configuration.paginationResultSize)
+        }
+
+        private fun buildESClient(configuration: SearchIndexServiceConfiguration): ElasticsearchClient {
+            val restClientBuilder = RestClient.builder(
+                HttpHost(
+                    configuration.endpoint,
+                    configuration.port,
+                    configuration.scheme
+                )
+            )
+
+            if (configuration.scheme == "https") {
+                val sslContext = TransportUtils.sslContextFromCaFingerprint(configuration.fingerprint)
+                val credentialsProvider = BasicCredentialsProvider().apply {
+                    this.setCredentials(AuthScope.ANY, UsernamePasswordCredentials(
+                        configuration.username,
+                        configuration.password
+                    ))
+                }
+
+                restClientBuilder.setHttpClientConfigCallback {
+                    it.setSSLContext(sslContext)
+                    it.setDefaultCredentialsProvider(credentialsProvider)
+                }
             }
 
-            val elasticSearchClient = ElasticsearchClient(
+            return ElasticsearchClient(
                 RestClientTransport(
-                    RestClient.builder(
-                        HttpHost(
-                            configuration.endpoint,
-                            configuration.port,
-                            configuration.scheme
-                        )
-                    ).setHttpClientConfigCallback {
-                        it.setSSLContext(sslContext)
-                        it.setDefaultCredentialsProvider(credentialsProvider)
-                    }.build(),
+                    restClientBuilder.build(),
                     JacksonJsonpMapper().apply {
                         this.objectMapper().registerModule(KotlinModule())
                     }
                 )
             )
-
-            return SummitSearchIndexService(elasticSearchClient, configuration.paginationResultSize)
         }
     }
 }

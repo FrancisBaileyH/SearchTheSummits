@@ -68,12 +68,12 @@ class SaveThumbnailStepTest: StepTest() {
 
         step.process(item, monitor)
 
-        verify(imageStore).save("www-test-com/image.jpeg", imageData)
+        verify(imageStore).save("www-test-com/some-path-here-image.jpeg", imageData)
         verify(imageIndex).indexThumbnail(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.referencingDocument)
             assertEquals(context.description, it.description)
             assertEquals(task.details.pageUrl, it.source)
-            assertEquals("www-test-com/image.jpeg", it.dataStoreReference)
+            assertEquals("www-test-com/some-path-here-image.jpeg", it.dataStoreReference)
         })
 
     }

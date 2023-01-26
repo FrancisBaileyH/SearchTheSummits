@@ -70,7 +70,7 @@ class ImageIndexService(
     private fun indexImage(type: ImageType, request: SummitSearchImagePutRequest) {
         log.info { "Indexing image: $type for source: ${request.source}" }
 
-        elasticSearchClient.index(IndexRequest.of {
+        val result = elasticSearchClient.index(IndexRequest.of {
             it.index(indexName)
             it.id(generateIdFromUrl(request.source))
             it.document(ImageMapping(
@@ -83,6 +83,8 @@ class ImageIndexService(
                 type = type
             ))
         })
+
+        log.info { "Saved image: ${request.source}: ${result.result()}" }
     }
 
 
