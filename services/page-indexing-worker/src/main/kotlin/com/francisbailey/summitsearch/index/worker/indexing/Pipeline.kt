@@ -119,6 +119,7 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
                 }
             }!!
         } catch (e: Exception) {
+            monitor.meter.counter("Pipeline.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source)
             monitor.meter.counter("${stepToRun.metricPrefix}.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source).increment()
             log.error(e) { "Failed to run step: ${stepToRun::class.simpleName}" }
             pipelineItem
