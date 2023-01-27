@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700&display=swap" rel="stylesheet">  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg"/>
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/images/site.webmanifest">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/search.css?cb=v1.0.4">
+  <title>Search the Summits</title>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/search.js?cb=v1.0.4"></script>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="column">
+      <nav class="header-menu">
+        <ul>
+          <li><a href="/">Search</a></li>
+          <li><a href="/about.html">About</a></li>
+          <li><a class="current-nav-page" href="/updates.html">Updates</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">
+      <h4 style="text-align: center; margin-top: 2em;">Latest Updates</h4>
+      <h5>January 26th, 2023</h5>
+      <ul>
+        <li>SearchTheSummits now supports thumbnails in search results!</li>
+        <li>In an effort to enrich the search experience, I've been busy working on image indexing logic.</li>
+        <li>Pages which have an appropriate display image will now have a thumbnail displayed next to the corresponding search result. The web crawler must re-index all existing pages, in order for thumbnails to be created, so it will take some time. The most recently indexed pages will have thumnbails already.</li>
+        <li>This is a precursor to image searching, which I am evaluating and potentially implementing in the near future</li>
+        <li>My next step is to add support for peakbagger.com's selected trip reports and fix some minor bugs</li>
+      </ul>
+      <h5>January 15th, 2023</h5>
+      <ul>
+        <li>Search the summits reaches over <strong>100,000</strong> web pages indexed from a starting point of just 50,000 a week prior</li>
+        <li>Added support for NWHikers.net forums. Their posts are now searchable!</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<footer>
+  <div id="footer-image"></div>
+</footer>
+</body>
+</html>
