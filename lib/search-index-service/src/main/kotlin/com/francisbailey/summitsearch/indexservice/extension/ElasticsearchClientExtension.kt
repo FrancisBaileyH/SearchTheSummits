@@ -35,3 +35,9 @@ internal fun <T> Hit<T>.stringField(name: String): String {
             JsonpDeserializer.stringDeserializer()
         )).first()
 }
+
+internal fun <T> Hit<T>.listField(name: String): List<String>? {
+    return this.fields()[name]?.deserialize(JsonpDeserializer.arrayDeserializer(
+        JsonpDeserializer.stringDeserializer()
+    ))
+}

@@ -2,8 +2,6 @@ package com.francisbailey.summitsearch.frontend.controller
 
 
 import com.francisbailey.summitsearch.frontend.cdn.DigitalOceanCDNShim
-import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchGetThumbnailsRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
 import io.micrometer.core.instrument.MeterRegistry
@@ -21,7 +19,6 @@ import java.net.URL
 @RestController
 class SearchController(
     private val summitSearchIndexService: SummitSearchIndexService,
-    private val imageIndexService: ImageIndexService,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry
 ) {
@@ -42,25 +39,13 @@ class SearchController(
                 )
             }!!
 
-            val thumbnailsResponse = meterRegistry.timer("api.searchindex.thumbnails.latency").recordCallable {
-                imageIndexService.fetchThumbnails(
-                    SummitSearchGetThumbnailsRequest(
-                        referenceDocuments = response.hits.map {
-                            URL(it.source)
-                        }.toSet()
-                    )
-                )
-            }
-
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
-                    val thumbnail = thumbnailsResponse?.getThumbnailsByUrl(URL(it.source))?.firstOrNull()?.dataStoreReference
-
                     SummitSearchHitResponse(
                         highlight = it.highlight,
                         source = it.source,
                         title = it.title,
-                        thumbnail = thumbnail?.let { tUrl -> digitalOceanCdnShim.originToCDN(URL(tUrl)).toString() }
+                        thumbnail = it.thumbnails?.firstOrNull()?.let { tUrl -> digitalOceanCdnShim.originToCDN(URL(tUrl)).toString() }
                     )
                 }.groupBy { URL(it.source).host }.values,
                 totalHits = response.totalHits,

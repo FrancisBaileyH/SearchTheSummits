@@ -7,9 +7,11 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*
 import co.elastic.clients.elasticsearch.core.DeleteRequest
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
+import co.elastic.clients.json.JsonpDeserializer
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -70,6 +72,9 @@ class SummitSearchIndexService(
                     },
                     FieldAndFormat.of { field ->
                         field.field(HtmlMapping::title.name)
+                    },
+                    FieldAndFormat.of { field ->
+                        field.field(HtmlMapping::thumbnails.name)
                     }
                 ))
                 it.source { sourceConfig ->
@@ -103,12 +108,24 @@ class SummitSearchIndexService(
                     SummitSearchHit(
                         highlight = seoHighlight ?: paragraphHighlight ?: rawTextHighlight!!,
                         source = it.stringField(HtmlMapping::source.name),
-                        title = it.stringField(HtmlMapping::title.name)
+                        title = it.stringField(HtmlMapping::title.name),
+                        thumbnails = it.listField(HtmlMapping::thumbnails.name)
                     )
                 },
             next = queryRequest.from + paginationResultSize,
             totalHits = response.hits().total()?.value() ?: 0
         )
+    }
+
+    fun putThumbnails(request: SummitSearchPutThumbnailRequest) {
+        log.info { "Updating thumbnails for: ${request.source}" }
+        elasticSearchClient.update(UpdateRequest.of {
+            it.index(indexName)
+            it.id(generateIdFromUrl(request.source))
+            it.doc(mapOf(
+                HtmlMapping::thumbnails.name to request.dataStoreReferences
+            ))
+        }, HtmlMapping::class.java)
     }
 
     fun indexPageContents(request: SummitSearchIndexRequest) {
@@ -133,7 +150,8 @@ class SummitSearchIndexService(
                     host = request.source.host,
                     rawTextContent = textOnly,
                     paragraphContent = paragraphContent,
-                    seoDescription = description
+                    seoDescription = description,
+                    thumbnails = emptyList()
                 ))
             }
         )
@@ -145,7 +163,7 @@ class SummitSearchIndexService(
         log.info { "Deleting: ${request.source} from index: $indexName" }
         val response = elasticSearchClient.delete(DeleteRequest.of {
             it.index(indexName)
-            it.id(request.source.toString())
+            it.id(generateIdFromUrl(request.source))
         })
 
         log.info { "Result: ${response.result()}" }
@@ -243,7 +261,8 @@ data class SummitSearchPaginatedResult(
 data class SummitSearchHit(
     val highlight: String,
     val source: String,
-    val title: String
+    val title: String,
+    val thumbnails: List<String>?
 )
 
 data class SummitSearchQueryRequest(
@@ -260,11 +279,17 @@ data class SummitSearchDeleteIndexRequest(
     val source: URL
 )
 
+data class SummitSearchPutThumbnailRequest(
+    val source: URL,
+    val dataStoreReferences: List<String>
+)
+
 internal data class HtmlMapping(
     val host: String,
     val source: URL,
     val title: String,
     val seoDescription: String,
     val paragraphContent: String,
-    val rawTextContent: String
+    val rawTextContent: String,
+    val thumbnails: List<String>?
 )

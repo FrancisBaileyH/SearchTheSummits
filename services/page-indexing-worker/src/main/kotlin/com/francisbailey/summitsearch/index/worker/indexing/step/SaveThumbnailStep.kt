@@ -5,8 +5,8 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
-import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchImagePutRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.SummitSearchPutThumbnailRequest
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import org.springframework.stereotype.Component
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 class SaveThumbnailStep(
     private val imageWriterStore: ImageWriterStore,
     private val imageWriter: ImageWriter,
-    private val imageIndexService: ImageIndexService
+    private val summitSearchIndexService: SummitSearchIndexService
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         return try {
@@ -27,13 +27,11 @@ class SaveThumbnailStep(
                     imageWriterStore.save(path, entity.payload!!.bytes(imageWriter))
                 }!!
 
-                monitor.meter.timer("$metricPrefix.imageindex.latency").recordCallable {
-                    imageIndexService.indexThumbnail(
-                        SummitSearchImagePutRequest(
-                            source = entity.task.details.pageUrl,
-                            referencingDocument = context.referencingURL,
-                            description = context.description,
-                            dataStoreReference = reference.toString()
+                monitor.meter.timer("$metricPrefix.indexservice.latency").recordCallable {
+                    summitSearchIndexService.putThumbnails(
+                        SummitSearchPutThumbnailRequest(
+                            source = context.referencingURL,
+                            dataStoreReferences = listOf(reference.toString())
                         )
                     )
                 }!!

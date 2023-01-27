@@ -6,7 +6,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.SaveThumbnailStep
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
-import com.francisbailey.summitsearch.indexservice.ImageIndexService
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.PngWriter
 import kotlinx.serialization.encodeToString
@@ -27,11 +27,11 @@ class SaveThumbnailStepTest: StepTest() {
 
     private val imageStore = mock<ImageWriterStore>()
 
-    private val imageIndex = mock<ImageIndexService>()
+    private val index = mock<SummitSearchIndexService>()
 
     private val imageWriter = mock<PngWriter>()
 
-    private val step = SaveThumbnailStep(imageStore, imageWriter, imageIndex)
+    private val step = SaveThumbnailStep(imageStore, imageWriter, index)
 
 
     @Test
@@ -72,11 +72,9 @@ class SaveThumbnailStepTest: StepTest() {
         step.process(item, monitor)
 
         verify(imageStore).save("www-test-com/b61099ca356b498764aa91614001bb297e514572.png", imageData)
-        verify(imageIndex).indexThumbnail(org.mockito.kotlin.check {
-            assertEquals(context.referencingURL, it.referencingDocument)
-            assertEquals(context.description, it.description)
-            assertEquals(task.details.pageUrl, it.source)
-            assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
+        verify(index).putThumbnails(org.mockito.kotlin.check {
+            assertEquals(context.referencingURL, it.source)
+            assertEquals(listOf(referenceStoreUrl.toString()), it.dataStoreReferences)
         })
 
     }

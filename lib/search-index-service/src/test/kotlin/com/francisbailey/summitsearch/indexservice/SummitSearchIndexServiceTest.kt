@@ -11,6 +11,7 @@ import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
+import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -332,7 +333,7 @@ class SummitSearchIndexServiceTest {
 
         val result = client.get(GetRequest.of {
             it.index(index)
-            it.id(url.toString())
+            it.id(generateIdFromUrl(url))
         }, HtmlMapping::class.java)
 
         assertFalse(result.found())
@@ -397,6 +398,85 @@ class SummitSearchIndexServiceTest {
         verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
     }
 
+    @Test
+    fun `adds thumbnails to document on update call`() {
+        val index = "thumbnail-index-test"
+        val testIndexService = createIndex(index)
+
+        val page = loadHtml("LibertyBell")
+        val url = URL("$sourceUrlString/LibertyBell")
+
+        val thumnbails = listOf("data-reference-1", "data-reference-2")
+
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
+        refreshIndex(index)
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(generateIdFromUrl(url))
+            },
+            HtmlMapping::class.java
+        )
+
+        assertNotNull(document)
+        assertEquals(emptyList<String>(),  document?.source()?.thumbnails)
+
+        testIndexService.putThumbnails(
+            SummitSearchPutThumbnailRequest(
+            source = url,
+            dataStoreReferences = thumnbails
+        )
+        )
+        refreshIndex(index)
+
+        val documentWithThumbnails = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(generateIdFromUrl(url))
+            },
+            HtmlMapping::class.java
+        )
+        assertEquals(thumnbails, documentWithThumbnails?.source()?.thumbnails)
+    }
+
+    @Test
+    fun `adds thumbnails to document and is available in query after`() {
+        val index = "thumbnail-index-test-query"
+        val testIndexService = createIndex(index)
+
+        val page = loadHtml("LibertyBell")
+        val url = URL("$sourceUrlString/LibertyBell")
+
+        val thumnbails = listOf("data-reference-1", "data-reference-2")
+
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
+        refreshIndex(index)
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(generateIdFromUrl(url))
+            },
+            HtmlMapping::class.java
+        )
+
+        assertNotNull(document)
+        assertEquals(emptyList<String>(),  document?.source()?.thumbnails)
+
+        testIndexService.putThumbnails(
+            SummitSearchPutThumbnailRequest(
+                source = url,
+                dataStoreReferences = thumnbails
+            )
+        )
+        refreshIndex(index)
+
+        val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+
+        assertEquals(thumnbails, results.hits.first().thumbnails)
+    }
+
     private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {
         return SearchRequest.of {
             it.index(index)
@@ -423,6 +503,9 @@ class SummitSearchIndexServiceTest {
                 },
                 FieldAndFormat.of { field ->
                     field.field(HtmlMapping::title.name)
+                },
+                FieldAndFormat.of {field ->
+                    field.field(HtmlMapping::thumbnails.name)
                 }
             ))
             it.source { sourceConfig ->
