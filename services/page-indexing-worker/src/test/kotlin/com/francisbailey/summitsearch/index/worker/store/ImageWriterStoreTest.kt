@@ -28,7 +28,7 @@ class ImageWriterStoreTest {
     @Test
     fun `generates expected id from URL`() {
         val url = URL("https://www.francisbaileyh.com/some/path/!with/illegal/chars.png")
-        val expectedId = "www-francisbaileyh-com/0883ca0daac933ec53bae7701bc7be92d1f73410.png"
+        val expectedId = "e7ce5206e216b1e5717cce5adc27ceaef939c568/534061934380f24125de1131dade1bbb6e9b5086.png"
 
         assertEquals(expectedId, ImageWriterStore.buildPathFromUrl(url))
     }

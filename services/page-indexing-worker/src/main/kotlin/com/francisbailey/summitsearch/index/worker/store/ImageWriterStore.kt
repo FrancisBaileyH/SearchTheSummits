@@ -58,10 +58,7 @@ class ImageWriterStore(
 
     companion object {
         fun buildPathFromUrl(url: URL, extension: String = "png"): String {
-            val basePath = url.host.replace(".", "-")
-            val name = url.path.substringAfter("/").replace("/", "-")
-
-            return "$basePath/${name.toSha1()}.$extension"
+            return "${url.host.toSha1()}/${url.path.toSha1()}.$extension"
         }
     }
 }
