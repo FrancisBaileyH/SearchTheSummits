@@ -135,9 +135,12 @@ class SummitSearchIndexService(
             it.remove()
         }
 
+        val title = request.htmlDocument.title().ifBlank {
+            request.source.host
+        }
+
         val textOnly = request.htmlDocument.body().text()
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
-        val title = request.htmlDocument.title()
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
         val result = elasticSearchClient.index(

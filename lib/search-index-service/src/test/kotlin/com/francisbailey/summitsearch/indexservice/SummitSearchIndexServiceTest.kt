@@ -195,6 +195,39 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
+    fun `title fallsback to URL if title value is missing`() {
+        val index = "missing-title-index"
+        val testIndexService = createIndex(index)
+        val sourceURL = URL("http://francisbaileyh.com/test")
+
+        val html = """
+           <html>
+             <body>
+               <p>Some Test</p>
+             </body>
+           </html>
+        """
+
+        testIndexService.indexPageContents(
+            SummitSearchIndexRequest(
+            source = sourceURL,
+            htmlDocument = Jsoup.parse(html)
+        ))
+
+        refreshIndex(index)
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id(generateIdFromUrl(sourceURL))
+            },
+            HtmlMapping::class.java
+        )
+
+        assertEquals(sourceURL.host, document.source()?.title)
+    }
+
+    @Test
     fun `malicious text stripped from content fields on indexing`() {
         val source = "francisbaileyh.com/this-test"
         val sourceUrl = URL("http://$source")
