@@ -88,6 +88,8 @@ object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
         merge(WordPressFilterChain)
         // Exclude images
         merge(ImageFilterChain)
+        // Exclude ecommerce links (best effort)
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*/product/.*|.*/store/.*")))
     }
 }
 

@@ -71,14 +71,17 @@ class CrawlerFilterTest {
             "/blog/tag/test",
             "/blog/category/test",
             "/blog/author/test",
-            "/blog/wp-content/test"
+            "/blog/wp-content/test",
+            "/store/",
+            "/product/abc123"
         ).map {
             urlString + it
         }
 
         val expectedNotToSkip = listOf(
             "/some-normal-page",
-            "/2022/06/12/some-page"
+            "/2022/06/12/some-page",
+            "/store-of-the-skies"
         ).map {
             urlString + it
         }
