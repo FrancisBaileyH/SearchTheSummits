@@ -215,41 +215,8 @@ nav.header-menu ul > li a.current-nav-page {
     display: none;
 }
 
-@media(max-width: 1300px) {
-    .search-form-container.has-query .search-logo-column {
-        padding-right: 1em;
-        position: relative;
-        width: 100%;
-        left: 0;
-        text-align: center;
-        margin-bottom: 1em;
-    }
-
-    .search-form-container.has-query h3 {
-        font-size: 1.4em;
-    }
-
-    .search-form-container.has-query h3 a {
-        text-decoration: none;
-    }
-}
-
-@media(max-width: 500px) {
-    .search-form-container h3 {
-        font-size: 2.8rem;
-    }
-
-    .search-form-container .search-form-tagline {
-        font-size: 1.35rem;
-    }
-
-    .search-logo-column .logo {
-        height: 30px;
-    }
-
-    .search-highlight-image-group {
-        display: none;
-    }
+.search-highlight-mobile-image-group {
+    display: none;
 }
 
 .search-result-highlight-group {
@@ -262,7 +229,7 @@ nav.header-menu ul > li a.current-nav-page {
     margin-left: auto;
 }
 
-.search-highlight-image-group .search-highlight-thumbnail {
+.search-highlight-thumbnail {
     object-fit: cover;
     width: 92px;
     height: 92px;
@@ -361,4 +328,52 @@ footer #footer-image {
     background-repeat: no-repeat;
     background-size: cover;
     min-height: 300px;
+}
+
+
+@media(max-width: 1300px) {
+    .search-form-container.has-query .search-logo-column {
+        padding-right: 1em;
+        position: relative;
+        width: 100%;
+        left: 0;
+        text-align: center;
+        margin-bottom: 1em;
+    }
+
+    .search-form-container.has-query h3 {
+        font-size: 1.4em;
+    }
+
+    .search-form-container.has-query h3 a {
+        text-decoration: none;
+    }
+}
+
+@media(max-width: 500px) {
+    .search-form-container h3 {
+        font-size: 2.8rem;
+    }
+
+    .search-form-container .search-form-tagline {
+        font-size: 1.35rem;
+    }
+
+    .search-logo-column .logo {
+        height: 30px;
+    }
+
+    .search-highlight-image-group {
+        display: none;
+    }
+
+    .search-highlight-mobile-image-group {
+        display: flex;
+        margin-left: auto;
+        padding-left: 12px;
+    }
+
+    .search-result-highlight {
+        display: flex;
+    }
 }

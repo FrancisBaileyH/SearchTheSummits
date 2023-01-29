@@ -81,11 +81,15 @@ function updateSearchResults(query, page) {
             var searchResult = "<div class=\"search-result-group\">"
             hitGroup.forEach(function(hit, index) {
                 var thumbnailHtml = ""
+                var mobileThumbnailHtml = ""
 
                 if (hit.thumbnail != null) {
                     thumbnailHtml += "<div class=\"search-highlight-image-group\">"
                     thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
                     thumbnailHtml += "</div>"
+                    mobileThumbnailHtml += "<div class=\"search-highlight-mobile-image-group\">"
+                    mobileThumbnailHtml += "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+                    mobileThumbnailHtml += "</div>"
                 }
 
                 searchResult += "<div class=\"search-result\">"
@@ -99,6 +103,7 @@ function updateSearchResults(query, page) {
                 searchResult += "      </div>"
                 searchResult += "      <div class=\"search-result-highlight\">"
                 searchResult += "        <p>" + hit.highlight + "...</p>"
+                searchResult +=          mobileThumbnailHtml
                 searchResult += "      </div>"
                 searchResult += "    </div>"
                 searchResult += thumbnailHtml
