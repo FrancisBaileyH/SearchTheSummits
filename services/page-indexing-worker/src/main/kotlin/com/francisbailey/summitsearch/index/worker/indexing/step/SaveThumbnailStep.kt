@@ -4,6 +4,7 @@ import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
+import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchPutThumbnailRequest
@@ -23,7 +24,7 @@ class SaveThumbnailStep(
 
             monitor.dependencyCircuitBreaker.executeCallable {
                 val reference = monitor.meter.timer("$metricPrefix.imagestore.latency").recordCallable {
-                    imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter))
+                    imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter), ImageStoreType.THUMBNAIL)
                 }!!
 
                 monitor.meter.timer("$metricPrefix.indexservice.latency").recordCallable {

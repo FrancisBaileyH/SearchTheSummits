@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.SaveThumbnailStep
+import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.sksamuel.scrimage.ImmutableImage
@@ -67,11 +68,11 @@ class SaveThumbnailStepTest: StepTest() {
         )
 
         whenever(image.bytes(any())).thenReturn(imageData)
-        whenever(imageStore.save(any<URL>(), any())).thenReturn(referenceStoreUrl)
+        whenever(imageStore.save(any<URL>(), any(), any())).thenReturn(referenceStoreUrl)
 
         step.process(item, monitor)
 
-        verify(imageStore).save(imageSrc, imageData)
+        verify(imageStore).save(imageSrc, imageData, ImageStoreType.THUMBNAIL)
         verify(index).putThumbnails(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.source)
             assertEquals(listOf(referenceStoreUrl.toString()), it.dataStoreReferences)
