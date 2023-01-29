@@ -89,6 +89,7 @@ class SummitSearchIndexService(
                         HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
                     ))
                     highlight.order(HighlighterOrder.Score)
+                    highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
                 }
                 it.size(paginationResultSize)
                 it.from(queryRequest.from)
@@ -101,12 +102,20 @@ class SummitSearchIndexService(
                 .filterNot { it.highlight().isEmpty() }
                 .map {
                     // Order of precedence for matches
-                    val seoHighlight = it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull()
-                    val paragraphHighlight = it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull()
-                    val rawTextHighlight = it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
+                    val highlightOptions = listOf(
+                        it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull(),
+                        it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull(),
+                        it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
+                    )
+
+                    val highlight = highlightOptions.firstOrNull { highlight ->
+                        highlight?.contains(HIGHLIGHT_DELIMITER) ?: false
+                    } ?: highlightOptions.filterNot { highlight ->
+                        highlight.isNullOrBlank()
+                    }.first()
 
                     SummitSearchHit(
-                        highlight = seoHighlight ?: paragraphHighlight ?: rawTextHighlight!!,
+                        highlight = highlight!!,
                         source = it.stringField(HtmlMapping::source.name),
                         title = it.stringField(HtmlMapping::title.name),
                         thumbnails = it.listField(HtmlMapping::thumbnails.name)
@@ -232,6 +241,7 @@ class SummitSearchIndexService(
        const val HIGHLIGHT_FRAGMENT_SIZE = 200
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
        const val PHRASE_TERM_THRESHOLD = 2
+       const val HIGHLIGHT_DELIMITER = "<em>"
 
        private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9'\\s]")
 

@@ -553,6 +553,7 @@ class SummitSearchIndexServiceTest {
                     HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
                 ))
                 highlight.order(HighlighterOrder.Score)
+                highlight.noMatchSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
             }
             it.size(20)
             it.from(0)
