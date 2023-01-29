@@ -44,7 +44,7 @@ class SearchController(
                     SummitSearchHitResponse(
                         highlight = it.highlight,
                         source = it.source,
-                        title = it.title,
+                        title = it.title.ifBlank { URL(it.source).host },
                         thumbnail = it.thumbnails?.firstOrNull()?.let { tUrl -> digitalOceanCdnShim.originToCDN(URL(tUrl)).toString() }
                     )
                 }.groupBy { URL(it.source).host }.values,
