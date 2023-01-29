@@ -259,6 +259,7 @@ nav.header-menu ul > li a.current-nav-page {
 .search-highlight-image-group {
     padding-left: 8px;
     padding-top: 12px;
+    margin-left: auto;
 }
 
 .search-highlight-image-group .search-highlight-thumbnail {
