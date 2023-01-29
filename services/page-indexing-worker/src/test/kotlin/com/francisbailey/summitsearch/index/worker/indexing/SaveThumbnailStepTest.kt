@@ -67,11 +67,11 @@ class SaveThumbnailStepTest: StepTest() {
         )
 
         whenever(image.bytes(any())).thenReturn(imageData)
-        whenever(imageStore.save(any(), any())).thenReturn(referenceStoreUrl)
+        whenever(imageStore.save(any<URL>(), any())).thenReturn(referenceStoreUrl)
 
         step.process(item, monitor)
 
-        verify(imageStore).save("www-test-com/b61099ca356b498764aa91614001bb297e514572.png", imageData)
+        verify(imageStore).save(imageSrc, imageData)
         verify(index).putThumbnails(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.source)
             assertEquals(listOf(referenceStoreUrl.toString()), it.dataStoreReferences)

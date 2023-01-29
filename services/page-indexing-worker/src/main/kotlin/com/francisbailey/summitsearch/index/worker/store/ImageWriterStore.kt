@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.store
 
 import com.francisbailey.summitsearch.index.worker.extension.toSha1
+import com.sun.scenario.effect.ImageData
 import mu.KotlinLogging
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -14,6 +15,10 @@ class ImageWriterStore(
     private val endpoint: URL
 ) {
     private val log = KotlinLogging.logger { }
+
+    fun save(source: URL, imageData: ByteArray): URL {
+        return save(buildPathFromUrl(source), imageData)
+    }
 
     fun save(path: String, imageData: ByteArray): URL {
         log.info { "Saving image with path: $path to store $storeName" }

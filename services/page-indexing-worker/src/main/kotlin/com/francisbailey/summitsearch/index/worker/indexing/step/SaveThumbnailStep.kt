@@ -19,12 +19,11 @@ class SaveThumbnailStep(
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         return try {
-            val path = ImageWriterStore.buildPathFromUrl(entity.task.details.pageUrl)
             val context = entity.task.details.getContext<ImageTaskContext>()!!
 
             monitor.dependencyCircuitBreaker.executeCallable {
                 val reference = monitor.meter.timer("$metricPrefix.imagestore.latency").recordCallable {
-                    imageWriterStore.save(path, entity.payload!!.bytes(imageWriter))
+                    imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter))
                 }!!
 
                 monitor.meter.timer("$metricPrefix.indexservice.latency").recordCallable {
