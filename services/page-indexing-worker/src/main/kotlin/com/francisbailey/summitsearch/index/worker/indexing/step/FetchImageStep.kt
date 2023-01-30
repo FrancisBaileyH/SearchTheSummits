@@ -15,10 +15,9 @@ class FetchImageStep(
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         return try {
             val image = monitor.sourceCircuitBreaker.executeCallable {
-                monitor.meter.timer("$metricPrefix.latency.image", "host", entity.task.details.pageUrl.host)
-                    .recordCallable {
-                        imageCrawlerService.get(entity.task.details.pageUrl)
-                    }!!
+                monitor.meter.timer("$metricPrefix.latency.image", "host", entity.task.details.pageUrl.host).recordCallable {
+                    imageCrawlerService.get(entity.task.details.pageUrl)
+                }!!
             }
             entity.apply { payload = image }
         } catch (e: Exception) {

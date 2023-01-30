@@ -23,34 +23,34 @@ class FetchHtmlPageStep(
 
     override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
         return try {
-            val document = monitor.meter.timer("$metricPrefix.latency.page", "host", entity.task.details.pageUrl.host).recordCallable {
+            monitor.meter.timer("$metricPrefix.latency.page", "host", entity.task.details.pageUrl.host).recordCallable {
                 monitor.sourceCircuitBreaker.executeCallable {
-                    pageCrawlerService.get(entity.task.details.pageUrl)
+                    getDocument(entity, monitor)
                 }
-            }
-
-            entity.apply { payload = document }
+            }!!
         } catch (e: Exception) {
-            when (e) {
-                is RedirectedEntityException -> {
-                    e.location?.run {
-                        monitor.meter.counter("$metricPrefix.redirects").increment()
-                        linkDiscoveryService.submitDiscoveries(entity.task, listOf(this))
-                    }
-                }
-                is NonRetryableEntityException -> {
-                    monitor.dependencyCircuitBreaker.executeCallable {
-                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
-                        monitor.meter.counter("$metricPrefix.indexservice.delete").increment()
-                        log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
-                    }
-                }
-                else -> {
-                    log.error(e) { "Failed to fetch page: ${entity.task.details.pageUrl}" }
-                    entity.apply { canRetry = true }
-                }
-            }
+            log.error(e) { "Failed to fetch page: ${entity.task.details.pageUrl}" }
+            entity.apply { canRetry = true }
+            entity.apply { continueProcessing = false }
+        }
+    }
 
+    private fun getDocument(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
+        return try {
+            val document = pageCrawlerService.get(entity.task.details.pageUrl)
+            entity.apply { payload = document }
+        } catch (e: RedirectedEntityException) {
+            e.location?.run {
+                monitor.meter.counter("$metricPrefix.redirects").increment()
+                linkDiscoveryService.submitDiscoveries(entity.task, listOf(this))
+            }
+            entity.apply { continueProcessing = false }
+        } catch (e: NonRetryableEntityException) {
+            monitor.dependencyCircuitBreaker.executeCallable {
+                indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
+                monitor.meter.counter("$metricPrefix.indexservice.delete").increment()
+                log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
+            }
             entity.apply { continueProcessing = false }
         }
     }
