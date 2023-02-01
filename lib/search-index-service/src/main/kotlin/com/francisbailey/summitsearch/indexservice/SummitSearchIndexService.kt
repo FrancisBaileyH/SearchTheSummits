@@ -5,13 +5,11 @@ import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.*
 import co.elastic.clients.elasticsearch.core.DeleteRequest
-import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import co.elastic.clients.json.JsonpDeserializer
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -152,20 +150,23 @@ class SummitSearchIndexService(
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
-        val result = elasticSearchClient.index(
-            IndexRequest.of {
+        val result = elasticSearchClient.update(
+            UpdateRequest.of {
                 it.index(indexName)
                 it.id(generateIdFromUrl(request.source))
-                it.document(HtmlMapping(
-                    title = title,
-                    source = request.source,
-                    host = request.source.host,
-                    rawTextContent = textOnly,
-                    paragraphContent = paragraphContent,
-                    seoDescription = description,
-                    thumbnails = emptyList()
-                ))
-            }
+                it.docAsUpsert(true)
+                it.doc(
+                    mapOf(
+                        HtmlMapping::title.name to title,
+                        HtmlMapping::source.name to request.source.toString(),
+                        HtmlMapping::host.name to request.source.host,
+                        HtmlMapping::rawTextContent.name to textOnly,
+                        HtmlMapping::paragraphContent.name to paragraphContent,
+                        HtmlMapping::seoDescription.name to description
+                    )
+                )
+            },
+            HtmlMapping::class.java
         )
 
         log.info { "Result: ${result.result().name}" }
@@ -304,5 +305,5 @@ internal data class HtmlMapping(
     val seoDescription: String,
     val paragraphContent: String,
     val rawTextContent: String,
-    val thumbnails: List<String>?
+    val thumbnails: List<String>? = null
 )

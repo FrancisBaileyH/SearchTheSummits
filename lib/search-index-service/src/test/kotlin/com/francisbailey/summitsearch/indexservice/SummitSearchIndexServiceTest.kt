@@ -29,10 +29,6 @@ import java.net.URL
 
 class SummitSearchIndexServiceTest {
 
-    private val testServer = ElasticSearchTestServer.global()
-
-    private val client = testServer.client()
-
     private val resources = File("src/test/resources")
 
     private val indexedPages = setOf("LibertyBell", "LilyRock", "TexasPeak", "ContentWithoutParagraphs")
@@ -453,7 +449,7 @@ class SummitSearchIndexServiceTest {
         )
 
         assertNotNull(document)
-        assertEquals(emptyList<String>(),  document?.source()?.thumbnails)
+        assertNull(document?.source()?.thumbnails)
 
         testIndexService.putThumbnails(
             SummitSearchPutThumbnailRequest(
@@ -495,7 +491,7 @@ class SummitSearchIndexServiceTest {
         )
 
         assertNotNull(document)
-        assertEquals(emptyList<String>(),  document?.source()?.thumbnails)
+        assertNull(document?.source()?.thumbnails)
 
         testIndexService.putThumbnails(
             SummitSearchPutThumbnailRequest(
@@ -507,6 +503,34 @@ class SummitSearchIndexServiceTest {
 
         val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
 
+        assertEquals(thumnbails, results.hits.first().thumbnails)
+    }
+
+    @Test
+    fun `index call does not override thumbnail field`() {
+        val index = "thumbnail-index-override"
+        val testIndexService = createIndex(index)
+
+        val page = loadHtml("LibertyBell")
+        val url = URL("$sourceUrlString/LibertyBell")
+
+        val thumnbails = listOf("data-reference-1", "data-reference-2")
+
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
+        refreshIndex(index)
+
+        testIndexService.putThumbnails(
+            SummitSearchPutThumbnailRequest(
+                source = url,
+                dataStoreReferences = thumnbails
+            )
+        )
+        refreshIndex(index)
+
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
+        refreshIndex(index)
+
+        val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
         assertEquals(thumnbails, results.hits.first().thumbnails)
     }
 
@@ -584,6 +608,12 @@ class SummitSearchIndexServiceTest {
         }
 
         refreshIndex(indexService.indexName)
+    }
+
+    companion object {
+        private val testServer = ElasticSearchTestServer.global()
+
+        private val client = testServer.client()
     }
 
 
