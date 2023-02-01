@@ -108,9 +108,9 @@ class SummitSearchIndexService(
 
                     val highlight = highlightOptions.firstOrNull { highlight ->
                         highlight?.contains(HIGHLIGHT_DELIMITER) ?: false
-                    } ?: highlightOptions.filterNot { highlight ->
-                        highlight.isNullOrBlank()
-                    }.first()
+                    } ?: highlightOptions.first {
+                        highlight -> !highlight.isNullOrBlank()
+                    }
 
                     SummitSearchHit(
                         highlight = highlight!!,
