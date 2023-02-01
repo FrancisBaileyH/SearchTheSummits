@@ -16,7 +16,7 @@ open class ImageConfiguration(
 ) {
 
     @Bean
-    open fun imageLoader() = ImmutableImageLoader.create()
+    open fun imageLoader(): ImmutableImageLoader = ImmutableImageLoader.create()
 
     @Bean
     open fun imageWriter() = PngWriter()

@@ -20,21 +20,21 @@ class PageMetadataStore(
 
     fun getMetadata(pageUrl: URL): PageMetadataStoreItem? {
         val key = buildKey(pageUrl)
-        log.info { "Fetching: $key" }
+        log.debug { "Fetching: $key" }
         val result: String? = redisClient.get(buildKey(pageUrl))
 
         return if (result != null) {
-            log.info { "Key found: $key" }
+            log.debug { "Key found: $key" }
             Json.decodeFromString<PageMetadataStoreItem>(result)
         } else {
-            log.info { "Store miss. No value found for key: $key" }
+            log.debug { "Store miss. No value found for key: $key" }
             null
         }
     }
 
     fun saveMetadata(taskRunId: String, pageUrl: URL) {
         val key = buildKey(pageUrl)
-        log.info { "Add value to $key" }
+        log.debug { "Add value to $key" }
         redisClient.set(key, Json.encodeToString(
             PageMetadataStoreItem(
             lastVisitTime = Instant.now().toEpochMilli(),
@@ -43,13 +43,13 @@ class PageMetadataStore(
         )
         ))
 
-        log.info { "Successfully saved $taskRunId and $pageUrl to $key" }
+        log.debug { "Successfully saved $taskRunId and $pageUrl to $key" }
     }
 
     fun saveDiscoveryMetadata(discoveryHost: String) {
-        log.info { "Adding discovery: $discoveryHost" }
+        log.debug { "Adding discovery: $discoveryHost" }
         redisClient.sadd(DISCOVERY_METADATA_KEY, discoveryHost.lowercase())
-        log.info { "Successfully added discovery" }
+        log.debug { "Successfully added discovery" }
     }
 
     fun getDiscoveryMetadata(): Set<String> {

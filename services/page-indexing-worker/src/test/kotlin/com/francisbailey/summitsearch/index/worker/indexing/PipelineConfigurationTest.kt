@@ -56,17 +56,17 @@ class PipelineConfigurationTest: StepTest() {
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
-        whenever(submitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
+//        whenever(submitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep) {
+        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep/*, submitThumbnailStep*/) {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
-            verify(submitThumbnailStep).process(any(), any())
+//            verify(submitThumbnailStep).process(any(), any())
         }
     }
 

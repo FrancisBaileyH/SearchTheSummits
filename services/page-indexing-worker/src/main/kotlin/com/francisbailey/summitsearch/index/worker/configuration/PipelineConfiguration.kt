@@ -25,7 +25,7 @@ open class PipelineConfiguration(
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
                     .then(indexHtmlPageStep)
-                    .then(submitThumbnailStep)
+//                    .then(submitThumbnailStep)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(fetchImageStep)

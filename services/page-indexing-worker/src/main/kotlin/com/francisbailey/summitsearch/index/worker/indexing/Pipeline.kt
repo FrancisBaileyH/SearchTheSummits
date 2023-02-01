@@ -43,11 +43,11 @@ data class PipelineMonitor(
 )
 
 class Pipeline {
-    private val tasks = mutableMapOf<IndexTaskType, Route<*>>()
+    private val routes = mutableMapOf<IndexTaskType, Route<*>>()
 
     fun <T> route(type: IndexTaskType, init: ChainableRoute<T>.() -> Unit): ChainableRoute<T> {
         val route = Route<T>()
-        tasks[type] = route
+        routes[type] = route
         return route.apply(init)
     }
 
@@ -55,13 +55,13 @@ class Pipeline {
      * @return - return true if item can be retried, false otherwise
      */
     fun process(task: IndexTask, monitor: PipelineMonitor): Boolean {
-        val mappedTask = tasks[task.details.taskType]
+        val mappedRoute = routes[task.details.taskType]
 
-        check(mappedTask != null) {
+        check(mappedRoute != null) {
             "Task type: ${task.details.taskType} has no handler in pipeline"
         }
 
-        return mappedTask.execute(task, monitor).canRetry
+        return mappedRoute.execute(task, monitor).canRetry
     }
 }
 
@@ -92,18 +92,17 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
      * the future, but for now we'll leave it as is.
      */
     fun execute(task: IndexTask, monitor: PipelineMonitor): PipelineItem<T> {
-        return run<PipelineItem<T>> runSteps@ {
-            steps.fold(
-                initial = PipelineItem(task, null),
-                operation = { pipelineItem: PipelineItem<T>, step: Step<T> ->
-                    runStep(step, pipelineItem, monitor).also {
-                        if (!it.continueProcessing) {
-                            return@runSteps pipelineItem
-                        }
-                    }
-                }
-            )
+        var item: PipelineItem<T> = PipelineItem(task, null)
+
+        for (step in steps) {
+            item = runStep(step, item, monitor)
+
+            if (!item.continueProcessing) {
+                break
+            }
         }
+
+        return item
     }
 
     private fun runStep(step: Step<T>, pipelineItem: PipelineItem<T>, monitor: PipelineMonitor): PipelineItem<T> {

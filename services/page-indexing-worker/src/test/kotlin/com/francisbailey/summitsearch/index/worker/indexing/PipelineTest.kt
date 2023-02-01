@@ -111,6 +111,7 @@ class PipelineTest: StepTest() {
         )
 
         whenever(step.process(any(), any())).thenReturn(item)
+        whenever(nextStep.process(any(), any())).thenReturn(item)
 
         pipeline.process(task, monitor)
 

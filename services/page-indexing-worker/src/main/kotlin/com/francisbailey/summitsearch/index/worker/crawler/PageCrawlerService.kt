@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.extension.bodyAsTextWithFallback
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.charsets.*
 import kotlinx.coroutines.runBlocking
@@ -25,23 +26,27 @@ class PageCrawlerService(
         { Jsoup.parse(it) }
     )
 
+    private val validator: (HttpResponse) -> Unit = {
+        val isHtml = it.contentType()?.match(ContentType.Text.Html) ?: false
+        if (!isHtml) {
+            throw UnparsableEntityException("Can't process non HTML page from: ${it.request.url}")
+        }
+    }
+
+    private val transformer: (HttpResponse) -> Document = { response ->
+        val responseText = runBlocking { response.bodyAsTextWithFallback(FALLBACK_CHARSET) }
+        htmlParser(responseText).also {
+            log.info { "Successfully retrieved HTML content from: ${response.request.url}" }
+            if (it.baseUri().isNullOrBlank()) {
+                it.setBaseUri(response.request.url.toString()) // needed to fetch relative href links
+            }
+        }
+    }
+
     fun get(pageUrl: URL): Document {
         return httpCrawlerClient.getContent(pageUrl,
-            responseValidationInterceptor = {
-                val isHtml = it.contentType()?.match(ContentType.Text.Html) ?: false
-                if (!isHtml) {
-                    throw UnparsableEntityException("Can't process non HTML page from: $pageUrl")
-                }
-            },
-            transformer = {
-                val responseText = runBlocking { it.bodyAsTextWithFallback(FALLBACK_CHARSET) }
-                htmlParser(responseText).also {
-                    log.info { "Successfully retrieved HTML content from: $pageUrl" }
-                    if (it.baseUri().isNullOrBlank()) {
-                        it.setBaseUri(pageUrl.toString()) // needed to fetch relative href links
-                    }
-                }
-            }
+            responseValidationInterceptor = validator,
+            transformer = transformer
         )
     }
 

@@ -36,7 +36,6 @@ class SaveThumbnailStep(
                     )
                 }!!
             }
-
             entity
         } catch (e: Exception) {
             log.error(e) { "Failed to save thumbnail from: ${entity.task.details.pageUrl}" }

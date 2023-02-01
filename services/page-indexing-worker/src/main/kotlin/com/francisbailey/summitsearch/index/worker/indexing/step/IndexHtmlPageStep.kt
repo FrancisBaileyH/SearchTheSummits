@@ -17,21 +17,24 @@ class IndexHtmlPageStep(
 
 
     override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
-        if (!documentIndexingFilterService.shouldFilter(entity.task.details.pageUrl)) {
-            monitor.meter.timer("$metricPrefix.indexservice.add.latency").recordCallable {
-                monitor.dependencyCircuitBreaker.executeCallable {
-                    summitSearchIndexService.indexPageContents(
-                        SummitSearchIndexRequest(
-                            source = entity.task.details.pageUrl,
-                            htmlDocument = entity.payload!!
-                        )
-                    )
-                }
-            }
-
-            log.info { "Successfully completed indexing task for: ${entity.task.source} with ${entity.task.details.pageUrl}" }
-            monitor.meter.counter("$metricPrefix.success", "host" , entity.task.details.pageUrl.host).increment()
+        if (documentIndexingFilterService.shouldFilter(entity.task.details.pageUrl)) {
+            log.warn { "Skipping indexing on: ${entity.task.details.pageUrl} as it matches filter" }
+            return entity
         }
+
+        monitor.meter.timer("$metricPrefix.indexservice.add.latency").recordCallable {
+            monitor.dependencyCircuitBreaker.executeCallable {
+                summitSearchIndexService.indexPageContents(
+                    SummitSearchIndexRequest(
+                        source = entity.task.details.pageUrl,
+                        htmlDocument = entity.payload!!
+                    )
+                )
+            }
+        }
+
+        log.info { "Successfully completed indexing task for: ${entity.task.source} with ${entity.task.details.pageUrl}" }
+        monitor.meter.counter("$metricPrefix.indexservice.add.success", "host" , entity.task.details.pageUrl.host).increment()
 
         return entity
     }

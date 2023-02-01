@@ -51,6 +51,7 @@ services:
     ports:
       - "8081:8080"
       - "9091:9090"
+      - "8849:8849"
     build:
       context: ./services/page-indexing-worker
       dockerfile: Dockerfile
