@@ -39,6 +39,10 @@ class SearchController(
                 )
             }!!
 
+            if (response.totalHits == 0L) {
+                meterRegistry.counter("api.searchindex.query.miss").increment()
+            }
+
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
                     SummitSearchHitResponse(

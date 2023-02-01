@@ -36,6 +36,8 @@ class SaveThumbnailStep(
                     )
                 }!!
             }
+            monitor.meter.counter("$metricPrefix.indexservice.add.success", "host", entity.task.details.pageUrl.host)
+
             entity
         } catch (e: Exception) {
             log.error(e) { "Failed to save thumbnail from: ${entity.task.details.pageUrl}" }
