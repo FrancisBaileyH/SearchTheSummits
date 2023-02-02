@@ -98,6 +98,7 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
             item = runStep(step, item, monitor)
 
             if (!item.continueProcessing) {
+                monitor.meter.counter("${step.metricPrefix}.aborted", "host", task.details.pageUrl.host).increment()
                 break
             }
         }

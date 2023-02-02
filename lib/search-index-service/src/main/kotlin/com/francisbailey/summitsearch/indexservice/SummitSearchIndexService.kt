@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.*
 import co.elastic.clients.elasticsearch.core.DeleteRequest
+import co.elastic.clients.elasticsearch.core.ExistsRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
@@ -133,6 +134,15 @@ class SummitSearchIndexService(
                 HtmlMapping::thumbnails.name to request.dataStoreReferences
             ))
         }, HtmlMapping::class.java)
+    }
+
+    fun pageExists(request: SummitSearchExistsRequest): Boolean {
+        val result = elasticSearchClient.exists(ExistsRequest.of {
+            it.index(indexName)
+            it.id(generateIdFromUrl(request.source))
+        })
+
+        return result.value()
     }
 
     fun indexPageContents(request: SummitSearchIndexRequest) {
@@ -296,6 +306,10 @@ data class SummitSearchDeleteIndexRequest(
 data class SummitSearchPutThumbnailRequest(
     val source: URL,
     val dataStoreReferences: List<String>
+)
+
+data class SummitSearchExistsRequest(
+    val source: URL
 )
 
 internal data class HtmlMapping(

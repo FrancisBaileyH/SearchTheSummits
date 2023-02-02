@@ -534,6 +534,23 @@ class SummitSearchIndexServiceTest {
         assertEquals(thumnbails, results.hits.first().thumbnails)
     }
 
+    @Test
+    fun `exists call returns true if exists and false otherwise`() {
+        val index = "test-index-exists-test"
+        val testIndexService = createIndex(index)
+
+        val page = loadHtml("LibertyBell")
+        val url = URL("$sourceUrlString/LibertyBell")
+
+
+        assertFalse(testIndexService.pageExists(SummitSearchExistsRequest(url)))
+
+        testIndexService.indexPageContents(SummitSearchIndexRequest(source = url, htmlDocument = page))
+        refreshIndex(index)
+
+        assertTrue(testIndexService.pageExists(SummitSearchExistsRequest(url)))
+    }
+
     private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {
         return SearchRequest.of {
             it.index(index)
