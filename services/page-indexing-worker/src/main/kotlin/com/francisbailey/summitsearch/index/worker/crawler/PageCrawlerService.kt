@@ -44,8 +44,8 @@ class PageCrawlerService(
     }
 
     fun get(pageUrl: URL): Document {
-        return httpCrawlerClient.getContent(pageUrl,
-            responseValidationInterceptor = validator,
+        return httpCrawlerClient.get(pageUrl,
+            contentValidationInterceptor = validator,
             transformer = transformer
         )
     }

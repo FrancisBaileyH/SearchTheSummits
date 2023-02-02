@@ -28,6 +28,6 @@ class ImageCrawlerService(
     }
 
     fun get(imageUrl: URL): ImmutableImage {
-         return httpCrawlerClient.getContent(imageUrl, responseValidationInterceptor = validator, transformer = transformer)
+         return httpCrawlerClient.get(imageUrl, contentValidationInterceptor = validator, transformer = transformer)
     }
 }

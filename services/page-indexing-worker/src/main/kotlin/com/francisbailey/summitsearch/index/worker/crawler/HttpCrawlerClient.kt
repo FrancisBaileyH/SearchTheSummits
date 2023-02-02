@@ -16,9 +16,9 @@ class HttpCrawlerClient(
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun <T> getContent(pageUrl: URL, responseValidationInterceptor: (HttpResponse) -> Unit, transformer: (HttpResponse) -> T): T {
+    fun <T> get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit, transformer: (HttpResponse) -> T): T {
         log.info { "Fetching content from: $pageUrl" }
-        val response = getContent(pageUrl, responseValidationInterceptor)
+        val response = get(pageUrl, contentValidationInterceptor)
 
         return try {
             transformer(response)
@@ -27,11 +27,11 @@ class HttpCrawlerClient(
         }
     }
 
-    private fun getContent(pageUrl: URL, responseValidationInterceptor: (HttpResponse) -> Unit): HttpResponse {
+    private fun get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit): HttpResponse {
         val response = runBlocking { httpClient.get(pageUrl) }
 
         if (response.status.value < 300) {
-            responseValidationInterceptor(response)
+            contentValidationInterceptor(response)
             return response
         }
 
