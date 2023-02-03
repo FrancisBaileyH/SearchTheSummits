@@ -1,5 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
+import com.francisbailey.summitsearch.index.worker.filter.PeakBaggerFilter
+import com.francisbailey.summitsearch.index.worker.filter.PeakBaggerIndexFilter
 import com.francisbailey.summitsearch.index.worker.task.DocumentFilterChain
 import com.francisbailey.summitsearch.index.worker.task.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.task.PathMatchingDocumentFilter
@@ -23,6 +25,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideFilter)
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationFilter)
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersFilter)
+            addFilterChain(URL("https://peakbagger.com"), PeakBaggerFilter)
         }
     }
 
@@ -35,6 +38,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideIndexFilter)
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationIndexFilter)
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersIndexFilter)
+            addFilterChain(URL("https://peakbagger.com"), PeakBaggerIndexFilter)
         }
     }
 }
