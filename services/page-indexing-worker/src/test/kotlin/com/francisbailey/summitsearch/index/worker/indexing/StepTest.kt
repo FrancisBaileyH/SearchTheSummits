@@ -5,8 +5,11 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import java.io.File
 import java.net.URL
 import java.time.Duration
 import java.util.*
@@ -40,5 +43,10 @@ open class StepTest {
         )
     )
 
+    private val resources = File("src/test/resources")
+
+    fun loadHtml(name: String): Document {
+        return Jsoup.parse(resources.resolve(name).readText())
+    }
 
 }

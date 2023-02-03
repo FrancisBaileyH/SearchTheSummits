@@ -5,13 +5,12 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.configuration.PipelineConfiguration
 import com.francisbailey.summitsearch.index.worker.indexing.step.*
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
 import com.sksamuel.scrimage.ImmutableImage
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.inOrder
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.net.URL
 import java.time.Duration
 import java.util.*
@@ -26,6 +25,9 @@ class PipelineConfigurationTest: StepTest() {
     private val saveThumbnailStep = mock<SaveThumbnailStep>()
     private val submitThumbnailStep = mock<SubmitThumbnailStep>()
     private val thumbnailValidationStep = mock<ThumbnailValidationStep>()
+    private val contentValidatorStep = mock<ContentValidatorStep>()
+    private val peakBaggerContentValidatorStep = mock<PeakBaggerContentValidatorStep>()
+    private val peakBaggerSubmitThumbnailStep = mock<PeakBaggerSubmitThumbnailStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -35,7 +37,10 @@ class PipelineConfigurationTest: StepTest() {
         generateThumbnailStep = generateThumbnailStep,
         saveThumbnailStep = saveThumbnailStep,
         submitThumbnailStep = submitThumbnailStep,
-        thumbnailValidationStep = thumbnailValidationStep
+        thumbnailValidationStep = thumbnailValidationStep,
+        contentValidatorStep = contentValidatorStep,
+        peakBaggerSubmitThumbnailStep = peakBaggerSubmitThumbnailStep,
+        peakBaggerContentValidatorStep = peakBaggerContentValidatorStep
     )
 
     @Test
@@ -59,14 +64,16 @@ class PipelineConfigurationTest: StepTest() {
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(contentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep) {
+        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep, contentValidatorStep) {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
+            verify(contentValidatorStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(submitThumbnailStep).process(any(), any())
         }
@@ -105,5 +112,44 @@ class PipelineConfigurationTest: StepTest() {
             verify(generateThumbnailStep).process(any(), any())
             verify(saveThumbnailStep).process(any(), any())
         }
+    }
+
+    @Test
+    fun `overrides on steps for peakbagger`() {
+        val task = IndexTask(
+            messageHandle = "testHandle123",
+            source = "some-queue-name",
+            details = IndexTaskDetails(
+                id = "123456",
+                pageUrl = URL("https://peakbagger.com/climbers/ascent.aspx?aid=12"),
+                submitTime = Date().time,
+                taskRunId = "test123",
+                taskType = IndexTaskType.HTML,
+                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            )
+        )
+
+        val pipelineItem = PipelineItem<Document>(task = task, payload = null)
+
+        whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(peakBaggerSubmitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(peakBaggerContentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
+
+        val pipeline = pipelineConfiguration.indexingPipeline()
+
+        pipeline.process(task, monitor)
+
+        inOrder(fetchHtmlPageStep, indexHtmlPageStep, submitLinksStep, peakBaggerContentValidatorStep, peakBaggerSubmitThumbnailStep) {
+            verify(fetchHtmlPageStep).process(any(), any())
+            verify(submitLinksStep).process(any(), any())
+            verify(peakBaggerContentValidatorStep).process(any(), any())
+            verify(indexHtmlPageStep).process(any(), any())
+            verify(peakBaggerSubmitThumbnailStep).process(any(), any())
+        }
+
+        verifyNoInteractions(submitThumbnailStep)
+        verifyNoInteractions(contentValidatorStep)
     }
 }

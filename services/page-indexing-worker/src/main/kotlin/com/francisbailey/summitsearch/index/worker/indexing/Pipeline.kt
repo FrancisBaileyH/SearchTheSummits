@@ -98,6 +98,7 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
             item = runStep(step, item, monitor)
 
             if (!item.continueProcessing) {
+                monitor.meter.counter("Pipeline.aborted", "host", task.details.pageUrl.host).increment()
                 monitor.meter.counter("${step.metricPrefix}.aborted", "host", task.details.pageUrl.host).increment()
                 break
             }
@@ -119,8 +120,9 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
                 }
             }!!
         } catch (e: Exception) {
-            monitor.meter.counter("Pipeline.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source)
-            monitor.meter.counter("${stepToRun.metricPrefix}.exception", "type", e::class.simpleName, "queue", pipelineItem.task.source).increment()
+            val qualifiers = arrayOf("type", e::class.simpleName, "queue", pipelineItem.task.source)
+            monitor.meter.counter("Pipeline.exception", *qualifiers)
+            monitor.meter.counter("${stepToRun.metricPrefix}.exception", *qualifiers).increment()
             log.error(e) { "Failed to run step: ${stepToRun::class.simpleName}" }
             pipelineItem
         }
