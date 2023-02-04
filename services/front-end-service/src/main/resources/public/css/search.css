@@ -20,6 +20,14 @@ a:hover {
     text-decoration: underline;
 }
 
+article ul {
+    padding-left: 1em;
+}
+
+article li {
+    list-style: circle outside;
+}
+
 .invisible {
     display: none;
 }
