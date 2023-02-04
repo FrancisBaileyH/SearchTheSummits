@@ -282,7 +282,11 @@ function runSearchAnimations() {
         "Mount Robson",
         "Mount Bonnycastle",
         "Nivalis",
-        "Sinister Peak"
+        "Sinister Peak",
+        "Harvey North Ramp",
+        "Parkhurst Peak Couloir",
+        "Judge Howay",
+        "Mazama Dome"
     ]);
 
     var animatedPhrases = [firstPhrase]
