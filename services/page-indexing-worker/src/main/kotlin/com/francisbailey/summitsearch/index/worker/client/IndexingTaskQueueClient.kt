@@ -22,6 +22,7 @@ interface IndexingTaskQueuePollingClient {
 
 interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
     fun listTaskQueues(): Set<String>
+    fun getTaskCount(queueName: String): Long
 }
 
 @Component
@@ -74,6 +75,18 @@ class SQSIndexingTaskQueueClient(
                 .receiptHandle(indexTask.messageHandle)
                 .build()
         )
+    }
+
+    override fun getTaskCount(queueName: String): Long {
+        val attributes = sqsClient.getQueueAttributes(
+            GetQueueAttributesRequest
+                .builder()
+                .queueUrl(queueName)
+                .attributeNames(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES)
+                .build()
+        )
+
+        return attributes.attributes()[QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES]?.toLong() ?: 0L
     }
 
     companion object {
