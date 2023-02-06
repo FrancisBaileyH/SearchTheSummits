@@ -121,7 +121,8 @@ class SummitSearchIndexService(
                     )
                 },
             next = queryRequest.from + paginationResultSize,
-            totalHits = response.hits().total()?.value() ?: 0
+            totalHits = response.hits().total()?.value() ?: 0,
+            sanitizedQuery = sanitizedQuery.toString()
         )
     }
 
@@ -279,7 +280,8 @@ class SummitSearchIndexService(
 data class SummitSearchPaginatedResult(
     val hits: List<SummitSearchHit>,
     val next: Int = 0,
-    val totalHits: Long = 0
+    val totalHits: Long = 0,
+    val sanitizedQuery: String
 )
 
 data class SummitSearchHit(

@@ -15,15 +15,27 @@ class SummitSearchIndexServiceFactory {
 
     companion object {
 
-        fun buildImageIndex(configuration: SearchIndexServiceConfiguration): ImageIndexService {
+        private val clientCache = mutableMapOf<String, ElasticsearchClient>()
+
+        fun buildQueryStatsIndex(configuration: SearchIndexServiceConfiguration, useClientCache: Boolean = true): QueryStatsIndex {
+            return QueryStatsIndex(buildESClient(configuration))
+        }
+
+        fun buildImageIndex(configuration: SearchIndexServiceConfiguration, useClientCache: Boolean = true): ImageIndexService {
             return ImageIndexService(buildESClient(configuration), configuration.paginationResultSize)
         }
 
-        fun build(configuration: SearchIndexServiceConfiguration): SummitSearchIndexService {
+        fun build(configuration: SearchIndexServiceConfiguration, useClientCache: Boolean = true): SummitSearchIndexService {
             return SummitSearchIndexService(buildESClient(configuration), configuration.paginationResultSize)
         }
 
-        private fun buildESClient(configuration: SearchIndexServiceConfiguration): ElasticsearchClient {
+        private fun buildESClient(configuration: SearchIndexServiceConfiguration, useClientCache: Boolean = true): ElasticsearchClient {
+            val cachedClient = clientCache[configuration.connectionIdentifier()]
+
+            if (useClientCache && cachedClient != null) {
+                return cachedClient
+            }
+
             val restClientBuilder = RestClient.builder(
                 HttpHost(
                     configuration.endpoint,
@@ -47,7 +59,7 @@ class SummitSearchIndexServiceFactory {
                 }
             }
 
-            return ElasticsearchClient(
+            val client = ElasticsearchClient(
                 RestClientTransport(
                     restClientBuilder.build(),
                     JacksonJsonpMapper().apply {
@@ -55,6 +67,12 @@ class SummitSearchIndexServiceFactory {
                     }
                 )
             )
+
+            if (useClientCache) {
+                clientCache[configuration.connectionIdentifier()] = client
+            }
+
+            return client
         }
     }
 }
@@ -68,4 +86,6 @@ data class SearchIndexServiceConfiguration(
     val scheme: String = "https",
     val port: Int = 9200,
     val paginationResultSize: Int = 20
-)
+) {
+    fun connectionIdentifier(): String = "$username@$password:$scheme://$endpoint:$port"
+}
