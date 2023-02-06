@@ -1,6 +1,8 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.mapping.DateProperty
+import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch.core.BulkRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
@@ -26,7 +28,6 @@ class QueryStatsIndex(
                         timestamp = it.timestamp,
                         query = it.query,
                         totalHits = it.totalHits,
-                        ipAddress = it.ipAddress,
                         page = it.page
                     ))
                 }
@@ -51,6 +52,13 @@ class QueryStatsIndex(
             log.info { "Index: $indexName not found. Creating now." }
             elasticSearchClient.indices().create(CreateIndexRequest.of{
                 it.index(indexName)
+                it.mappings { mapping ->
+                    mapping.properties(mapOf(
+                        QueryStat::timestamp.name to Property.of { property ->
+                            property.date(DateProperty.Builder().build())
+                        }
+                    ))
+                }
             })
         }
     }
@@ -65,7 +73,6 @@ internal data class QueryStat(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,
-    val ipAddress: String?,
     val page: Long?
 )
 
@@ -77,6 +84,5 @@ data class SummitSearchQueryStat(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,
-    val ipAddress: String?,
     val page: Long?
 )

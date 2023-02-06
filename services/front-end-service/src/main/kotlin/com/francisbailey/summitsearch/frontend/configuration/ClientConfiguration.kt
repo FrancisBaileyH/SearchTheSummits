@@ -1,9 +1,6 @@
 package com.francisbailey.summitsearch.frontend.configuration
 
-import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
+import com.francisbailey.summitsearch.indexservice.*
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
@@ -43,26 +40,25 @@ open class ClientConfiguration(
     }
 
     @Bean
-    open fun imageIndexService(): ImageIndexService {
+    open fun queryStatsService(): QueryStatsIndex {
         return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildImageIndex(
+            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildQueryStatsIndex(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
+                ))
+            else -> SummitSearchIndexServiceFactory.buildQueryStatsIndex(
                 SearchIndexServiceConfiguration(
                     fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    paginationResultSize = 10
+                    scheme = "http"
                 ))
-            else -> SummitSearchIndexServiceFactory.buildImageIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http",
-                    paginationResultSize = 10
-                ))
+        }.also {
+            it.createIfNotExists()
         }
-
     }
 }

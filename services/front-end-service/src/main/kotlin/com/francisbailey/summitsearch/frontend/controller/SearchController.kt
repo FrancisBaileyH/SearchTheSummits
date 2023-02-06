@@ -2,8 +2,10 @@ package com.francisbailey.summitsearch.frontend.controller
 
 
 import com.francisbailey.summitsearch.frontend.cdn.DigitalOceanCDNShim
+import com.francisbailey.summitsearch.frontend.stats.QueryStatsReporter
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStat
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -15,10 +17,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.time.Instant
 
 @RestController
 class SearchController(
     private val summitSearchIndexService: SummitSearchIndexService,
+    private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry
 ) {
@@ -42,6 +46,13 @@ class SearchController(
             if (response.totalHits == 0L) {
                 meterRegistry.counter("api.searchindex.query.miss").increment()
             }
+
+            queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
+                query = response.sanitizedQuery,
+                page = next?.toLong(),
+                totalHits = response.totalHits,
+                timestamp = Instant.now().toEpochMilli()
+            ))
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {

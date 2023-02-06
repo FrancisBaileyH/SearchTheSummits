@@ -30,7 +30,6 @@ class QueryStatsIndexTest {
         val data = (0..4).map {
             SummitSearchQueryStat(
                 query = "Some Test $it",
-                ipAddress = "123.123.123.12$it",
                 page = it.toLong(),
                 timestamp = Instant.now().toEpochMilli(),
                 totalHits = 1
