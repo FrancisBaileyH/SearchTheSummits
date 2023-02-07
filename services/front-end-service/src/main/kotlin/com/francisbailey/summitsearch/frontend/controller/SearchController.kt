@@ -43,10 +43,6 @@ class SearchController(
                 )
             }!!
 
-            if (response.totalHits == 0L) {
-                meterRegistry.counter("api.searchindex.query.miss").increment()
-            }
-
             queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
                 query = response.sanitizedQuery.lowercase(),
                 page = next?.toLong(),
