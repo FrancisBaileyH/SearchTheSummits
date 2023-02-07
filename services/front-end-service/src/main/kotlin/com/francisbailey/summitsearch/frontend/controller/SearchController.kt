@@ -48,7 +48,7 @@ class SearchController(
             }
 
             queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
-                query = response.sanitizedQuery,
+                query = response.sanitizedQuery.lowercase(),
                 page = next?.toLong(),
                 totalHits = response.totalHits,
                 timestamp = Instant.now().toEpochMilli()
