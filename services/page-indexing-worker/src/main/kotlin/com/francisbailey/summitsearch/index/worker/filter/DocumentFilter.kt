@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.task
+package com.francisbailey.summitsearch.index.worker.filter
 
 import java.net.URL
 import java.util.regex.Pattern

@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
+import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
-import com.francisbailey.summitsearch.index.worker.task.DocumentFilterService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.Jsoup

@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
+import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.MalformedURLException

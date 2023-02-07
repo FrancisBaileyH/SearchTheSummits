@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging

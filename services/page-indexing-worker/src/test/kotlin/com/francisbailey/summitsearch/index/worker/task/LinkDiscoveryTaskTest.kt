@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.*
+import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStoreItem
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry

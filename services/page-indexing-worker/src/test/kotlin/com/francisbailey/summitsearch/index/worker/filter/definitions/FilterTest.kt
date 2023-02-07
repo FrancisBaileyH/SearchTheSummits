@@ -1,7 +1,7 @@
-package com.francisbailey.summitsearch.index.worker.filter
+package com.francisbailey.summitsearch.index.worker.filter.definitions
 
 import com.francisbailey.summitsearch.index.worker.configuration.FilterConfiguration
-import com.francisbailey.summitsearch.index.worker.task.DocumentFilterService
+import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import org.junit.jupiter.api.Assertions
 import java.net.URL
 

@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.index.worker.filter
+package com.francisbailey.summitsearch.index.worker.filter.definitions
 
 import org.junit.jupiter.api.Test
 
