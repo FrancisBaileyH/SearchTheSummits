@@ -41,6 +41,8 @@ object DefaultFilterChain: DocumentFilterChain(exclusive = true) {
         merge(ImageFilterChain)
         // Exclude ecommerce links (best effort)
         addFilter(PathMatchingDocumentFilter(Pattern.compile(".*/product/.*|.*/store/.*")))
+        // Exclude PDF Documents by default
+        addFilter(PathMatchingDocumentFilter(Pattern.compile(".*.pdf", Pattern.CASE_INSENSITIVE)))
     }
 }
 

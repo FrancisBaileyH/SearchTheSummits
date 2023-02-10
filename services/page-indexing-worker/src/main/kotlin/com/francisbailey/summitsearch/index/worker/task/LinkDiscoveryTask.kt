@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
+import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
@@ -20,7 +21,7 @@ class LinkDiscoveryTask(
     private val associatedTask: IndexTask,
     private val documentFilterService: DocumentFilterService,
     private val meterRegistry: MeterRegistry,
-    val discovery: String
+    val discovery: Discovery
 ): Runnable {
 
     private val log = KotlinLogging.logger {  }
@@ -30,11 +31,11 @@ class LinkDiscoveryTask(
      */
     override fun run() {
         try {
-            val discoveryUrl = URL(discovery).normalize()
+            val discoveryUrl = URL(discovery.source).normalize()
             val associatedTaskUrl = associatedTask.details.pageUrl
 
-            if (discovery.length > MAX_LINK_SIZE) {
-                log.warn { "Link: ${discovery.take(MAX_LINK_SIZE)} is too large to be processed" }
+            if (discovery.source.length > MAX_LINK_SIZE) {
+                log.warn { "Link: ${discovery.source.take(MAX_LINK_SIZE)} is too large to be processed" }
                 return
             }
 
@@ -68,7 +69,7 @@ class LinkDiscoveryTask(
                             taskRunId = associatedTask.details.taskRunId,
                             pageUrl = discoveryUrl,
                             submitTime = Instant.now().toEpochMilli(),
-                            taskType = associatedTask.details.taskType,
+                            taskType = discovery.type,
                             refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds
                         )
                     )
@@ -99,3 +100,8 @@ class LinkDiscoveryTask(
     }
 
 }
+
+data class Discovery(
+    val type: IndexTaskType,
+    val source: String
+)

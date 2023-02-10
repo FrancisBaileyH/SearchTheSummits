@@ -25,10 +25,10 @@ class LinkDiscoveryService(
     private val log = KotlinLogging.logger {  }
 
 
-    fun submitDiscoveries(associatedTask: IndexTask, discoveries: List<String>) {
+    fun submitDiscoveries(associatedTask: IndexTask, discoveries: List<Discovery>) {
         log.info { "Processing: ${discoveries.size} link discoveries" }
         discoveries.filterNot {
-            it.isEmpty()
+            it.source.isEmpty()
         }.toSet().forEach {
             linkDiscoveryTaskExecutor.execute(LinkDiscoveryTask(
                 taskQueueClient = taskQueueClient,

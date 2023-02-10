@@ -52,7 +52,8 @@ class DefaultFilterTest: FilterTest() {
             "/blog/author/test",
             "/blog/wp-content/test",
             "/store/",
-            "/product/abc123"
+            "/product/abc123",
+            "/some-page.pDf"
         ).map {
             urlString + it
         }

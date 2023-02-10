@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.task
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
+import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
@@ -24,7 +25,12 @@ class LinkDiscoveryServiceTest {
 
     @Test
     fun `omits empty link submissions`() {
-        val discoveries = listOf("", "")
+        val discoveries = listOf(
+            "",
+            ""
+        ).map {
+            Discovery(IndexTaskType.HTML, it)
+        }
 
         linkDiscoveryService.submitDiscoveries(associatedTask, discoveries)
 
@@ -38,15 +44,17 @@ class LinkDiscoveryServiceTest {
             "https://francisbailey.com/test2", // duplicate
             "https://someexternalsite.com",
             "https://francisbailey.com/test2"
-        )
+        ).map {
+            Discovery(IndexTaskType.HTML, it)
+        }
 
         linkDiscoveryService.submitDiscoveries(associatedTask, discoveries)
 
         argumentCaptor<Runnable>().apply {
             verify(linkDiscoveryTaskExecutor, times(3)).execute(capture())
-            assertEquals("https://francisbailey.com/test", (firstValue as LinkDiscoveryTask).discovery)
-            assertEquals("https://francisbailey.com/test2", (secondValue as LinkDiscoveryTask).discovery)
-            assertEquals("https://someexternalsite.com", (thirdValue as LinkDiscoveryTask).discovery)
+            assertEquals("https://francisbailey.com/test", (firstValue as LinkDiscoveryTask).discovery.source)
+            assertEquals("https://francisbailey.com/test2", (secondValue as LinkDiscoveryTask).discovery.source)
+            assertEquals("https://someexternalsite.com", (thirdValue as LinkDiscoveryTask).discovery.source)
         }
 
         verifyNoMoreInteractions(linkDiscoveryTaskExecutor)

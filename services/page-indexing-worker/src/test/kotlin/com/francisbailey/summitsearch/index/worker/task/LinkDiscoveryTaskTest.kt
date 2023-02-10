@@ -124,7 +124,7 @@ class LinkDiscoveryTaskTest {
         whenever(indexTaskDetails.taskType).thenReturn(IndexTaskType.HTML)
         whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(true)
 
-        buildTask(discovery.toString()).run()
+        buildTask(discovery.toString(), type = IndexTaskType.PDF).run()
 
         verify(pageMetadataStore).getMetadata(discovery)
         verify(pageMetadataStoreItem).canRefresh(indexTaskDetails.refreshDuration())
@@ -132,17 +132,18 @@ class LinkDiscoveryTaskTest {
             assertEquals(it.details.pageUrl, discovery)
             assertEquals(it.source, associatedTask.source)
             assertEquals(it.details.taskRunId, indexTaskDetails.taskRunId)
+            assertEquals(it.details.taskType, IndexTaskType.PDF)
         })
         verify(pageMetadataStore).saveMetadata(indexTaskDetails.taskRunId, discovery)
     }
 
 
-    private fun buildTask(discovery: String) = LinkDiscoveryTask(
+    private fun buildTask(discovery: String, type: IndexTaskType = IndexTaskType.HTML) = LinkDiscoveryTask(
         taskQueueClient,
         pageMetadataStore,
         associatedTask,
         documentFilterService,
         meterRegistry,
-        discovery
+        Discovery(type, discovery)
     )
 }
