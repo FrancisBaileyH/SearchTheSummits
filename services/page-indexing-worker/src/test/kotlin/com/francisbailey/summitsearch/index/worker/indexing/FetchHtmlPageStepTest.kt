@@ -7,7 +7,7 @@ import com.francisbailey.summitsearch.index.worker.crawler.RetryableEntityExcept
 import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageStep
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexHtmlPageRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -58,7 +58,7 @@ class FetchHtmlPageStepTest: StepTest() {
         assertFalse(result.continueProcessing)
         assertFalse(result.canRetry)
 
-        verify(indexService, never()).indexPageContents(any())
+        verify(indexService, never()).indexPageContents(any<SummitSearchIndexHtmlPageRequest>())
         verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.pageUrl)))
     }
 

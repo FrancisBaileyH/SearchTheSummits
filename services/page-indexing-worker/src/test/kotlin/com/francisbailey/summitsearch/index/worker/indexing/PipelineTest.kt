@@ -23,6 +23,8 @@ class PipelineTest: StepTest() {
 
     private val overrideStep = mock<OverrideStep>()
 
+    private val finalStep =  mock<Step<Unit>>()
+
     private val pipeline = pipeline {
         route(IndexTaskType.PDF) {
             firstRun(step)
@@ -152,6 +154,37 @@ class PipelineTest: StepTest() {
         }, any())
 
         verify(nextStep).process(org.mockito.kotlin.check {
+            assertEquals(item, it)
+        }, any())
+    }
+
+    @Test
+    fun `always executes finally step`() {
+        val pipeline = pipeline {
+            route(IndexTaskType.PDF) {
+                firstRun(step)
+                    .then(nextStep)
+                    .finally(finalStep)
+            }
+        }
+
+        val item = PipelineItem<Unit>(
+            task = task,
+            payload = null,
+            continueProcessing = true
+        )
+
+        whenever(step.process(any(), any())).thenReturn(item.apply { continueProcessing = false })
+
+        pipeline.process(task, monitor)
+
+        verify(step).process(org.mockito.kotlin.check {
+            assertEquals(task, it.task)
+        }, any())
+
+        verifyNoInteractions(nextStep)
+
+        verify(finalStep).process(org.mockito.kotlin.check {
             assertEquals(item, it)
         }, any())
     }

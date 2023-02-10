@@ -21,7 +21,10 @@ open class PipelineConfiguration(
     private val thumbnailValidationStep: ThumbnailValidationStep,
     private val contentValidatorStep: ContentValidatorStep,
     private val peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
-    private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep
+    private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
+    private val fetchPDFStep: FetchPDFStep,
+    private val indexPDFStep: IndexPDFStep,
+    private val closePDFStep: ClosePDFStep
 ) {
 
     @Bean
@@ -41,6 +44,11 @@ open class PipelineConfiguration(
                     .then(fetchImageStep)
                     .then(generateThumbnailStep)
                     .then(saveThumbnailStep)
+            }
+            route(IndexTaskType.PDF) {
+                firstRun(fetchPDFStep)
+                    .then(indexPDFStep)
+                    .finally(closePDFStep)
             }
         }
     }

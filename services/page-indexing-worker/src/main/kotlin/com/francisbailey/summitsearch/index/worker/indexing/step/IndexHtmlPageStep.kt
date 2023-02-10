@@ -4,7 +4,7 @@ import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchIndexHtmlPageRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
@@ -25,7 +25,7 @@ class IndexHtmlPageStep(
         monitor.meter.timer("$metricPrefix.indexservice.add.latency").recordCallable {
             monitor.dependencyCircuitBreaker.executeCallable {
                 summitSearchIndexService.indexPageContents(
-                    SummitSearchIndexRequest(
+                    SummitSearchIndexHtmlPageRequest(
                         source = entity.task.details.pageUrl,
                         htmlDocument = entity.payload!!
                     )

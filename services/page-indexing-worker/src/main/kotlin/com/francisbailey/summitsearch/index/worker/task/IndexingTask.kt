@@ -7,7 +7,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
-import java.lang.Exception
 
 
 class IndexingTask(

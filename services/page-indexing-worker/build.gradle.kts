@@ -35,6 +35,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
 
     implementation("com.sksamuel.scrimage:scrimage-core:4.0.33")
+    implementation("org.apache.pdfbox:pdfbox:2.0.27")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")

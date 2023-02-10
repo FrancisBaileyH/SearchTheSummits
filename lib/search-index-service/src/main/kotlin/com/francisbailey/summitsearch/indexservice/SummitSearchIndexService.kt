@@ -14,8 +14,10 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.safety.Safelist
 import org.jsoup.select.Evaluator
 import java.net.URL
 import javax.swing.text.html.HTML
@@ -149,6 +151,29 @@ class SummitSearchIndexService(
     fun indexPageContents(request: SummitSearchIndexRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
+        val result = elasticSearchClient.update(
+            UpdateRequest.of {
+                it.index(indexName)
+                it.id(generateIdFromUrl(request.source))
+                it.docAsUpsert(true)
+                it.doc(
+                    mapOf(
+                        HtmlMapping::title.name to Jsoup.clean(request.title, Safelist.none()),
+                        HtmlMapping::source.name to request.source.toString(),
+                        HtmlMapping::host.name to request.source.host,
+                        HtmlMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
+                        HtmlMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
+                        HtmlMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none())
+                    )
+                )
+            },
+            HtmlMapping::class.java
+        )
+
+        log.info { "Result: ${result.result().name}" }
+    }
+
+    fun indexPageContents(request: SummitSearchIndexHtmlPageRequest) {
         request.htmlDocument.body().select(EXCLUDED_TAG_EVALUATOR).forEach {
             it.remove()
         }
@@ -161,26 +186,14 @@ class SummitSearchIndexService(
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
-        val result = elasticSearchClient.update(
-            UpdateRequest.of {
-                it.index(indexName)
-                it.id(generateIdFromUrl(request.source))
-                it.docAsUpsert(true)
-                it.doc(
-                    mapOf(
-                        HtmlMapping::title.name to title,
-                        HtmlMapping::source.name to request.source.toString(),
-                        HtmlMapping::host.name to request.source.host,
-                        HtmlMapping::rawTextContent.name to textOnly,
-                        HtmlMapping::paragraphContent.name to paragraphContent,
-                        HtmlMapping::seoDescription.name to description
-                    )
-                )
-            },
-            HtmlMapping::class.java
-        )
-
-        log.info { "Result: ${result.result().name}" }
+        indexPageContents(
+            SummitSearchIndexRequest(
+            source = request.source,
+            title = title,
+            rawTextContent = textOnly,
+            paragraphContent = paragraphContent,
+            seoDescription = description
+        ))
     }
 
     fun deletePageContents(request: SummitSearchDeleteIndexRequest) {
@@ -296,9 +309,17 @@ data class SummitSearchQueryRequest(
     val from: Int = 0,
 )
 
-data class SummitSearchIndexRequest(
+data class SummitSearchIndexHtmlPageRequest(
     val source: URL,
     val htmlDocument: Document
+)
+
+data class SummitSearchIndexRequest(
+    val source: URL,
+    val title: String,
+    val rawTextContent: String,
+    val paragraphContent: String,
+    val seoDescription: String
 )
 
 data class SummitSearchDeleteIndexRequest(

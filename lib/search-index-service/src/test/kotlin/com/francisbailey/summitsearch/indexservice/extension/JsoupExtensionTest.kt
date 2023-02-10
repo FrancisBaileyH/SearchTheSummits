@@ -34,19 +34,4 @@ class JsoupExtensionTest {
         assertNull(Jsoup.parse(html).getSeoDescription())
     }
 
-    @Test
-    fun `strips html from description`() {
-        val inputDescription = "Hello this <center>is</center> a test!"
-        val expectedDescription = "Hello this is a test!"
-        val html = """
-            <html>  
-                <head>
-                    <meta name="description" content="$inputDescription">
-                </head>
-            </html>
-        """
-
-        assertEquals(expectedDescription, Jsoup.parse(html).getSeoDescription())
-    }
-
 }

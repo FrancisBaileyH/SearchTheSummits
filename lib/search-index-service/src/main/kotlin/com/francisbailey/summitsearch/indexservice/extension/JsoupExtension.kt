@@ -1,8 +1,6 @@
 package com.francisbailey.summitsearch.indexservice.extension
 
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.safety.Safelist
 
 /**
  * Some SEO Descriptions have HTML tags in them and could also contain
@@ -11,7 +9,5 @@ import org.jsoup.safety.Safelist
  */
 fun Document.getSeoDescription(): String? {
     val description = this.selectFirst("meta[name=description]")
-    return description?.attr("content")?.run {
-        Jsoup.clean(this, Safelist.none())
-    }
+    return description?.attr("content")
 }

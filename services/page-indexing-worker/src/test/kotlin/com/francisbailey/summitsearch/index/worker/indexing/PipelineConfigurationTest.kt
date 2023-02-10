@@ -8,6 +8,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.*
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
 import com.sksamuel.scrimage.ImmutableImage
+import org.apache.pdfbox.pdmodel.PDDocument
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -28,6 +29,9 @@ class PipelineConfigurationTest: StepTest() {
     private val contentValidatorStep = mock<ContentValidatorStep>()
     private val peakBaggerContentValidatorStep = mock<PeakBaggerContentValidatorStep>()
     private val peakBaggerSubmitThumbnailStep = mock<PeakBaggerSubmitThumbnailStep>()
+    private val fetchPDFStep = mock<FetchPDFStep>()
+    private val indexPDFStep = mock<IndexPDFStep>()
+    private val closePDFStep = mock<ClosePDFStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -39,6 +43,9 @@ class PipelineConfigurationTest: StepTest() {
         submitThumbnailStep = submitThumbnailStep,
         thumbnailValidationStep = thumbnailValidationStep,
         contentValidatorStep = contentValidatorStep,
+        fetchPDFStep = fetchPDFStep,
+        indexPDFStep = indexPDFStep,
+        closePDFStep = closePDFStep,
         peakBaggerSubmitThumbnailStep = peakBaggerSubmitThumbnailStep,
         peakBaggerContentValidatorStep = peakBaggerContentValidatorStep
     )
@@ -111,6 +118,39 @@ class PipelineConfigurationTest: StepTest() {
             verify(fetchImageStep).process(any(), any())
             verify(generateThumbnailStep).process(any(), any())
             verify(saveThumbnailStep).process(any(), any())
+        }
+    }
+
+    @Test
+    fun `executes steps in expected order for pdf route`() {
+        val task = IndexTask(
+            messageHandle = "testHandle123",
+            source = "some-queue-name",
+            details = IndexTaskDetails(
+                id = "123456",
+                pageUrl = URL("https://www.francisbaileyh.com"),
+                submitTime = Date().time,
+                taskRunId = "test123",
+                taskType = IndexTaskType.PDF,
+                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            )
+        )
+
+        val pipelineItem = PipelineItem<PDDocument>(task = task, payload = null)
+
+        whenever(fetchPDFStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(indexPDFStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(closePDFStep.process(any(), any())).thenReturn(pipelineItem)
+
+
+        val pipeline = pipelineConfiguration.indexingPipeline()
+
+        pipeline.process(task, monitor)
+
+        inOrder(fetchPDFStep, indexPDFStep, closePDFStep) {
+            verify(fetchPDFStep).process(any(), any())
+            verify(indexPDFStep).process(any(), any())
+            verify(closePDFStep).process(any(), any())
         }
     }
 

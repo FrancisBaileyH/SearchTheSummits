@@ -12,6 +12,7 @@ import kotlin.reflect.KClass
 interface ChainedRoute<T> {
     fun then(step: Step<T>): ChainedRoute<T>
     fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
+    fun finally(step: Step<T>)
 }
 
 interface ChainableRoute<T> {
@@ -72,6 +73,8 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
 
     private val hostOverrides: MutableMap<String, MutableMap<KClass<*>, Step<T>>> = mutableMapOf()
 
+    private var finallyStep: Step<T>? = null
+
     override fun firstRun(step: Step<T>): ChainedRoute<T> {
         steps.add(step)
         return this
@@ -104,6 +107,10 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
             }
         }
 
+        finallyStep?.let {
+            item = runStep(it, item, monitor)
+        }
+
         return item
     }
 
@@ -130,6 +137,10 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
 
     override fun then(step: Step<T>): ChainedRoute<T> {
         return firstRun(step)
+    }
+
+    override fun finally(step: Step<T>) {
+        this.finallyStep = step
     }
 }
 
