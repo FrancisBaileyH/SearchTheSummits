@@ -4,6 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -14,6 +15,8 @@ class PDFCrawlerService(
     private val httpCrawlerClient: HttpCrawlerClient,
     private val pdfLoader: (ByteArray) -> PDDocument
 ) {
+    private val log = KotlinLogging.logger { }
+
     @Autowired
     constructor(
         httpCrawlerClient: HttpCrawlerClient
@@ -29,7 +32,9 @@ class PDFCrawlerService(
 
     private val transformer: (HttpResponse) -> PDDocument = {
         val pdfData = runBlocking { it.body<ByteArray>() }
-        pdfLoader(pdfData)
+        pdfLoader(pdfData).also { _ ->
+            log.info { "Successfully fetched PDF from: ${it.request.url}" }
+        }
     }
 
     fun get(url: URL): PDDocument {

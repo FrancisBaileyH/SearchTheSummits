@@ -15,11 +15,11 @@ abstract class FilterTest {
 
     fun verifyFilter(service: DocumentFilterService, expectedToSkip: List<String>, expectedNotToSkip: List<String>) {
         expectedToSkip.forEach {
-            Assertions.assertTrue(service.shouldFilter(URL(it)))
+            Assertions.assertTrue(service.shouldFilter(URL(it)), "Failed on skipping: $it")
         }
 
         expectedNotToSkip.forEach {
-            Assertions.assertFalse(service.shouldFilter(URL(it)), "Failed on: $it")
+            Assertions.assertFalse(service.shouldFilter(URL(it)), "Failed on not skipping: $it")
         }
     }
 

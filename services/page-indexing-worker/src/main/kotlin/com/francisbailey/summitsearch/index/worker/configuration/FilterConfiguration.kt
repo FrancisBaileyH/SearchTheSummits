@@ -22,6 +22,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationFilter)
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersFilter)
             addFilterChain(URL("https://peakbagger.com"), PeakBaggerFilter)
+            addFilterChain(URL("http://www.alpinejournal.org.uk"), AlpineJournalUKFilter)
         }
     }
 
