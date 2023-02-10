@@ -82,6 +82,7 @@ function updateSearchResults(query, page) {
             hitGroup.forEach(function(hit, index) {
                 var thumbnailHtml = ""
                 var mobileThumbnailHtml = ""
+                var linkHtml = ""
 
                 if (hit.thumbnail != null) {
                     thumbnailHtml += "<div class=\"search-highlight-image-group\">"
@@ -92,10 +93,21 @@ function updateSearchResults(query, page) {
                     mobileThumbnailHtml += "</div>"
                 }
 
+                linkHtml += "  <div class=\"search-result-link\">"
+                linkHtml += "    <div class=\"search-result-link-value\">"
+                linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+                linkHtml += "    </div>"
+
+                if (hit.source.toLowerCase().endsWith(".pdf")) {
+                    linkHtml += "<div class=\"search-result-link-label\">"
+                    linkHtml += "  <span>PDF</span>"
+                    linkHtml += "</div>"
+                }
+
+                linkHtml += "</div>"
+
                 searchResult += "<div class=\"search-result\">"
-                searchResult += "  <div class=\"search-result-link\">"
-                searchResult += "    <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
-                searchResult += "  </div>"
+                searchResult += linkHtml
                 searchResult += "  <div class=\"search-result-highlight-group\">"
                 searchResult += "    <div class=\"search-result-highlight-text-group\">"
                 searchResult += "      <div class=\"search-result-title\">"

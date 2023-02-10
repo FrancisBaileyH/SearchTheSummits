@@ -277,12 +277,31 @@ nav.header-menu ul > li a.current-nav-page {
 }
 
 .search-result-link {
+    display: inline-flex;
+    width: 100%;
+}
+
+.search-result-link-value {
+    flex: 0 1 content;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.search-result-link a {
+.search-result-link-label {
+    flex: 1 0 content;
+    white-space: nowrap;
+}
+
+.search-result-link-label span {
+    border: 1px solid rgba(187, 187, 187, 0.5);
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-left: 5px;
+}
+
+.search-result-link a,
+.search-result-link span {
     color: #576574;
     font-size: 1.3rem;
 }
