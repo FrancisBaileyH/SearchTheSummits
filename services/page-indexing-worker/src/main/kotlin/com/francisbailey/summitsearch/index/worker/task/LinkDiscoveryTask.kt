@@ -35,7 +35,7 @@ class LinkDiscoveryTask(
      */
     override fun run() {
         try {
-            val encodedDiscovery = discovery.source.trim().replace(" ", "+")
+            val encodedDiscovery = discovery.source.trim().replace(" ", "%20")
             val discoveryUrl = URL(encodedDiscovery).normalize()
             val associatedTaskUrl = associatedTask.details.pageUrl
 
