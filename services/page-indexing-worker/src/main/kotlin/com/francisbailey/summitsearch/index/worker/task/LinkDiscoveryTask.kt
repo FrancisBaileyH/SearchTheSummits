@@ -7,17 +7,14 @@ import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClien
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
-import io.ktor.utils.io.charsets.*
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
-import java.net.URLEncoder
-import java.nio.charset.Charset
 import java.time.Instant
 import java.util.UUID
-import kotlin.text.Charsets
+
 
 class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,

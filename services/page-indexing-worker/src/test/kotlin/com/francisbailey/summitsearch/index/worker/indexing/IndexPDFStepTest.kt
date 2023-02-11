@@ -20,7 +20,11 @@ class IndexPDFStepTest: StepTest() {
 
     private val textStripper = mock<PDFTextStripper>()
 
-    private val step = IndexPDFStep(summitSearchIndexService = summitSearchIndexService, textStripper = textStripper)
+    private val textStripperGenerator = mock<() -> PDFTextStripper> {
+        on(mock.invoke()).thenReturn(textStripper)
+    }
+
+    private val step = IndexPDFStep(summitSearchIndexService = summitSearchIndexService, textStripper = textStripperGenerator)
 
     private val document = mock<PDDocument>()
 
