@@ -12,7 +12,7 @@ class URLExtensionTest {
         val url = URL("https://francisbaileyh.com/test/test3/index.html?query=x#someFragment")
         val expectedUrl = URL("https://francisbaileyh.com/test/test3/index.html?query=x")
 
-        assertEquals(expectedUrl, url.normalize())
+        assertEquals(expectedUrl, url.normalizeAndEncode())
     }
 
     @Test
@@ -20,6 +20,14 @@ class URLExtensionTest {
         val url = URL("https://francisbaileyh.com/test/test3/index.html/")
         val expectedUrl = URL("https://francisbaileyh.com/test/test3/index.html/")
 
-        assertEquals(expectedUrl, url.normalize())
+        assertEquals(expectedUrl, url.normalizeAndEncode())
+    }
+
+    @Test
+    fun `safely handles encoded urls`() {
+        val testUrl = URL("https://francisbailey.com/test/test with spaces here.pdf")
+        val expectedUrl = URL("https://francisbailey.com/test/test%20with%20spaces%20here.pdf")
+
+        assertEquals(expectedUrl, testUrl.normalizeAndEncode())
     }
 }

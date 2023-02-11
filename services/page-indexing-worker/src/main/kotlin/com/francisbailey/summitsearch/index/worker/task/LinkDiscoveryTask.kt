@@ -5,7 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
-import com.francisbailey.summitsearch.index.worker.extension.normalize
+import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
@@ -32,8 +32,7 @@ class LinkDiscoveryTask(
      */
     override fun run() {
         try {
-            val encodedDiscovery = discovery.source.trim().replace(" ", "%20")
-            val discoveryUrl = URL(encodedDiscovery).normalize()
+            val discoveryUrl = URL(discovery.source).normalizeAndEncode()
             val associatedTaskUrl = associatedTask.details.pageUrl
 
             if (discovery.source.length > MAX_LINK_SIZE) {
@@ -86,7 +85,7 @@ class LinkDiscoveryTask(
             when (e) {
                 is MalformedURLException,
                 is URISyntaxException ->
-                    log.debug { "Bad URL for discovery: $discovery" }
+                    log.debug(e) { "Bad URL for discovery: $discovery" }
                 else -> {
                     meterRegistry.counter("$TASK_METRIC.exception", "type", e.javaClass.simpleName).increment()
                     log.error(e) { "Unable to process link: $discovery" }

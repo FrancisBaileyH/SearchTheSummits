@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.filter
 
+import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.filter.definitions.DefaultFilterChain
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -73,6 +74,36 @@ class CrawlerFilterTest {
         chain.merge(chainToMerge)
 
         assertTrue(chain.shouldFilter(url))
+    }
+
+    @Test
+    fun `safely handles white spaces in URLs`() {
+        val url = URL("https://francisbailey.com/test/test with spaces here.pdf").normalizeAndEncode()
+
+        val filterService = DocumentFilterService(DefaultFilterChain)
+
+        val inclusiveChain = DocumentFilterChain(exclusive = true).apply {
+            addFilter(PathMatchingDocumentFilter(Pattern.compile(".*")))
+        }
+
+        filterService.addFilterChain(url, inclusiveChain)
+
+        assertTrue(filterService.shouldFilter(url))
+    }
+
+    @Test
+    fun `safely handles already encoded URLs`() {
+        val url = URL("https://francisbailey.com/test/test%20with%20spaces%20here.pdf").normalizeAndEncode()
+
+        val filterService = DocumentFilterService(DefaultFilterChain)
+
+        val inclusiveChain = DocumentFilterChain(exclusive = true).apply {
+            addFilter(PathMatchingDocumentFilter(Pattern.compile(".*")))
+        }
+
+        filterService.addFilterChain(url, inclusiveChain)
+
+        assertTrue(filterService.shouldFilter(url))
     }
 
 }
