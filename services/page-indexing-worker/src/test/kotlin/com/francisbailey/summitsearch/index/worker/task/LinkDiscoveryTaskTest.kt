@@ -116,6 +116,20 @@ class LinkDiscoveryTaskTest {
     }
 
     @Test
+    fun `encodes white spaces before creating URL`() {
+        val discovery ="https://francisbailey.com/test/test with spaces here.pdf"
+        whenever(indexTaskDetails.pageUrl).thenReturn(defaultURL)
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
+
+        buildTask(discovery).run()
+
+        verifyNoInteractions(taskQueueClient)
+        verify(pageMetadataStore).getMetadata(URL("https://francisbailey.com/test/test+with+spaces+here.pdf"))
+    }
+
+    @Test
     fun `if all conditions met then link is added to task queue and saved to task store`() {
         val discovery = URL("https://francisbailey.com/test")
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))

@@ -7,13 +7,17 @@ import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClien
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import com.francisbailey.summitsearch.index.worker.extension.normalize
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
+import io.ktor.utils.io.charsets.*
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.Charset
 import java.time.Instant
 import java.util.UUID
+import kotlin.text.Charsets
 
 class LinkDiscoveryTask(
     private val taskQueueClient: IndexingTaskQueueClient,
@@ -31,7 +35,8 @@ class LinkDiscoveryTask(
      */
     override fun run() {
         try {
-            val discoveryUrl = URL(discovery.source).normalize()
+            val encodedDiscovery = discovery.source.trim().replace(" ", "+")
+            val discoveryUrl = URL(encodedDiscovery).normalize()
             val associatedTaskUrl = associatedTask.details.pageUrl
 
             if (discovery.source.length > MAX_LINK_SIZE) {
