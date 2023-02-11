@@ -295,9 +295,10 @@ nav.header-menu ul > li a.current-nav-page {
 
 .search-result-link-label span {
     border: 1px solid rgba(187, 187, 187, 0.5);
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
     margin-left: 5px;
+    border-radius: 6px;
 }
 
 .search-result-link a,
