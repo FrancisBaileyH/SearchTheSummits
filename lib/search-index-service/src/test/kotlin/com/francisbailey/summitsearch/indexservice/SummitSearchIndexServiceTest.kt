@@ -439,7 +439,7 @@ class SummitSearchIndexServiceTest {
     @Test
     fun `escapes non-alphanumeric characters from query`() {
         val index = "phrase-sanitization-test"
-        val phraseFieldTerm = "(two*) terms!<>||( \"test\""
+        val phraseFieldTerm = """(two*) terms!<>||( "test" test's test’s"""
         val testIndexService = SummitSearchIndexService(mockClient, 20, index)
 
         val response = mock<SearchResponse<HtmlMapping>>()
@@ -451,7 +451,7 @@ class SummitSearchIndexServiceTest {
 
         testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
 
-        val expectedQuery = buildExpectedSearchQuery("\"two terms\" \"test\"", index)
+        val expectedQuery = buildExpectedSearchQuery(""""two terms" "test" "test's" "test’s"""", index)
 
         verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
     }

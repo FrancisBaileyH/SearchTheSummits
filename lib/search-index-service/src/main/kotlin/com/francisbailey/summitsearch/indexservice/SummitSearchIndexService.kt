@@ -45,7 +45,7 @@ class SummitSearchIndexService(
         val sanitizedQuery = StringBuilder()
 
         sanitizedQuery.append(words.take(PHRASE_TERM_THRESHOLD).joinToString(prefix = "\"", postfix = "\"", separator = " "))
-        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString { " \"$it\"" })
+        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString(separator = "") { " \"$it\"" })
 
         val response = elasticSearchClient.search(
             SearchRequest.of {
@@ -268,7 +268,7 @@ class SummitSearchIndexService(
        const val PHRASE_TERM_THRESHOLD = 2
        const val HIGHLIGHT_DELIMITER = "<em>"
 
-       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9'\\s]")
+       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9’'\\s]")
 
        private val DEFAULT_SYNONYMS = listOf(
            "mt., mt, mount",

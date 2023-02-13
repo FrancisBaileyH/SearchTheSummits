@@ -262,7 +262,7 @@ function printPhrases(phrases, el) {
     phrases.reduce(
         (promise, phrase, index) => {
             return promise
-                 .then(_ => delay(1000))
+                .then(_ => delay(1000))
                 .then(_ => printPhrase(phrase, el))
                 .then(_ => delay(2000))
                 .then(_ => {
