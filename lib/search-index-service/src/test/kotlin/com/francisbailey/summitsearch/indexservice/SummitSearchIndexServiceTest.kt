@@ -439,7 +439,7 @@ class SummitSearchIndexServiceTest {
     @Test
     fun `escapes non-alphanumeric characters from query`() {
         val index = "phrase-sanitization-test"
-        val phraseFieldTerm = """(two*) terms!<>||( "test" test's test’s"""
+        val phraseFieldTerm = "Term-with-hyphen *produces| this (query) ~here and tom's 0123456789’!"
         val testIndexService = SummitSearchIndexService(mockClient, 20, index)
 
         val response = mock<SearchResponse<HtmlMapping>>()
@@ -451,7 +451,7 @@ class SummitSearchIndexServiceTest {
 
         testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
 
-        val expectedQuery = buildExpectedSearchQuery(""""two terms" "test" "test's" "test’s"""", index)
+        val expectedQuery = buildExpectedSearchQuery(""""Term\-with\-hyphen produces" "this" "query" "here" "and" "tom's" "0123456789’"""", index)
 
         verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
     }
@@ -578,6 +578,14 @@ class SummitSearchIndexServiceTest {
         refreshIndex(index)
 
         assertTrue(testIndexService.pageExists(SummitSearchExistsRequest(url)))
+    }
+
+    @Test
+    fun `sanitize query produces clean query term with escaped characters`() {
+        val query = "Term-with-hyphen *produces| this (query) ~here and tom's 0123456789’"
+        val expectedQuery = """Term\-with\-hyphen produces this query here and tom's 0123456789’"""
+
+        assertEquals(expectedQuery, SummitSearchIndexService.sanitizeQuery(query))
     }
 
     private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {

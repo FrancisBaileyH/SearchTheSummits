@@ -40,7 +40,7 @@ class SummitSearchIndexService(
 
         log.info { "Querying for: ${queryRequest.term}" }
 
-        val term = queryRequest.term.replace(QUERY_SANITIZATION_REGEX, "")
+        val term = sanitizeQuery(queryRequest.term)
         val words = term.words()
         val sanitizedQuery = StringBuilder()
 
@@ -268,7 +268,8 @@ class SummitSearchIndexService(
        const val PHRASE_TERM_THRESHOLD = 2
        const val HIGHLIGHT_DELIMITER = "<em>"
 
-       private val QUERY_SANITIZATION_REGEX = Regex("[^a-zA-Z0-9’'\\s]")
+       private val RESERVED_QUERY_REGEX = Regex("[-+|*()~]")
+       private val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\\s]")
 
        private val DEFAULT_SYNONYMS = listOf(
            "mt., mt, mount",
@@ -277,7 +278,9 @@ class SummitSearchIndexService(
            "sw, south west, southwest",
            "nw, north west, northwest",
            "ne, north east, northeast",
-           "bc, british columbia"
+           "bc, british columbia",
+           "fsr, forest service road, service road",
+           "rd, road"
        )
 
        private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
@@ -286,6 +289,14 @@ class SummitSearchIndexService(
            override fun matches(root: Element, element: Element): Boolean {
                return excludedTags.contains(element.normalName())
            }
+       }
+
+       internal fun sanitizeQuery(query: String): String {
+           return query
+               .replace(QUERY_SANITIZATION_REGEX, "")
+               .replace(RESERVED_QUERY_REGEX) {
+                   "\\${it.value}"
+               }
        }
    }
 }
