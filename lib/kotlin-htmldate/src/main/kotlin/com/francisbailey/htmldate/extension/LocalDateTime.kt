@@ -36,13 +36,3 @@ class LocalDateTimeBuilder {
         }
     }
 }
-
-
-fun LocalDateTime?.setOrOverrideIf(value: LocalDateTime?, check: (original: LocalDateTime, new: LocalDateTime) -> Boolean): LocalDateTime? {
-    return when {
-        this == null -> value
-        value == null -> this
-        check(this, value) -> value
-        else -> this
-    }
-}

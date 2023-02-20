@@ -2,7 +2,6 @@ package com.francisbailey.htmldate.searcher
 
 import com.francisbailey.htmldate.HtmlDateParser
 import com.francisbailey.htmldate.HtmlDateSearchConfiguration
-import com.francisbailey.htmldate.extension.setOrOverrideIf
 import org.jsoup.nodes.Document
 import java.time.LocalDateTime
 
@@ -27,24 +26,27 @@ class HtmlAbbrSearcher(
 
             when {
                 dataUTime.isNotBlank() && dataUTime.toIntOrNull() != null -> {
-                    val date = parser.parse(dataUTime)
-                    oldestDate = oldestDate.setOrOverrideIf(date) { original, new -> new.isBefore(original) }
-                    newestDate = newestDate.setOrOverrideIf(date) { original, new -> new.isAfter(original) }
+                    parser.parse(dataUTime)?.let {
+                        oldestDate = oldestDate?.coerceAtMost(it) ?: it
+                        newestDate = newestDate?.coerceAtLeast(it) ?: it
+                    }
                 }
                 cssClass.isNotBlank() && cssClass in HtmlDateAttributes.CLASS_ATTRIBUTE_KEYS -> {
                     val text = item.ownText().trim()
                     val title = item.attr("title").trim()
 
                     if (title.isNotBlank()) {
-                        val date = parser.parse(title)
-                        oldestDate = oldestDate.setOrOverrideIf(date) { original, new -> new.isBefore(original) }
-                        newestDate = newestDate.setOrOverrideIf(date) { original, new -> new.isAfter(original) }
+                        parser.parse(title)?.let {
+                            oldestDate = oldestDate?.coerceAtMost(it) ?: it
+                            newestDate = newestDate?.coerceAtLeast(it) ?: it
+                        }
                     }
 
                     if (text.length > 10) {
-                        val date = parser.parse(text)
-                        oldestDate = oldestDate.setOrOverrideIf(date) { original, new -> new.isBefore(original) }
-                        newestDate = newestDate.setOrOverrideIf(date) { original, new -> new.isAfter(original) }
+                        parser.parse(text)?.let {
+                            oldestDate = oldestDate?.coerceAtMost(it) ?: it
+                            newestDate = newestDate?.coerceAtLeast(it) ?: it
+                        }
                     }
                 }
             }

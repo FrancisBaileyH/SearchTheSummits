@@ -2,7 +2,6 @@ package com.francisbailey.htmldate.searcher
 
 import com.francisbailey.htmldate.HtmlDateParser
 import com.francisbailey.htmldate.HtmlDateSearchConfiguration
-import com.francisbailey.htmldate.extension.setOrOverrideIf
 import org.jsoup.nodes.Document
 import java.time.LocalDateTime
 
@@ -38,17 +37,19 @@ class HtmlTimeElementSearcher(
                         }
                     }
                     else -> {
-                        oldestDate = oldestDate.setOrOverrideIf(date) { original, new -> new.isBefore(original) }
-                        newestDate = newestDate.setOrOverrideIf(date) { original, new -> new.isAfter(original) }
+                        date?.let {
+                            oldestDate = oldestDate?.coerceAtMost(date) ?: date
+                            newestDate = newestDate?.coerceAtLeast(date) ?: date
+                        }
                     }
                 }
             }
 
             if (text.length > 6) {
-                val date = parser.parse(text)
-
-                oldestDate = oldestDate.setOrOverrideIf(date) { original, new -> new.isBefore(original) }
-                newestDate = newestDate.setOrOverrideIf(date) { original, new -> new.isAfter(original) }
+                parser.parse(text)?.let { date ->
+                    oldestDate = oldestDate?.coerceAtMost(date) ?: date
+                    newestDate = newestDate?.coerceAtLeast(date) ?: date
+                }
             }
         }
 
