@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
+import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitThumbnailStep
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,9 +23,12 @@ class SubmitThumbnailStepTest: StepTest() {
     fun `does not submit task if thumbnail is not present`() {
         val document = Jsoup.parse("<html><body></body></html>")
 
-        val item = PipelineItem(
-            payload = document,
-            task = defaultIndexTask
+        val item = PipelineItem<DatedDocument>(
+            task = defaultIndexTask,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = document
+            )
         )
 
         step.process(item, monitor)
@@ -53,9 +57,12 @@ class SubmitThumbnailStepTest: StepTest() {
 
         val document = Jsoup.parse(html)
 
-        val item = PipelineItem(
-            payload = document,
-            task = defaultIndexTask
+        val item = PipelineItem<DatedDocument>(
+            task = defaultIndexTask,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = document
+            )
         )
 
         step.process(item, monitor)

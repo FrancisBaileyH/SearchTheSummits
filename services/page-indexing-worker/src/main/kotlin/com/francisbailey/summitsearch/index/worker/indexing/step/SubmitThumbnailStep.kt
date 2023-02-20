@@ -9,17 +9,16 @@ import com.francisbailey.summitsearch.index.worker.indexing.Step
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Component
-import org.jsoup.nodes.Document
 import java.net.URL
 import java.time.Instant
 
 @Component
 class SubmitThumbnailStep(
     private val indexingTaskQueueClient: IndexingTaskQueueClient
-): Step<Document> {
-    override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
-        val thumbnailCandidate = entity.payload?.getOGImage()
-            ?: entity.payload?.getCaptionedImages()?.firstOrNull()
+): Step<DatedDocument> {
+    override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
+        val thumbnailCandidate = entity.payload?.document?.getOGImage()
+            ?: entity.payload?.document?.getCaptionedImages()?.firstOrNull()
 
         thumbnailCandidate?.let {
             monitor.dependencyCircuitBreaker.executeCallable {

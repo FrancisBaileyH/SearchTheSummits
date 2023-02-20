@@ -3,16 +3,16 @@ package com.francisbailey.summitsearch.index.worker.indexing.step.override
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import org.jsoup.nodes.Document
+import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import org.springframework.stereotype.Component
 
 @Component
-class PeakBaggerContentValidatorStep: Step<Document> {
-    override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
+class PeakBaggerContentValidatorStep: Step<DatedDocument> {
+    override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         val page = entity.task.details.pageUrl
 
         if (page.path.startsWith("/climber/ascent.aspx")) {
-            val reportContentTitle = entity.payload?.selectFirst("h2:contains(Ascent Trip Report)")
+            val reportContentTitle = entity.payload?.document?.selectFirst("h2:contains(Ascent Trip Report)")
             val reportContent = reportContentTitle?.parent()?.text() ?: ""
 
             if (reportContent.length < MINIMUM_REPORT_LENGTH) {

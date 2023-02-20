@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitLinksStep
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
@@ -32,9 +33,12 @@ class SubmitLinksStepTest: StepTest() {
                 .text(it.source)
         }
 
-        val item = PipelineItem<Document>(
+        val item = PipelineItem<DatedDocument>(
             task = defaultIndexTask,
-            payload = htmlContent
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = htmlContent
+            )
         )
 
         val result = step.process(item, monitor)
@@ -59,9 +63,12 @@ class SubmitLinksStepTest: StepTest() {
                 .text(it.source)
         }
 
-        val item = PipelineItem<Document>(
+        val item = PipelineItem<DatedDocument>(
             task = defaultIndexTask,
-            payload = htmlContent
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = htmlContent
+            )
         )
 
         val result = step.process(item, monitor)

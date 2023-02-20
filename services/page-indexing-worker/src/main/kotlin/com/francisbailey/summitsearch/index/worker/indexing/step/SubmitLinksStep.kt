@@ -7,17 +7,16 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
-import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
 
 
 @Component
 class SubmitLinksStep(
     private val linkDiscoveryService: LinkDiscoveryService
-): Step<Document> {
+): Step<DatedDocument> {
 
-    override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
-        val organicLinks = entity.payload?.body()?.getLinks() ?: emptyList()
+    override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
+        val organicLinks = entity.payload?.document?.body()?.getLinks() ?: emptyList()
 
         val discoveries = organicLinks.map {
             val type = when {

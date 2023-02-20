@@ -3,7 +3,6 @@ package com.francisbailey.summitsearch.index.worker.indexing.step
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
 
 /**
@@ -11,8 +10,8 @@ import org.springframework.stereotype.Component
  * with other hosts
  */
 @Component
-class ContentValidatorStep: Step<Document> {
-    override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
+class ContentValidatorStep: Step<DatedDocument> {
+    override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         return entity
     }
 }

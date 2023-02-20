@@ -65,7 +65,7 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<Document>(task = task, payload = null)
+        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
 
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
@@ -169,7 +169,7 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<Document>(task = task, payload = null)
+        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
 
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)

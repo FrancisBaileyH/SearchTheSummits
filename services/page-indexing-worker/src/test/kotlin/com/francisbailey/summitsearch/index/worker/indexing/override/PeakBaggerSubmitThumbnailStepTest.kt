@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.indexing.override
 import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.StepTest
+import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -33,7 +34,13 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
             )
         )
 
-        val item = PipelineItem(task = task, payload = loadHtml("peakbagger/TripReportWithImage.html"))
+        val item = PipelineItem<DatedDocument>(
+            task = task,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = loadHtml("peakbagger/TripReportWithImage.html")
+            )
+        )
 
         val result = step.process(item, monitor)
 

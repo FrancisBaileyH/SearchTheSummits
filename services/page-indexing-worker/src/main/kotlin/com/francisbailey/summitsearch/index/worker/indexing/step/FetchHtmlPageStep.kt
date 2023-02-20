@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
+import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
@@ -14,16 +15,22 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
 import java.lang.Exception
+import java.time.LocalDateTime
 
+data class DatedDocument(
+    val pageCreationDate: LocalDateTime? = null,
+    val document: Document
+)
 
 @Component
 class FetchHtmlPageStep(
     private val pageCrawlerService: PageCrawlerService,
     private val linkDiscoveryService: LinkDiscoveryService,
-    private val indexService: SummitSearchIndexService
-): Step<Document> {
+    private val indexService: SummitSearchIndexService,
+    private val htmlDateGuesser: GoodEnoughHtmlDateGuesser
+): Step<DatedDocument> {
 
-    override fun process(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
+    override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         return try {
             monitor.meter.timer("$metricPrefix.latency.page", "host", entity.task.details.pageUrl.host).recordCallable {
                 monitor.sourceCircuitBreaker.executeCallable {
@@ -37,10 +44,19 @@ class FetchHtmlPageStep(
         }
     }
 
-    private fun getDocument(entity: PipelineItem<Document>, monitor: PipelineMonitor): PipelineItem<Document> {
+    private fun getDocument(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         return try {
             val document = pageCrawlerService.get(entity.task.details.pageUrl)
-            entity.apply { payload = document }
+
+            val date = monitor.meter.timer("${metricPrefix}.dateguess.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+                htmlDateGuesser.findDate(entity.task.details.pageUrl, document)
+            }
+
+            if (date == null) {
+                monitor.meter.counter("${metricPrefix}.dateguess.miss", "host", entity.task.details.pageUrl.host).increment()
+            }
+
+            entity.apply { payload = DatedDocument(pageCreationDate = date, document = document) }
         } catch (e: RedirectedEntityException) {
             e.location?.run {
                 monitor.meter.counter("$metricPrefix.redirects").increment()

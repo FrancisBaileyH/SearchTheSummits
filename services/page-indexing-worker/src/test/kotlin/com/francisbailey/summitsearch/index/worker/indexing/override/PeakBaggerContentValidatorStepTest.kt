@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.StepTest
+import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -34,7 +35,13 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
             )
         )
 
-        val item = PipelineItem<Document>(task = task, payload = document)
+        val item = PipelineItem<DatedDocument>(
+            task = task,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = document
+            )
+        )
 
         val result = step.process(item, monitor)
 
@@ -56,7 +63,13 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
             )
         )
 
-        val item = PipelineItem<Document>(task = task, payload = document)
+        val item = PipelineItem<DatedDocument>(
+            task = task,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = document
+            )
+        )
 
         val result = step.process(item, monitor)
 
@@ -78,7 +91,13 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
             )
         )
 
-        val item = PipelineItem<Document>(task = task, payload = document)
+        val item = PipelineItem<DatedDocument>(
+            task = task,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = document
+            )
+        )
 
         val result = step.process(item, monitor)
 
