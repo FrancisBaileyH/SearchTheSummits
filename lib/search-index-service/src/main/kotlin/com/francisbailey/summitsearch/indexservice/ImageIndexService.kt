@@ -1,13 +1,16 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
-import co.elastic.clients.elasticsearch._types.FieldValue
+import co.elastic.clients.elasticsearch._types.mapping.DateProperty
+import co.elastic.clients.elasticsearch._types.mapping.Property
+import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch.core.IndexRequest
-import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
 import mu.KotlinLogging
+import org.jsoup.Jsoup
+import org.jsoup.safety.Safelist
 import java.net.URL
 
 class ImageIndexService(
@@ -18,53 +21,8 @@ class ImageIndexService(
 
     private val log = KotlinLogging.logger { }
 
-    fun fetchThumbnails(request: SummitSearchGetThumbnailsRequest): SummitSearchGetThumbnailsResponse {
-        log.info { "Fetching thumbnails for referencing documents: ${request.referenceDocuments}" }
-        val referenceDocuments = request.referenceDocuments.map {
-            FieldValue.of(generateIdFromUrl(it))
-        }
-
-        val result = elasticSearchClient.search(SearchRequest.of{
-            it.index(indexName)
-            it.trackTotalHits { trackHits ->
-                trackHits.enabled(true)
-            }
-            it.query { query ->
-                query.bool { boolQuery ->
-                    boolQuery.filter { filter ->
-                        filter.terms { termsFilter ->
-                            termsFilter.field("${ImageMapping::referencingDocument.name}.keyword")
-                            termsFilter.terms { terms ->
-                                terms.value(referenceDocuments)
-                            }
-                        }
-                    }
-                }
-            }
-        }, ImageMapping::class.java)
-
-        return SummitSearchGetThumbnailsResponse(
-            hits = result.hits().hits().filterNot {
-                it.source() == null && it.source()?.referencingDocument != null
-            }.map {
-                SummitSearchImage(
-                    referencingDocument = it.source()!!.referencingDocument,
-                    source = it.source()!!.source,
-                    dataStoreReference = it.source()!!.dataStoreReference,
-                    description = it.source()!!.description
-                )
-            }.groupBy {
-                it.referencingDocument!!
-            }
-        )
-    }
-
     fun indexImage(request: SummitSearchImagePutRequest) {
         indexImage(ImageType.STANDARD, request)
-    }
-
-    fun indexThumbnail(request: SummitSearchImagePutRequest) {
-        indexImage(ImageType.THUMBNAIL, request)
     }
 
     private fun indexImage(type: ImageType, request: SummitSearchImagePutRequest) {
@@ -74,13 +32,13 @@ class ImageIndexService(
             it.index(indexName)
             it.id(generateIdFromUrl(request.source))
             it.document(ImageMapping(
+                type = type,
                 source = request.source.toString(),
                 dataStoreReference = request.dataStoreReference,
-                description = request.description,
-                referencingDocument = request.referencingDocument?.let { url ->
-                    generateIdFromUrl(url)
-                },
-                type = type
+                description = Jsoup.clean(request.description, Safelist.none()),
+                referencingDocument = generateIdFromUrl(request.referencingDocument),
+                referencingDocumentDate = request.referencingDocumentDate,
+                referencingDocumentHost = request.referencingDocument.host
             ))
         })
 
@@ -93,10 +51,29 @@ class ImageIndexService(
             log.info { "Index: $indexName not found. Creating now." }
             elasticSearchClient.indices().create(CreateIndexRequest.of{
                 it.index(indexName)
+                it.mappings { mapping ->
+                    mapping.properties(mapOf(
+                        ImageMapping::referencingDocumentHost.name to Property.of { property ->
+                            property.keyword { keyword ->
+                                keyword.docValues(true)
+                            }
+                        },
+                        ImageMapping::referencingDocument.name to Property.of { property ->
+                            property.keyword { keyword ->
+                                keyword.docValues(true)
+                            }
+                        },
+                        ImageMapping::description.name to Property.of { property ->
+                            property.text(TextProperty.Builder().build())
+                        },
+                        ImageMapping::referencingDocumentDate.name to Property.of { property ->
+                            property.date(DateProperty.Builder().build())
+                        }
+                    ))
+                }
             })
         }
     }
-
 
     companion object {
         const val INDEX_NAME = "summit-search-images"
@@ -108,7 +85,9 @@ internal data class ImageMapping(
     val source: String,
     val dataStoreReference: String,
     val description: String,
-    val referencingDocument: String?,
+    val referencingDocument: String,
+    val referencingDocumentHost: String,
+    val referencingDocumentDate: Long?,
     val type: ImageType
 )
 
@@ -121,20 +100,9 @@ data class SummitSearchImagePutRequest(
     val source: URL,
     val dataStoreReference: String,
     val description: String,
-    val referencingDocument: URL?
+    val referencingDocument: URL,
+    val referencingDocumentDate: Long? = null
 )
-
-data class SummitSearchGetThumbnailsRequest(
-    val referenceDocuments: Set<URL>
-)
-
-data class SummitSearchGetThumbnailsResponse(
-    private val hits: Map<String, List<SummitSearchImage>>
-) {
-    fun getThumbnailsByUrl(url: URL): List<SummitSearchImage>? {
-        return hits[generateIdFromUrl(url)]
-    }
-}
 
 data class SummitSearchImage(
     val dataStoreReference: String,
