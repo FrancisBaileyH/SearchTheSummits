@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
+import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexHtmlPageRequest
@@ -8,8 +9,11 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
+import java.time.LocalDateTime
 
 class IndexHtmlPageStepTest: StepTest() {
+
+    private val htmlDateGuesser = mock<GoodEnoughHtmlDateGuesser>()
 
     private val indexService = mock<SummitSearchIndexService>()
 
@@ -19,7 +23,8 @@ class IndexHtmlPageStepTest: StepTest() {
 
     private val step = IndexHtmlPageStep(
         summitSearchIndexService = indexService,
-        documentIndexingFilterService = documentIndexFilterService
+        documentIndexingFilterService = documentIndexFilterService,
+        htmlDateGuesser = htmlDateGuesser
     )
 
     @Test
@@ -59,5 +64,27 @@ class IndexHtmlPageStepTest: StepTest() {
 
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
         verifyNoInteractions(indexService)
+    }
+
+    @Test
+    fun `supplies date if a date guess returns result`() {
+        val date = LocalDateTime.now()
+
+        whenever(htmlDateGuesser.findDate(any(), any())).thenReturn(date)
+        val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
+
+        val pipelineItem = PipelineItem(
+            task = defaultIndexTask,
+            payload = htmlContent
+        )
+
+        val result = step.process(pipelineItem, monitor)
+
+        Assertions.assertTrue(result.continueProcessing)
+        Assertions.assertFalse(result.canRetry)
+
+        verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
+        verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
+        verify(indexService).indexPageContents(SummitSearchIndexHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, date))
     }
 }

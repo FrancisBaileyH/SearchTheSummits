@@ -26,6 +26,8 @@ import org.mockito.kotlin.whenever
 import org.mockito.kotlin.check
 import java.io.File
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class SummitSearchIndexServiceTest {
 
@@ -188,6 +190,38 @@ class SummitSearchIndexServiceTest {
         assertTrue(document.found())
         assertEquals(URL(sourceUrlString).host, document.source()?.host)
         assertEquals("In fact, there's a very high concentration of", document.source()?.seoDescription)
+    }
+
+    @Test
+    fun `pageCreationDate is set if date value is not null`() {
+        val index = "test-index-liberty-with-date"
+        val testIndexService = createIndex(index)
+
+        val date = LocalDateTime.now()
+        val page = loadHtml("LibertyBell")
+
+        assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
+        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(
+            source = URL("$sourceUrlString/LibertyBell"),
+            htmlDocument = page,
+            pageCreationDate = date
+        ))
+        refreshIndex(index)
+
+        val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+
+        assertFalse(result.hits.isEmpty())
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id("$source/LibertyBell")
+            },
+            HtmlMapping::class.java
+        )
+        assertTrue(document.found())
+        assertEquals(URL(sourceUrlString).host, document.source()?.host)
+        assertEquals(date.toInstant(ZoneOffset.UTC).toEpochMilli(), document.source()?.pageCreationDate!!)
     }
 
     @Test

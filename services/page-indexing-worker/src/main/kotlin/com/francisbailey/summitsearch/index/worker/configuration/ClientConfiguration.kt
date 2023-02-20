@@ -1,5 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
+import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
+import com.francisbailey.htmldate.HtmlDateSearchConfiguration
 import com.francisbailey.summitsearch.indexservice.ImageIndexService
 import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
@@ -143,6 +145,13 @@ open class ClientConfiguration(
                 ))
             )
             .build()
+    }
+
+    @Bean
+    open fun htmlDateGuesser(): GoodEnoughHtmlDateGuesser {
+        return GoodEnoughHtmlDateGuesser.from(HtmlDateSearchConfiguration(
+            useOriginalDate = true
+        ))
     }
 
     companion object {

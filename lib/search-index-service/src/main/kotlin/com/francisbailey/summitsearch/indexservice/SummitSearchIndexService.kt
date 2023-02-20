@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.mapping.DateProperty
 import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.*
@@ -20,6 +21,8 @@ import org.jsoup.nodes.Element
 import org.jsoup.safety.Safelist
 import org.jsoup.select.Evaluator
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.swing.text.html.HTML
 
 class SummitSearchIndexService(
@@ -163,7 +166,8 @@ class SummitSearchIndexService(
                         HtmlMapping::host.name to request.source.host,
                         HtmlMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
                         HtmlMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
-                        HtmlMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none())
+                        HtmlMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none()),
+                        HtmlMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
                     )
                 )
             },
@@ -188,12 +192,14 @@ class SummitSearchIndexService(
 
         indexPageContents(
             SummitSearchIndexRequest(
-            source = request.source,
-            title = title,
-            rawTextContent = textOnly,
-            paragraphContent = paragraphContent,
-            seoDescription = description
-        ))
+                source = request.source,
+                title = title,
+                rawTextContent = textOnly,
+                paragraphContent = paragraphContent,
+                seoDescription = description,
+                pageCreationDate = request.pageCreationDate
+            )
+        )
     }
 
     fun deletePageContents(request: SummitSearchDeleteIndexRequest) {
@@ -224,6 +230,9 @@ class SummitSearchIndexService(
                         },
                         HtmlMapping::rawTextContent.name to Property.of { property ->
                             property.text(TextProperty.Builder().build())
+                        },
+                        HtmlMapping::pageCreationDate.name to Property.of { property ->
+                            property.date(DateProperty.Builder().build())
                         }
                     ))
                 }
@@ -280,7 +289,8 @@ class SummitSearchIndexService(
            "ne, north east, northeast",
            "bc, british columbia",
            "fsr, forest service road, service road",
-           "rd, road"
+           "rd, road",
+           "pk, peak"
        )
 
        private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
@@ -322,7 +332,8 @@ data class SummitSearchQueryRequest(
 
 data class SummitSearchIndexHtmlPageRequest(
     val source: URL,
-    val htmlDocument: Document
+    val htmlDocument: Document,
+    val pageCreationDate: LocalDateTime? = null
 )
 
 data class SummitSearchIndexRequest(
@@ -330,7 +341,8 @@ data class SummitSearchIndexRequest(
     val title: String,
     val rawTextContent: String,
     val paragraphContent: String,
-    val seoDescription: String
+    val seoDescription: String,
+    val pageCreationDate: LocalDateTime? = null
 )
 
 data class SummitSearchDeleteIndexRequest(
@@ -353,5 +365,6 @@ internal data class HtmlMapping(
     val seoDescription: String,
     val paragraphContent: String,
     val rawTextContent: String,
-    val thumbnails: List<String>? = null
+    val thumbnails: List<String>? = null,
+    val pageCreationDate: Long? = null
 )
