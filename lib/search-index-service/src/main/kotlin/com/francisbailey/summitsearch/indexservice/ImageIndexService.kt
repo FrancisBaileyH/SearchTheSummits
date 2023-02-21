@@ -49,7 +49,7 @@ class ImageIndexService(
     fun createIfNotExists() {
         if (!elasticSearchClient.indexExists(indexName)) {
             log.info { "Index: $indexName not found. Creating now." }
-            elasticSearchClient.indices().create(CreateIndexRequest.of{
+            elasticSearchClient.indices().create(CreateIndexRequest.of {
                 it.index(indexName)
                 it.mappings { mapping ->
                     mapping.properties(mapOf(
@@ -71,11 +71,37 @@ class ImageIndexService(
                         }
                     ))
                 }
+                it.settings { settings ->
+                    settings.analysis { analysis ->
+                        analysis.analyzer(ANALYZER_NAME) { analyzer ->
+                            analyzer.custom { custom ->
+                                custom.tokenizer("standard")
+                                custom.filter(
+                                    listOf(
+                                        "lowercase",
+                                        SYNONYM_FILTER_NAME
+                                    )
+                                )
+                            }
+                        }
+                        analysis.filter(SYNONYM_FILTER_NAME) { tokenFilter ->
+                            tokenFilter.definition { definition ->
+                                definition.synonymGraph { synonymGraph ->
+                                    synonymGraph.expand(true)
+                                    synonymGraph.lenient(false)
+                                    synonymGraph.synonyms(SummitSearchSynonyms.synonyms)
+                                }
+                            }
+                        }
+                    }
+                }
             })
         }
     }
 
     companion object {
+        const val ANALYZER_NAME = "standard_with_synonyms"
+        const val SYNONYM_FILTER_NAME = "synonym_graph"
         const val INDEX_NAME = "summit-search-images"
     }
 }

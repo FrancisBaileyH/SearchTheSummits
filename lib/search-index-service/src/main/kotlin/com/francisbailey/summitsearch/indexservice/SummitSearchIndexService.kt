@@ -252,7 +252,7 @@ class SummitSearchIndexService(
                                 definition.synonymGraph { synonymGraph ->
                                     synonymGraph.expand(true)
                                     synonymGraph.lenient(false)
-                                    synonymGraph.synonyms(DEFAULT_SYNONYMS)
+                                    synonymGraph.synonyms(SummitSearchSynonyms.synonyms)
                                 }
                             }
                         }
@@ -279,19 +279,6 @@ class SummitSearchIndexService(
 
        private val RESERVED_QUERY_REGEX = Regex("[-+|*()~]")
        private val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\\s]")
-
-       private val DEFAULT_SYNONYMS = listOf(
-           "mt., mt, mount",
-           "mtn, mtn., mountain",
-           "se, south east, southeast",
-           "sw, south west, southwest",
-           "nw, north west, northwest",
-           "ne, north east, northeast",
-           "bc, british columbia",
-           "fsr, forest service road, service road",
-           "rd, road",
-           "pk, peak"
-       )
 
        private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
