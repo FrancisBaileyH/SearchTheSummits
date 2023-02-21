@@ -28,4 +28,9 @@ open class ImageConfiguration(
         URL(environment.getRequiredProperty("S3_ENDPOINT"))
     )
 
+    val imageGenerationAllowList = setOf(
+        "www.francisbaileyh.com",
+        "stevensong.com"
+    )
+
 }
