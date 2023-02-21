@@ -40,4 +40,13 @@ class LinkDiscoveryService(
             ))
         }
     }
+
+    fun submitImages(associatedTask: IndexTask, discoveries: Set<ImageDiscovery>) {
+        log.info { "Processing ${discoveries.size} image discoveries" }
+        linkDiscoveryTaskExecutor.execute(ImageDiscoveryTask(
+            taskQueueClient = taskQueueClient,
+            discoveries = discoveries,
+            associatedTask = associatedTask
+        ))
+    }
 }

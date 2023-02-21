@@ -71,5 +71,6 @@ class ImageWriterStore(
 enum class ImageStoreType(
     val path: String
 ) {
-    THUMBNAIL("thumbnails")
+    THUMBNAIL("thumbnails"),
+    STANDARD("standard")
 }

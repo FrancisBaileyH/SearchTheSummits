@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.client
 
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient.Companion.MAX_MESSAGE_BATCH_SIZE
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -18,11 +19,16 @@ interface IndexingTaskQueuePollingClient {
     fun pollTask(queueName: String): IndexTask?
     fun deleteTask(indexTask: IndexTask)
     fun addTask(indexTask: IndexTask)
+    fun addTasks(tasks: List<IndexTask>)
 }
 
 interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
     fun listTaskQueues(): Set<String>
     fun getTaskCount(queueName: String): Long
+
+    companion object {
+        const val MAX_MESSAGE_BATCH_SIZE = 10
+    }
 }
 
 @Component
@@ -34,6 +40,26 @@ class SQSIndexingTaskQueueClient(
         sqsClient.sendMessage(SendMessageRequest.builder()
             .queueUrl(indexTask.source)
             .messageBody(Json.encodeToString(indexTask.details))
+            .build()
+        )
+    }
+
+    /**
+     * Tasks must all be for the same source
+     */
+    override fun addTasks(tasks: List<IndexTask>) {
+        check(tasks.size <= MAX_MESSAGE_BATCH_SIZE) {
+            "Tasks count must be 10 or less"
+        }
+
+        sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
+            .queueUrl(tasks.first().source)
+            .entries(tasks.map {
+                SendMessageBatchRequestEntry.builder()
+                    .messageBody(Json.encodeToString(it.details))
+                    .id(it.details.id)
+                    .build()
+            })
             .build()
         )
     }
@@ -127,7 +153,8 @@ data class IndexTaskDetails(
 data class ImageTaskContext(
     @Serializable(with = URLSerializer::class)
     val referencingURL: URL,
-    val description: String
+    val description: String,
+    val pageCreationDate: Long? = null
 )
 
 

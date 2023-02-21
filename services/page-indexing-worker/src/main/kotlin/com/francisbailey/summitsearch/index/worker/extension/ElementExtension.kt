@@ -25,19 +25,36 @@ fun Element.getOGImage(): CaptionedImage? {
 fun Element.getCaptionedImages(): List<CaptionedImage> {
     val figures = this.select("figure") as List<Element>
 
-    return figures.map {
-        val image = it.select("img[src~=(?i)\\.(png|jpe?g)]").first()
-        val caption = it.select("figcaption").text()
-        val src = image?.src()
+    return figures.mapNotNull {
+        val image = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
+        val caption = it.selectFirst("figcaption")?.text()
 
-        src to caption
-    }.filterNot {
-        it.first.isNullOrBlank() || it.second.isNullOrBlank()
-    }.map {
-        CaptionedImage(
-            caption = it.second,
-            imageSrc = it.first!!
-        )
+        if (image.isNullOrBlank() || caption.isNullOrBlank()) {
+            null
+        } else {
+            CaptionedImage(
+                imageSrc = image,
+                caption = caption
+            )
+        }
+    }
+}
+
+fun Element.getWPCaptionedImages(): List<CaptionedImage> {
+    val captions = this.select(".wp-caption")
+
+    return captions.mapNotNull {
+        val image = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
+        val caption = it.selectFirst(".wp-caption-text")?.text()
+
+        if (image.isNullOrBlank() || caption.isNullOrBlank()) {
+            null
+        } else {
+            CaptionedImage(
+                imageSrc = image,
+                caption = caption
+            )
+        }
     }
 }
 

@@ -9,7 +9,6 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBa
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
 import com.sksamuel.scrimage.ImmutableImage
 import org.apache.pdfbox.pdmodel.PDDocument
-import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
@@ -32,6 +31,9 @@ class PipelineConfigurationTest: StepTest() {
     private val fetchPDFStep = mock<FetchPDFStep>()
     private val indexPDFStep = mock<IndexPDFStep>()
     private val closePDFStep = mock<ClosePDFStep>()
+    private val submitImagesStep = mock<SubmitImagesStep>()
+    private val saveImageStep = mock<SaveImageStep>()
+    private val generateImagePreviewStep = mock<GenerateImagePreviewStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -47,7 +49,10 @@ class PipelineConfigurationTest: StepTest() {
         indexPDFStep = indexPDFStep,
         closePDFStep = closePDFStep,
         peakBaggerSubmitThumbnailStep = peakBaggerSubmitThumbnailStep,
-        peakBaggerContentValidatorStep = peakBaggerContentValidatorStep
+        peakBaggerContentValidatorStep = peakBaggerContentValidatorStep,
+        generateImagePreviewStep = generateImagePreviewStep,
+        submitImagesStep = submitImagesStep,
+        saveImageStep = saveImageStep
     )
 
     @Test
@@ -77,12 +82,13 @@ class PipelineConfigurationTest: StepTest() {
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep, contentValidatorStep) {
+        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, submitThumbnailStep, contentValidatorStep, submitImagesStep) {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(contentValidatorStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(submitThumbnailStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
         }
     }
 
@@ -118,6 +124,38 @@ class PipelineConfigurationTest: StepTest() {
             verify(fetchImageStep).process(any(), any())
             verify(generateThumbnailStep).process(any(), any())
             verify(saveThumbnailStep).process(any(), any())
+        }
+    }
+
+    @Test
+    fun `executes steps in expected order for image route`() {
+        val task = IndexTask(
+            messageHandle = "testHandle123",
+            source = "some-queue-name",
+            details = IndexTaskDetails(
+                id = "123456",
+                pageUrl = URL("https://www.francisbaileyh.com"),
+                submitTime = Date().time,
+                taskRunId = "test123",
+                taskType = IndexTaskType.IMAGE,
+                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            )
+        )
+
+        val pipelineItem = PipelineItem<ImmutableImage>(task = task, payload = null)
+
+        whenever(fetchImageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(generateImagePreviewStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(saveImageStep.process(any(), any())).thenReturn(pipelineItem)
+
+        val pipeline = pipelineConfiguration.indexingPipeline()
+
+        pipeline.process(task, monitor)
+
+        inOrder(fetchImageStep, generateImagePreviewStep, saveImageStep) {
+            verify(fetchImageStep).process(any(), any())
+            verify(generateImagePreviewStep).process(any(), any())
+            verify(saveImageStep).process(any(), any())
         }
     }
 
@@ -181,12 +219,13 @@ class PipelineConfigurationTest: StepTest() {
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchHtmlPageStep, indexHtmlPageStep, submitLinksStep, peakBaggerContentValidatorStep, peakBaggerSubmitThumbnailStep) {
+        inOrder(fetchHtmlPageStep, indexHtmlPageStep, submitLinksStep, peakBaggerContentValidatorStep, peakBaggerSubmitThumbnailStep, submitImagesStep) {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(peakBaggerContentValidatorStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(peakBaggerSubmitThumbnailStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
         }
 
         verifyNoInteractions(submitThumbnailStep)

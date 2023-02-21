@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 
 class ElementExtensionTest {
 
-
     @Test
     fun `only fetches images wrapped by a figure and with a figcaption`() {
         val html = """
@@ -71,6 +70,26 @@ class ElementExtensionTest {
 
         assertEquals("https://www.somesite.com/image.jpeg", captionedImage?.imageSrc)
         assertEquals("Test Caption", captionedImage?.caption)
+    }
+
+    @Test
+    fun `fetches word press captions`() {
+        val html = """
+           <html>
+                <body>
+                    <div class="wp-caption aligncenter">
+                        <a href="#"><img id="good-image" src="a-good-source.png" /></a>
+                        <p class="wp-caption-text">Hello world</p>
+                    </div>
+                </body>
+           </html>
+        """.trimIndent()
+
+        val document = Jsoup.parse(html)
+        val captionedImage = document.getWPCaptionedImages().first()
+
+        assertEquals("a-good-source.png", captionedImage.imageSrc)
+        assertEquals("Hello world", captionedImage.caption)
     }
 
 }

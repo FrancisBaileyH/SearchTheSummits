@@ -24,7 +24,10 @@ open class PipelineConfiguration(
     private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
     private val fetchPDFStep: FetchPDFStep,
     private val indexPDFStep: IndexPDFStep,
-    private val closePDFStep: ClosePDFStep
+    private val closePDFStep: ClosePDFStep,
+    private val generateImagePreviewStep: GenerateImagePreviewStep,
+    private val saveImageStep: SaveImageStep,
+    private val submitImagesStep: SubmitImagesStep
 ) {
 
     @Bean
@@ -38,6 +41,7 @@ open class PipelineConfiguration(
                     .then(indexHtmlPageStep)
                     .then(submitThumbnailStep)
                         .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
+                    .then(submitImagesStep)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(thumbnailValidationStep)
@@ -49,6 +53,11 @@ open class PipelineConfiguration(
                 firstRun(fetchPDFStep)
                     .then(indexPDFStep)
                     .finally(closePDFStep)
+            }
+            route(IndexTaskType.IMAGE) {
+                firstRun(fetchImageStep)
+                    .then(generateImagePreviewStep)
+                    .then(saveImageStep)
             }
         }
     }

@@ -7,8 +7,11 @@ import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.store.PageMetadataStore
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
+import java.net.URL
+import java.time.Instant
 import java.util.concurrent.Executor
 
 class LinkDiscoveryServiceTest {
@@ -55,6 +58,27 @@ class LinkDiscoveryServiceTest {
             assertEquals("https://francisbailey.com/test", (firstValue as LinkDiscoveryTask).discovery.source)
             assertEquals("https://francisbailey.com/test2", (secondValue as LinkDiscoveryTask).discovery.source)
             assertEquals("https://someexternalsite.com", (thirdValue as LinkDiscoveryTask).discovery.source)
+        }
+
+        verifyNoMoreInteractions(linkDiscoveryTaskExecutor)
+    }
+
+    @Test
+    fun `submits one image discovery task per call`() {
+        val discoveries = (0..9).map {
+            ImageDiscovery(
+                source = "abc$it",
+                referencingURL = URL("https://www.exmaple.com"),
+                pageCreationDate = Instant.now().toEpochMilli(),
+                description = "ABC $it"
+            )
+        }.toSet()
+
+        linkDiscoveryService.submitImages(associatedTask, discoveries)
+
+        argumentCaptor<Runnable>().apply {
+            verify(linkDiscoveryTaskExecutor, times(1)).execute(capture())
+            assertTrue(firstValue is ImageDiscoveryTask)
         }
 
         verifyNoMoreInteractions(linkDiscoveryTaskExecutor)
