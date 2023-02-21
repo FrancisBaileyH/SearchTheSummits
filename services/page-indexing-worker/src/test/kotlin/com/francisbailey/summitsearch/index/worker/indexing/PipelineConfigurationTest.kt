@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.configuration.PipelineConfiguration
 import com.francisbailey.summitsearch.index.worker.indexing.step.*
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
 import com.sksamuel.scrimage.ImmutableImage
@@ -34,6 +35,7 @@ class PipelineConfigurationTest: StepTest() {
     private val submitImagesStep = mock<SubmitImagesStep>()
     private val saveImageStep = mock<SaveImageStep>()
     private val generateImagePreviewStep = mock<GenerateImagePreviewStep>()
+    private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -52,7 +54,8 @@ class PipelineConfigurationTest: StepTest() {
         peakBaggerContentValidatorStep = peakBaggerContentValidatorStep,
         generateImagePreviewStep = generateImagePreviewStep,
         submitImagesStep = submitImagesStep,
-        saveImageStep = saveImageStep
+        saveImageStep = saveImageStep,
+        cascadeClimbersSubmitThumbnailStep = cascadeClimbersSubmitThumbnailStep
     )
 
     @Test
@@ -229,6 +232,44 @@ class PipelineConfigurationTest: StepTest() {
         }
 
         verifyNoInteractions(submitThumbnailStep)
-        verifyNoInteractions(contentValidatorStep)
+    }
+
+    @Test
+    fun `overrides on steps for cascade climbers`() {
+        val task = IndexTask(
+            messageHandle = "testHandle123",
+            source = "some-queue-name",
+            details = IndexTaskDetails(
+                id = "123456",
+                pageUrl = URL("https://cascadeclimbers.com/forum/topic/100857-tr-mt-deception-amp-others-scrambles-7232017/"),
+                submitTime = Date().time,
+                taskRunId = "test123",
+                taskType = IndexTaskType.HTML,
+                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            )
+        )
+
+        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
+
+        whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(cascadeClimbersSubmitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(contentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
+
+        val pipeline = pipelineConfiguration.indexingPipeline()
+
+        pipeline.process(task, monitor)
+
+        inOrder(fetchHtmlPageStep, submitLinksStep, indexHtmlPageStep, cascadeClimbersSubmitThumbnailStep, contentValidatorStep, submitImagesStep) {
+            verify(fetchHtmlPageStep).process(any(), any())
+            verify(submitLinksStep).process(any(), any())
+            verify(contentValidatorStep).process(any(), any())
+            verify(indexHtmlPageStep).process(any(), any())
+            verify(cascadeClimbersSubmitThumbnailStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
+        }
+
+        verifyNoInteractions(submitThumbnailStep)
     }
 }
