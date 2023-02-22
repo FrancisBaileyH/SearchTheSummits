@@ -41,7 +41,7 @@ open class PipelineConfiguration(
                     .then(contentValidatorStep)
                         .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
                     .then(submitImagesStep)
-                    .then(indexHtmlPageStep)
+                    .then(indexHtmlPageStep) // destructive step. Need to consider supplying clone
                     .then(submitThumbnailStep)
                         .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
                         .withHostOverride("cascadeclimbers.com", SubmitThumbnailStep::class, cascadeClimbersSubmitThumbnailStep)
