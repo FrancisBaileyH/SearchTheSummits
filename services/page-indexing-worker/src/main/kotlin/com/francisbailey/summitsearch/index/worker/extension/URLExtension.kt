@@ -10,3 +10,8 @@ fun URL.normalizeAndEncode(): URL {
     val uri = URI(this.toString().replace(" ", "%20")).normalize()
     return URL("${uri.scheme}:${uri.rawSchemeSpecificPart}")
 }
+
+fun URL.stripQueryAndFragment(): URL {
+    val uri = URI(this.toString().replace(" ", "%20")).normalize()
+    return URL("${uri.scheme}://${uri.host}${uri.path}")
+}

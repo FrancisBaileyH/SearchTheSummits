@@ -30,7 +30,7 @@ class ImageIndexService(
 
         val result = elasticSearchClient.index(IndexRequest.of {
             it.index(indexName)
-            it.id(generateIdFromUrl(request.source))
+            it.id(generateIdFromUrl(request.normalizedSource))
             it.document(ImageMapping(
                 type = type,
                 source = request.source.toString(),
@@ -123,6 +123,7 @@ internal enum class ImageType {
 }
 
 data class SummitSearchImagePutRequest(
+    val normalizedSource: URL,
     val source: URL,
     val dataStoreReference: String,
     val description: String,

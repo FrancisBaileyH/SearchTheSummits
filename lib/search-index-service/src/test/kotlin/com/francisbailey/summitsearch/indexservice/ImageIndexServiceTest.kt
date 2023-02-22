@@ -26,11 +26,12 @@ class ImageIndexServiceTest {
     @Test
     fun `indexes image with expected content`() {
         val request = SummitSearchImagePutRequest(
-            source = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
+            source = URL("https://francisbaileyh.com/wp-content/image.jpeg?w=1230"),
             referencingDocumentDate = 123456789,
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
             description = "This is a mountain!",
-            dataStoreReference = "https://some-reference-here"
+            dataStoreReference = "https://some-reference-here",
+            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg")
         )
 
         val index = "create-image-index"
@@ -44,13 +45,14 @@ class ImageIndexServiceTest {
 
         client.indices().refresh(RefreshRequest.of { it.index(index) })
 
-        val result = getDocument(request.source, index)
+        val result = getDocument(request.normalizedSource, index)
 
         assertEquals(request.description, result.source()!!.description)
         assertEquals(request.dataStoreReference, result.source()!!.dataStoreReference)
         assertEquals(request.referencingDocumentDate, result.source()!!.referencingDocumentDate)
         assertEquals(request.referencingDocument.host, result.source()!!.referencingDocumentHost)
-        assertEquals(generateIdFromUrl(request.source), result.id())
+        assertEquals(request.source.toString(), result.source()!!.source)
+        assertEquals(generateIdFromUrl(request.normalizedSource), result.id())
     }
 
     @Test
@@ -60,7 +62,8 @@ class ImageIndexServiceTest {
             referencingDocumentDate = 123456789,
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
             description = "This is a mountain!<script>alert(something);</script><p>Hello?</p>",
-            dataStoreReference = "https://some-reference-here"
+            dataStoreReference = "https://some-reference-here",
+            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg")
         )
 
         val index = "create-image-index-bad-text"
