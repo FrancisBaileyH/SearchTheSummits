@@ -40,11 +40,11 @@ open class PipelineConfiguration(
                     .then(submitLinksStep)
                     .then(contentValidatorStep)
                         .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
+                    .then(submitImagesStep)
                     .then(indexHtmlPageStep)
                     .then(submitThumbnailStep)
                         .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
                         .withHostOverride("cascadeclimbers.com", SubmitThumbnailStep::class, cascadeClimbersSubmitThumbnailStep)
-                    .then(submitImagesStep)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(thumbnailValidationStep)

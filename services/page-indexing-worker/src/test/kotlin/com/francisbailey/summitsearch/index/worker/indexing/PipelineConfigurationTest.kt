@@ -89,9 +89,9 @@ class PipelineConfigurationTest: StepTest() {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(contentValidatorStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(submitThumbnailStep).process(any(), any())
-            verify(submitImagesStep).process(any(), any())
         }
     }
 
@@ -226,9 +226,9 @@ class PipelineConfigurationTest: StepTest() {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(peakBaggerContentValidatorStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(peakBaggerSubmitThumbnailStep).process(any(), any())
-            verify(submitImagesStep).process(any(), any())
         }
 
         verifyNoInteractions(submitThumbnailStep)
@@ -265,9 +265,9 @@ class PipelineConfigurationTest: StepTest() {
             verify(fetchHtmlPageStep).process(any(), any())
             verify(submitLinksStep).process(any(), any())
             verify(contentValidatorStep).process(any(), any())
+            verify(submitImagesStep).process(any(), any())
             verify(indexHtmlPageStep).process(any(), any())
             verify(cascadeClimbersSubmitThumbnailStep).process(any(), any())
-            verify(submitImagesStep).process(any(), any())
         }
 
         verifyNoInteractions(submitThumbnailStep)
