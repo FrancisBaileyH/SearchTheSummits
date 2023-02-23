@@ -35,7 +35,8 @@ open class ImageConfiguration(
         "alpinebaking.com",
         "www.desertmountaineer.com",
         "www.lemkeclimbs.com",
-        "www.countryhighpoints.com"
+        "www.countryhighpoints.com",
+        "besthikesbc.ca"
     )
 
 }

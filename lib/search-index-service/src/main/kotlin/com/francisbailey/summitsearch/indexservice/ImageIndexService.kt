@@ -36,7 +36,7 @@ class ImageIndexService(
                 source = request.source.toString(),
                 dataStoreReference = request.dataStoreReference,
                 description = Jsoup.clean(request.description, Safelist.none()),
-                referencingDocument = generateIdFromUrl(request.referencingDocument),
+                referencingDocument = request.referencingDocument.toString(),
                 referencingDocumentDate = request.referencingDocumentDate,
                 referencingDocumentHost = request.referencingDocument.host
             ))
