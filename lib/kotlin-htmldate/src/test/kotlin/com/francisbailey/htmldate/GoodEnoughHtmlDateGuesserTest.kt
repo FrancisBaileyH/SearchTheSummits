@@ -24,7 +24,6 @@ class GoodEnoughHtmlDateGuesserTest {
 
     @Test
     fun `reports expected dates from real html pages`() {
-
         val expectedDates = setOf(
             ResourceDateMapping(
                 url = URL("https://cascadeclimbers.com/forum/topic/106009-phylliss-engine-standard-route-sept-20th-2022/"),
@@ -50,6 +49,11 @@ class GoodEnoughHtmlDateGuesserTest {
                 url = URL("https://bretteharrington.blogspot.com/2020/08/auroraphobia-13b-220m.html"),
                 localName = "bretteharrington.html",
                 date = LocalDateTimeBuilder.of(2020, 8, 22)
+            ),
+            ResourceDateMapping(
+                url = URL("https://www.nwhikers.net/forums/viewtopic.php?t=8036796"),
+                localName = "phpbb.html",
+                date = LocalDateTimeBuilder.of(2023, 2, 13)
             )
         )
 

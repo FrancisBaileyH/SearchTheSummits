@@ -68,7 +68,8 @@ class GoodEnoughHtmlDateGuesser {
                     HtmlExtendedAbbrSearcher(configuration, parser),
                     HtmlDateElementSearcher(configuration, parser),
                     HtmlTimeElementSearcher(configuration, parser),
-                    HtmlTitleSearcher(parser)
+                    HtmlTitleSearcher(parser),
+                    CommonForumSearcher(parser)
                 ),
                 urlExtractor = UrlDateExtractor()
             )
