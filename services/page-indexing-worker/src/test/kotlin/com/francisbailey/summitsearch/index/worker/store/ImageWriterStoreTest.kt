@@ -28,7 +28,7 @@ class ImageWriterStoreTest {
     @Test
     fun `generates expected id from URL`() {
         val url = URL("https://www.francisbaileyh.com/some/path/!with/illegal/chars.png")
-        val expectedId = "thumbnails/e7ce5206e216b1e5717cce5adc27ceaef939c568/534061934380f24125de1131dade1bbb6e9b5086.png"
+        val expectedId = "thumbnails/e7ce5206e216b1e5717cce5adc27ceaef939c568/534061934380f24125de1131dade1bbb6e9b5086.jpg"
 
         assertEquals(expectedId, ImageWriterStore.buildPathFromUrl(url, ImageStoreType.THUMBNAIL))
     }
@@ -79,7 +79,7 @@ class ImageWriterStoreTest {
 
     @Test
     fun `saves object to store with expected URL`() {
-        val expectedPath = "thumbnails/d2c789dbed3ca341e03395189ba64b35c9732e8d/1c682072958afb17941bb1754e5f8b7fd2941f3d.png"
+        val expectedPath = "thumbnails/d2c789dbed3ca341e03395189ba64b35c9732e8d/1c682072958afb17941bb1754e5f8b7fd2941f3d.jpg"
         val source = URL("https://francisbaileyh.com/test/image.png")
         val reference = writerStore.save(source, ByteArray(1), ImageStoreType.THUMBNAIL)
 

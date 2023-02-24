@@ -61,7 +61,7 @@ class ImageWriterStore(
     }
 
     companion object {
-        fun buildPathFromUrl(url: URL, type: ImageStoreType, extension: String = "png"): String {
+        fun buildPathFromUrl(url: URL, type: ImageStoreType, extension: String = "jpg"): String {
             return "${type.path}/${url.host.toSha1()}/${url.path.toSha1()}.$extension"
         }
     }

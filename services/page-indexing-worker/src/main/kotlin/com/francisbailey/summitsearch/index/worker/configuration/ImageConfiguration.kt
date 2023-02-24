@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.configuration
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.ImmutableImageLoader
+import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.nio.PngWriter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,7 +21,7 @@ open class ImageConfiguration(
     open fun imageLoader(): ImmutableImageLoader = ImmutableImageLoader.create()
 
     @Bean
-    open fun imageWriter(): ImageWriter = PngWriter().withMaxCompression()
+    open fun imageWriter(): ImageWriter = JpegWriter.Default
 
     @Bean
     open fun imageWriterStore() = ImageWriterStore(
