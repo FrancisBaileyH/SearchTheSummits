@@ -1,6 +1,6 @@
-package com.francisbailey.summitsearch.index.worker.client
+package com.francisbailey.summitsearch.taskclient
 
-import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient.Companion.MAX_MESSAGE_BATCH_SIZE
+import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient.Companion.MAX_MESSAGE_BATCH_SIZE
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -8,7 +8,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
-import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.*
 import java.net.URL
@@ -25,13 +24,15 @@ interface IndexingTaskQueuePollingClient {
 interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
     fun listTaskQueues(): Set<String>
     fun getTaskCount(queueName: String): Long
+    fun queueExists(queueName: String): Boolean
+    fun createQueue(queueName: String)
 
     companion object {
         const val MAX_MESSAGE_BATCH_SIZE = 10
     }
 }
 
-@Component
+
 class SQSIndexingTaskQueueClient(
     private val sqsClient: SqsClient
 ): IndexingTaskQueueClient {
@@ -115,9 +116,45 @@ class SQSIndexingTaskQueueClient(
         return attributes.attributes()[QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES]?.toLong() ?: 0L
     }
 
+    override fun queueExists(queueName: String): Boolean {
+        return try {
+            sqsClient.getQueueUrl(
+                GetQueueUrlRequest
+                    .builder()
+                    .queueName(queueName)
+                    .build()
+            )
+            true
+        } catch (e: QueueDoesNotExistException) {
+            false
+        }
+    }
+
+    override fun createQueue(queueName: String) {
+        val queueUrl = sqsClient.createQueue(CreateQueueRequest.builder()
+            .queueName(queueName)
+            .build()
+        ).queueUrl()
+
+        sqsClient.setQueueAttributes(SetQueueAttributesRequest.builder()
+            .queueUrl(queueUrl)
+            .attributes(mapOf(
+                QueueAttributeName.REDRIVE_POLICY to REDRIVE_POLICY,
+                QueueAttributeName.VISIBILITY_TIMEOUT to "${Duration.ofMinutes(5).seconds}"
+            ))
+            .build()
+        )
+    }
+
     companion object {
         const val INDEXING_QUEUE_PREFIX = "IndexingQueue-"
         const val MAX_RECEIVE_WAIT_TIME = 20
+        const val REDRIVE_POLICY = """
+            {
+                "maxReceiveCount": "5",
+                "deadLetterTargetArn": "arn:aws:sqs:us-west-2:259609947632:IndexingQueue-DLQ"
+            }
+        """
     }
 }
 
