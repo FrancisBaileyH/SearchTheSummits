@@ -7,6 +7,8 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import com.francisbailey.summitsearch.services.common.RegionConfig
+import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.taskclient.SQSIndexingTaskQueueClient
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
@@ -45,11 +47,13 @@ open class ClientConfiguration(
 ) {
 
     @Bean
-    open fun sqsClient(): SqsClient {
-        return SqsClient.builder()
-            .region(Region.US_WEST_2)
-            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-            .build()
+    open fun indexingTaskQueueClient(): IndexingTaskQueueClient {
+        return SQSIndexingTaskQueueClient(
+            SqsClient.builder()
+                .region(Region.US_WEST_2)
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .build()
+        )
     }
 
     /**
