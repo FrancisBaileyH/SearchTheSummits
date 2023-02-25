@@ -4,7 +4,6 @@ import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.ImmutableImageLoader
 import com.sksamuel.scrimage.nio.JpegWriter
-import com.sksamuel.scrimage.nio.PngWriter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -37,7 +36,10 @@ open class ImageConfiguration(
         "www.desertmountaineer.com",
         "www.lemkeclimbs.com",
         "www.countryhighpoints.com",
-        "besthikesbc.ca"
+        "besthikesbc.ca",
+        "www.drdirtbag.com",
+        "climberkyle.com",
+        "havetent.com"
     )
 
 }

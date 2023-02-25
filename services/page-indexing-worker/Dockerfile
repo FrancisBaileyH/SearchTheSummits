@@ -1,8 +1,8 @@
-FROM amazoncorretto:8u352
+FROM adoptopenjdk/openjdk11-openj9
+
 VOLUME /tmp
 EXPOSE 8080
 EXPOSE 9090
-EXPOSE 8849
 
 RUN mkdir /service
 RUN mkdir -p /service/var/logs
