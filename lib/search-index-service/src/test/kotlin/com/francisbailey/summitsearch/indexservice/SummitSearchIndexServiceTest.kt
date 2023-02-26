@@ -622,6 +622,55 @@ class SummitSearchIndexServiceTest {
         assertEquals(expectedQuery, SummitSearchIndexService.sanitizeQuery(query))
     }
 
+    @Test
+    fun `sorts by date when request specifies sortByDate type`() {
+        val index = "sort-by-date-test"
+        val testIndexService = createIndex(index)
+        val dateTime = LocalDateTime.now()
+        val searchTerm = "Mount Last"
+
+        val highScoreRequest = SummitSearchIndexRequest(
+            source = URL("https://www.francisbaileyh.com/high-score"),
+            title = searchTerm,
+            rawTextContent = "This mountain is called: $searchTerm",
+            paragraphContent = "This mountain is called: $searchTerm",
+            seoDescription = "This mountain is called: $searchTerm",
+            pageCreationDate = dateTime
+        )
+
+        val normalScoreRequests = (0..2).map {
+            SummitSearchIndexRequest(
+                source = URL("https://www.francisbaileyh.com/$it"),
+                title = "A standard title $it",
+                rawTextContent = "This mountain is called: $searchTerm",
+                paragraphContent = "",
+                seoDescription = "",
+                pageCreationDate = dateTime.plusDays(it.toLong())
+            )
+        }
+
+        normalScoreRequests.plus(highScoreRequest).forEach {
+            testIndexService.indexPageContents(it)
+        }
+
+        refreshIndex(index)
+
+        val standardQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm))
+
+        assertEquals("https://www.francisbaileyh.com/high-score", standardQueryResult.hits.first().source)
+        assertEquals(4, standardQueryResult.hits.size)
+
+
+        val sortByDateQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm, sortByDate = true))
+
+        normalScoreRequests.reversed().forEachIndexed { index, it ->
+            assertEquals(it.source.toString(), sortByDateQueryResult.hits[index].source)
+        }
+        assertEquals("https://www.francisbaileyh.com/high-score", sortByDateQueryResult.hits.last().source)
+        assertEquals(4, sortByDateQueryResult.hits.size)
+
+    }
+
     private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {
         return SearchRequest.of {
             it.index(index)

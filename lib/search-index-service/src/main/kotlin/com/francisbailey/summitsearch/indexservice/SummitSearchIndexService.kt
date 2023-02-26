@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.SortOrder
 import co.elastic.clients.elasticsearch._types.mapping.DateProperty
 import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
@@ -68,6 +69,16 @@ class SummitSearchIndexService(
                         match.minimumShouldMatch("100%")
                         match.analyzer(ANALYZER_NAME)
                         match.defaultOperator(Operator.And)
+                    }
+                }
+                if (queryRequest.sortByDate) {
+                    it.sort { sort ->
+                        sort.field { field ->
+                            field.field(HtmlMapping::pageCreationDate.name)
+                            field.format("strict_date_optional_time_nanos")
+                            field.missing("_last")
+                            field.order(SortOrder.Desc)
+                        }
                     }
                 }
                 it.fields(listOf(
@@ -315,6 +326,7 @@ data class SummitSearchHit(
 data class SummitSearchQueryRequest(
     val term: String,
     val from: Int = 0,
+    val sortByDate: Boolean = false
 )
 
 data class SummitSearchIndexHtmlPageRequest(
