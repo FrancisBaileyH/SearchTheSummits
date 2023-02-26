@@ -321,6 +321,79 @@ nav.header-menu ul > li a.current-nav-page {
     text-align: center;
 }
 
+.search-results-details p {
+    margin-bottom: 0.5em;
+}
+
+.search-results-tools {
+    margin-bottom: 0.5em;
+    display: flex;
+    align-items: center;
+}
+
+.search-results-tools .tool-menu,
+.search-results-tools .search-tool-icon {
+    display: inline-flex;
+}
+
+.search-results-tools .tool-menu button {
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.search-results-tools #search-sort-menu .js-Dropdown {
+    width: 10em;
+}
+
+.search-results-tools .search-tool-icon {
+    padding-right: 0.6em;
+    color: #576574;
+}
+
+.search-results-tools .search-tool-icon .bi-gear {
+    height: 1.5rem;
+}
+
+.search-results-tools #search-sort-menu .js-Dropdown-title {
+    border: 0;
+    font: 400 1.5rem "Mulish";
+    padding-left: 0;
+    margin: 0;
+    width: auto;
+    padding-right: 2em;
+    color: #576574;
+}
+
+.search-results-tools .tool-menu .js-Dropdown-list {
+    border: 1px solid rgba(187, 187, 187, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 1px rgba(64,60,67,.16);
+}
+
+.search-results-tools .tool-menu .js-Dropdown-list li {
+    margin: 0;
+    border: none;
+}
+
+.search-results-tools .tool-menu .js-Dropdown-list li {
+    border-radius: 16px;
+}
+
+.search-results-tools .tool-menu .js-Dropdown-list li.is-selected {
+   background-color: transparent;
+   font-weight: 700;
+   color: #6997a1;
+}
+
+.search-results-tools .tool-menu .js-Dropdown-list li:hover {
+   background-color: transparent;
+   color: #6997a1;
+}
+
+.search-results-tools .tool-menu .js-Dropdown-title::after {
+    border-width: 5px;
+}
+
 .search-pagination-container {
     text-align: center;
     margin-bottom: 1em;

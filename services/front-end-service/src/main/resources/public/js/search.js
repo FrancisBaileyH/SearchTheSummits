@@ -7,6 +7,7 @@ $(document).ready(function() {
 
     var urlQuery = queries.get("query")
     var page = queries.get("page")
+    var sort = queries.get("sort")
 
     if (page == null || isNaN(page)) {
         page = 1
@@ -15,7 +16,7 @@ $(document).ready(function() {
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
-        updateSearchResults(urlQuery, Number(page)) // If we do "10" + 4 we get 104... why javascript?!
+        updateSearchResults(urlQuery, Number(page), sort) // If we do "10" + 4 we get 104... why javascript?!
     } else {
          $(".search-form-container").removeClass("invisible");
          $(".search-form-tagline").removeClass("invisible");
@@ -50,7 +51,7 @@ function renderClearButton() {
     $('.search-clear-button').toggle(Boolean(hasContent));
 }
 
-function updateSearchResults(query, page) {
+function updateSearchResults(query, page, sort) {
     $("#search-bar").val(query)
     $(".search-pagination-container").html("")
 
@@ -59,6 +60,10 @@ function updateSearchResults(query, page) {
 
     if (page > 1) {
         endpoint += "&next=" + ((page - 1) * perPageResult)
+    }
+
+    if (sort != "") {
+        endpoint += "&sort=" + sort
     }
 
     $.getJSON(endpoint)
@@ -76,6 +81,8 @@ function updateSearchResults(query, page) {
 
          $(".search-results-container").html(searchDetails)
          $(".search-form-container").addClass("has-query");
+
+         renderSearchTools();
 
          json.hits.forEach(function(hitGroup) {
             var searchResult = "<div class=\"search-result-group\">"
@@ -132,7 +139,46 @@ function updateSearchResults(query, page) {
      });
 }
 
+function renderSearchTools() {
+    var url = new URL(window.location.href);
+    var sortOptions = [ "Relevance", "Date" ];
+    var currentOption = url.searchParams.get("sort");
+
+    var settingsSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-gear\" viewBox=\"0 0 16 16\"><path d=\"M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z\"/><path d=\"M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z\"/></svg>"
+    var searchToolsHtml = "<div class=\"search-results-tools\">"
+    searchToolsHtml += "<span class=\"search-tool-icon\">" + settingsSvg + "</span><div class=\"tool-menu\" id=\"search-sort-menu\">"
+    searchToolsHtml += "<select id=\"search-sort\">"
+
+    sortOptions.forEach(function(option) {
+        searchToolsHtml += "<option value=\"" + option.toLowerCase() + "\""
+
+        if (currentOption !== null && option.toLowerCase() == currentOption.toLowerCase()) {
+            searchToolsHtml += " selected "
+        }
+
+        searchToolsHtml += ">" + option + "</option>"
+    });
+
+    searchToolsHtml += "</select>"
+    searchToolsHtml += "</div>"
+    searchToolsHtml += "</div>"
+
+    $(".search-results-container").append(searchToolsHtml);
+
+    var select = new CustomSelect({
+        elem: "search-sort"
+    });
+
+    $('#search-sort').change(function() {
+        var value = $('#search-sort').val();
+
+        url.searchParams.set("sort", value);
+        window.location.href = url;
+    });
+}
+
 function renderPagination(json, page, query) {
+    var url = new URL(window.location.href);
     var paginationData = getPaginationDisplayData(Math.min(json.totalHits, maxPaginatedResults), page, perPageResult)
     $(".search-pagination-container").html("test")
 
@@ -143,136 +189,14 @@ function renderPagination(json, page, query) {
         if (i == page) {
             cssClass = "current-search-page"
         }
-        paginationHtml += "<li><a class='" + cssClass + "' href=\"/?query=" + query.replace(" ", "+") + "&page=" + i + "\">" + i + "</a></li>"
+
+        url.searchParams.set("page", i);
+        paginationHtml += "<li><a class='" + cssClass + "' href=\"" +  url + "\">" + i + "</a></li>"
     }
 
     paginationHtml += "</ul>"
 
     $(".search-pagination-container").html(paginationHtml)
-}
-
-
-function getPaginationDisplayData(totalItems, currentPage, pageSize) {
-    // default to first page
-    currentPage = currentPage || 1;
-
-    // default page size is 10
-    pageSize = pageSize || 10;
-
-    // calculate total pages
-    var totalPages = Math.ceil(totalItems / pageSize);
-
-    var startPage, endPage;
-    if (totalPages <= 10) {
-        // less than 10 total pages so show all
-        startPage = 1;
-        endPage = totalPages;
-    } else {
-        // more than 10 total pages so calculate start and end pages
-        if (currentPage <= 6) {
-            startPage = 1;
-            endPage = 10;
-        } else if (currentPage + 4 >= totalPages) {
-            startPage = totalPages - 9;
-            endPage = totalPages;
-        } else {
-            startPage = currentPage - 5;
-            endPage = currentPage + 4;
-        }
-    }
-
-    // return object with all pager properties required by the view
-    return {
-        currentPage: currentPage,
-        pageSize: pageSize,
-        totalPages: totalPages,
-        startPage: startPage,
-        endPage: endPage
-    };
-}
-
-/**
-  Search Animations
-*/
-
-// Add something to given element placeholder
-function addToPlaceholder(toAdd, el) {
-    el.attr('placeholder', el.attr('placeholder') + toAdd);
-    // Delay between symbols "typing"
-    return new Promise(resolve => setTimeout(resolve, 75));
-}
-
-function deleteFromPlaceHolder(el) {
-    var placeHolder = el.attr('placeholder')
-    el.attr('placeholder', placeHolder.substring(0, placeHolder.length - 1));
-    return new Promise(resolve => setTimeout(resolve, 30));
-}
-
-// Clear placeholder attribute in given element
-function clearPlaceholder(el) {
-    el.attr("placeholder", "");
-}
-
-// Print one phrase
-function printPhrase(phrase, el) {
-    return new Promise(resolve => {
-        // Clear placeholder before typing next phrase
-        clearPlaceholder(el);
-        let letters = phrase.split('');
-        // For each letter in phrase
-        letters.reduce(
-            (promise, letter, index) => promise.then(_ => {
-                // Resolve promise when all letters are typed
-                if (index === letters.length - 1) {
-                    resolve()
-                }
-                return addToPlaceholder(letter, el);
-            }),
-            Promise.resolve()
-        );
-    });
-}
-
-function clearPhrase(phrase, el) {
-    return new Promise(resolve => {
-        let letters = phrase.split('');
-        letters.reduce(
-            (promise, letter, index) => promise.then(_ => {
-                // Resolve promise when all letters are typed
-                if (index === letters.length - 1) {
-                    resolve()
-                }
-                return deleteFromPlaceHolder(el);
-            }),
-            Promise.resolve()
-        )
-    });
-}
-
-function delay(timeout) {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-}
-
-// Print given phrases to element
-function printPhrases(phrases, el) {
-    clearPlaceholder(el);
-
-    // check for promise cancellation
-    // do not clear last search value
-    phrases.reduce(
-        (promise, phrase, index) => {
-            return promise
-                .then(_ => delay(1000))
-                .then(_ => printPhrase(phrase, el))
-                .then(_ => delay(2000))
-                .then(_ => {
-                    if (index !== phrases.length - 1) {
-                        return clearPhrase(phrase, el)
-                    }
-                })
-        },
-        Promise.resolve()
-    );
 }
 
 // Start typing
@@ -306,19 +230,4 @@ function runSearchAnimations() {
     animatedPhrases.push(finalPhrase);
 
     printPhrases(animatedPhrases, $('#search-bar'));
-}
-
-
-function shuffle(array) {
-  let currentIndex = array.length,  randomIndex;
-
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
-  }
-
-  return array;
 }
