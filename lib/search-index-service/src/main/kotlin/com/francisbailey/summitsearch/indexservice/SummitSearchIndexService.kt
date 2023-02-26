@@ -71,7 +71,7 @@ class SummitSearchIndexService(
                         match.defaultOperator(Operator.And)
                     }
                 }
-                if (queryRequest.sortByDate) {
+                if (queryRequest.sortType == SummitSearchSortType.BY_DATE) {
                     it.sort { sort ->
                         sort.field { field ->
                             field.field(HtmlMapping::pageCreationDate.name)
@@ -326,7 +326,7 @@ data class SummitSearchHit(
 data class SummitSearchQueryRequest(
     val term: String,
     val from: Int = 0,
-    val sortByDate: Boolean = false
+    val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE
 )
 
 data class SummitSearchIndexHtmlPageRequest(
@@ -334,6 +334,11 @@ data class SummitSearchIndexHtmlPageRequest(
     val htmlDocument: Document,
     val pageCreationDate: LocalDateTime? = null
 )
+
+enum class SummitSearchSortType {
+    BY_DATE,
+    BY_RELEVANCE
+}
 
 data class SummitSearchIndexRequest(
     val source: URL,

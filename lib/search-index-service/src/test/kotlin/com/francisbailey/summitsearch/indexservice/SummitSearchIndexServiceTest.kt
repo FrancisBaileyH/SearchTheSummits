@@ -661,7 +661,7 @@ class SummitSearchIndexServiceTest {
         assertEquals(4, standardQueryResult.hits.size)
 
 
-        val sortByDateQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm, sortByDate = true))
+        val sortByDateQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm, sortType = SummitSearchSortType.BY_DATE))
 
         normalScoreRequests.reversed().forEachIndexed { index, it ->
             assertEquals(it.source.toString(), sortByDateQueryResult.hits[index].source)

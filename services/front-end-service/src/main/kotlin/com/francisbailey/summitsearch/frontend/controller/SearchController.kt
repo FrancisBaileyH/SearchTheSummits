@@ -6,6 +6,7 @@ import com.francisbailey.summitsearch.frontend.stats.QueryStatsReporter
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStat
+import com.francisbailey.summitsearch.indexservice.SummitSearchSortType
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -30,15 +31,25 @@ class SearchController(
     private val log = KotlinLogging.logger { }
 
     @GetMapping(path = [SEARCH_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun search(@RequestParam(name = "query") requestQuery: String, @RequestParam(name = "next", required = false) next: Int?): ResponseEntity<String> {
+    fun search(
+        @RequestParam(name = "query") requestQuery: String,
+        @RequestParam(name = "next", required = false) next: Int?,
+        @RequestParam(name = "sort", required = false) sort: String? = null
+    ): ResponseEntity<String> {
         log.info { "Querying search service for: $requestQuery and next value: $next" }
+
+        val sortType = when (sort?.lowercase()) {
+            "date" -> SummitSearchSortType.BY_DATE
+            else -> SummitSearchSortType.BY_RELEVANCE
+        }
 
         return try {
             val response = meterRegistry.timer("api.searchindex.query.latency").recordCallable {
                 summitSearchIndexService.query(
                     SummitSearchQueryRequest(
                         term = requestQuery,
-                        from = next ?: 0
+                        from = next ?: 0,
+                        sortType = sortType
                     )
                 )
             }!!
