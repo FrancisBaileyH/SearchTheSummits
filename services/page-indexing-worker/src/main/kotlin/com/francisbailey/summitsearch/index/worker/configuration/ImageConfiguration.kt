@@ -39,7 +39,8 @@ open class ImageConfiguration(
         "besthikesbc.ca",
         "www.drdirtbag.com",
         "climberkyle.com",
-        "havetent.com"
+        "havetent.com",
+        "alpinejournals.com"
     )
 
 }
