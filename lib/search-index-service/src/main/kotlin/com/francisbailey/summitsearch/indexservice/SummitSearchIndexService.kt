@@ -44,39 +44,23 @@ class SummitSearchIndexService(
 
         log.info { "Querying for: ${queryRequest.term}" }
 
-        val term = sanitizeQuery(queryRequest.term)
-        val words = term.words()
-        val sanitizedQuery = StringBuilder()
+        val summitSearchQuery = when(queryRequest.queryType) {
+            SummitSearchQueryType.FUZZY -> buildFuzzyQuery(queryRequest)
+            SummitSearchQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
+        }
 
-        sanitizedQuery.append(words.take(PHRASE_TERM_THRESHOLD).joinToString(prefix = "\"", postfix = "\"", separator = " "))
-        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString(separator = "") { " \"$it\"" })
-
-        val response = elasticSearchClient.search(
-            SearchRequest.of {
+        val response = elasticSearchClient.search(SearchRequest.of {
                 it.index(indexName)
                 it.trackTotalHits { track ->
                     track.enabled(true)
                 }
-                it.query { query ->
-                    query.simpleQueryString { match ->
-                        match.query(sanitizedQuery.toString())
-                        match.fields(
-                            HtmlMapping::title.name.plus("^10"), // boost title the highest
-                            HtmlMapping::rawTextContent.name,
-                            HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
-                            HtmlMapping::paragraphContent.name
-                        )
-                        match.minimumShouldMatch("100%")
-                        match.analyzer(ANALYZER_NAME)
-                        match.defaultOperator(Operator.And)
-                    }
-                }
+                it.query(summitSearchQuery.query)
                 if (queryRequest.sortType == SummitSearchSortType.BY_DATE) {
                     it.sort { sort ->
                         sort.field { field ->
                             field.field(HtmlMapping::pageCreationDate.name)
-                            field.format("strict_date_optional_time_nanos")
-                            field.missing("_last")
+                            field.format(SORT_DATE_FORMAT)
+                            field.missing(SORT_LAST_NAME)
                             field.order(SortOrder.Desc)
                         }
                     }
@@ -108,9 +92,7 @@ class SummitSearchIndexService(
                 }
                 it.size(paginationResultSize)
                 it.from(queryRequest.from)
-            },
-            HtmlMapping::class.java
-        )
+        }, HtmlMapping::class.java)
 
         return SummitSearchPaginatedResult(
             hits = response.hits().hits()
@@ -125,8 +107,8 @@ class SummitSearchIndexService(
 
                     val highlight = highlightOptions.firstOrNull { highlight ->
                         highlight?.contains(HIGHLIGHT_DELIMITER) ?: false
-                    } ?: highlightOptions.first {
-                        highlight -> !highlight.isNullOrBlank()
+                    } ?: highlightOptions.first { highlight ->
+                        !highlight.isNullOrBlank()
                     }
 
                     SummitSearchHit(
@@ -138,9 +120,10 @@ class SummitSearchIndexService(
                 },
             next = queryRequest.from + paginationResultSize,
             totalHits = response.hits().total()?.value() ?: 0,
-            sanitizedQuery = sanitizedQuery.toString()
+            sanitizedQuery = summitSearchQuery.rawQueryString
         )
     }
+
 
     fun putThumbnails(request: SummitSearchPutThumbnailRequest) {
         log.info { "Updating thumbnails for: ${request.source}" }
@@ -277,6 +260,53 @@ class SummitSearchIndexService(
         }
     }
 
+    private fun buildFuzzyQuery(request: SummitSearchQueryRequest): SummitSearchQuery {
+        val query = Query.of {  query ->
+            query.multiMatch { match ->
+                match.query(request.term)
+                match.fields(
+                    HtmlMapping::title.name.plus("^10"), // boost title the highest
+                    HtmlMapping::rawTextContent.name,
+                    HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                    HtmlMapping::paragraphContent.name
+                )
+                match.analyzer(ANALYZER_NAME)
+                match.operator(Operator.And)
+                match.minimumShouldMatch("100%")
+                match.fuzziness("AUTO")
+                match.maxExpansions(2)
+            }
+        }
+
+        return SummitSearchQuery(rawQueryString = request.term, query = query)
+    }
+
+    private fun buildSimpleQueryStringQuery(request: SummitSearchQueryRequest): SummitSearchQuery {
+        val term = sanitizeQuery(request.term)
+        val words = term.words()
+        val sanitizedQuery = StringBuilder()
+
+        sanitizedQuery.append(words.take(PHRASE_TERM_THRESHOLD).joinToString(prefix = "\"", postfix = "\"", separator = " "))
+        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString(separator = "") { " \"$it\"" })
+
+        val query = Query.of { query ->
+            query.simpleQueryString { match ->
+                match.query(sanitizedQuery.toString())
+                match.fields(
+                    HtmlMapping::title.name.plus("^10"), // boost title the highest
+                    HtmlMapping::rawTextContent.name,
+                    HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                    HtmlMapping::paragraphContent.name
+                )
+                match.minimumShouldMatch("100%")
+                match.analyzer(ANALYZER_NAME)
+                match.defaultOperator(Operator.And)
+            }
+        }
+
+        return SummitSearchQuery(rawQueryString = sanitizedQuery.toString(), query = query)
+    }
+
    internal companion object {
        const val SUMMIT_INDEX_NAME = "summit-search-index"
        const val ANALYZER_NAME = "standard_with_synonyms"
@@ -287,6 +317,8 @@ class SummitSearchIndexService(
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
        const val PHRASE_TERM_THRESHOLD = 2
        const val HIGHLIGHT_DELIMITER = "<em>"
+       const val SORT_DATE_FORMAT = "strict_date_optional_time_nanos"
+       const val SORT_LAST_NAME = "_last"
 
        private val RESERVED_QUERY_REGEX = Regex("[-+|*()~]")
        private val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\\s]")
@@ -309,6 +341,11 @@ class SummitSearchIndexService(
    }
 }
 
+internal data class SummitSearchQuery(
+    val rawQueryString: String,
+    val query: Query
+)
+
 data class SummitSearchPaginatedResult(
     val hits: List<SummitSearchHit>,
     val next: Int = 0,
@@ -323,10 +360,16 @@ data class SummitSearchHit(
     val thumbnails: List<String>?
 )
 
+enum class SummitSearchQueryType {
+    FUZZY,
+    STRICT
+}
+
 data class SummitSearchQueryRequest(
     val term: String,
     val from: Int = 0,
-    val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE
+    val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE,
+    val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT
 )
 
 data class SummitSearchIndexHtmlPageRequest(

@@ -668,7 +668,78 @@ class SummitSearchIndexServiceTest {
         }
         assertEquals("https://www.francisbaileyh.com/high-score", sortByDateQueryResult.hits.last().source)
         assertEquals(4, sortByDateQueryResult.hits.size)
+    }
 
+    @Test
+    fun `performs fuzzy query when specified in request`() {
+        val index = "fuzzy-match-test"
+        val phraseFieldTerm = "this is a query"
+        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+
+        val response = mock<SearchResponse<HtmlMapping>>()
+        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(response.hits()).thenReturn(hitsMetadata)
+        whenever(hitsMetadata.hits()).thenReturn(emptyList())
+
+        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.FUZZY))
+
+        val expectedQuery = buildExpectedFuzzyQuery("this is a query", index)
+
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+    }
+
+    private fun buildExpectedFuzzyQuery(term: String, index: String): SearchRequest {
+        return SearchRequest.of {
+            it.index(index)
+            it.trackTotalHits { track ->
+                track.enabled(true)
+            }
+            it.query { query ->
+                query.multiMatch { match ->
+                    match.query(term)
+                    match.fields(
+                        HtmlMapping::title.name.plus("^10"), // boost title the highest
+                        HtmlMapping::rawTextContent.name,
+                        HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                        HtmlMapping::paragraphContent.name
+                    )
+                    match.analyzer(SummitSearchIndexService.ANALYZER_NAME)
+                    match.operator(Operator.And)
+                    match.minimumShouldMatch("100%")
+                    match.fuzziness("AUTO")
+                    match.maxExpansions(2)
+                }
+            }
+            it.fields(listOf(
+                FieldAndFormat.of { field ->
+                    field.field(HtmlMapping::source.name)
+                },
+                FieldAndFormat.of { field ->
+                    field.field(HtmlMapping::title.name)
+                },
+                FieldAndFormat.of {field ->
+                    field.field(HtmlMapping::thumbnails.name)
+                }
+            ))
+            it.source { sourceConfig ->
+                sourceConfig.fetch(false)
+            }
+            it.highlight { highlight ->
+                highlight.numberOfFragments(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_COUNT)
+                highlight.fragmentSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.fields(mapOf(
+                    HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
+                    HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
+                    HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                ))
+                highlight.order(HighlighterOrder.Score)
+                highlight.noMatchSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+            }
+            it.size(20)
+            it.from(0)
+        }
     }
 
     private fun buildExpectedSearchQuery(term: String, index: String): SearchRequest {
