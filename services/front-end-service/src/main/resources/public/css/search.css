@@ -395,6 +395,10 @@ nav.header-menu ul > li a.current-nav-page {
     border-width: 5px;
 }
 
+.search-results-message {
+    margin-top: 2em;
+}
+
 .search-pagination-container {
     text-align: center;
     margin-bottom: 1em;

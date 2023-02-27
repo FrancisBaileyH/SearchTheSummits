@@ -52,7 +52,7 @@ class SearchController(
                         from = next ?: 0,
                         sortType = sortType,
                         queryType = queryType
-                    ).also { log.info { it } }
+                    )
                 )
             }!!
 

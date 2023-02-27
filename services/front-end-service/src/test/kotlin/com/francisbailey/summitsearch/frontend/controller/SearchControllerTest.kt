@@ -2,10 +2,7 @@ package com.francisbailey.summitsearch.frontend.controller
 
 import com.francisbailey.summitsearch.frontend.cdn.DigitalOceanCDNShim
 import com.francisbailey.summitsearch.frontend.stats.QueryStatsReporter
-import com.francisbailey.summitsearch.indexservice.SummitSearchHit
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchPaginatedResult
-import com.francisbailey.summitsearch.indexservice.SummitSearchSortType
+import com.francisbailey.summitsearch.indexservice.*
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -82,6 +79,7 @@ class SearchControllerTest {
         verify(summitSearchIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
             assertEquals(SummitSearchSortType.BY_RELEVANCE, it.sortType)
+            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
         })
     }
 
@@ -127,6 +125,7 @@ class SearchControllerTest {
         verify(summitSearchIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
             assertEquals(SummitSearchSortType.BY_RELEVANCE, it.sortType)
+            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
         })
     }
 
@@ -152,6 +151,33 @@ class SearchControllerTest {
         verify(summitSearchIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
             assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
+            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
+        })
+    }
+
+    @Test
+    fun `uses fuzzy match when fuzzy parameter is set`() {
+        val result = SummitSearchPaginatedResult(
+            hits = listOf(
+                SummitSearchHit(
+                    highlight = "test",
+                    title = "test",
+                    source = "https://somewhere.com",
+                    thumbnails = emptyList()
+                )
+            ),
+            totalHits = 1,
+            sanitizedQuery = "some test"
+        )
+
+        whenever(summitSearchIndexService.query(any())).thenReturn(result)
+
+        controller.search("some test", null, "date", "fuzzy")
+
+        verify(summitSearchIndexService).query(org.mockito.kotlin.check {
+            assertEquals("some test", it.term)
+            assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
+            assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
         })
     }
 }

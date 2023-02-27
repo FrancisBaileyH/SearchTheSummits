@@ -87,7 +87,9 @@ function updateSearchResults(query, page, sort, type) {
          $(".search-results-container").html(searchDetails)
          $(".search-form-container").addClass("has-query");
 
-         renderSearchTools();
+         if (json.totalHits > 0) {
+            renderSearchTools();
+         }
 
          json.hits.forEach(function(hit) {
             var thumbnailHtml = ""
@@ -137,7 +139,32 @@ function updateSearchResults(query, page, sort, type) {
          if (json.totalHits > perPageResult && json.hits.length > 0) {
              renderPagination(json, page, query)
          }
+
+         if (json.totalHits < 1) {
+            console.log(json);
+            renderNoResultsMessage();
+         }
      });
+}
+
+function renderNoResultsMessage() {
+    var url = new URL(window.location.href);
+    var query = url.searchParams.get("query");
+    var type = url.searchParams.get("type");
+
+    var noResultsMessage = "<div class=\"search-results-message\"><p>Your search for - <strong>" + query + "</strong> did not match any documents</p>"
+    noResultsMessage += "<p>Suggestions:</p><ul>"
+
+    if (type == null || type != "fuzzy") {
+        url.searchParams.set("type", "fuzzy");
+        noResultsMessage += "<li>Expand your search results with <a href=\"" + url + "\" >fuzzy match</a></li>"
+    }
+
+    noResultsMessage += "<li>Make sure all words are spelled correctly.</li>"
+    noResultsMessage += "<li>Try fewer keywords.</li>"
+    noResultsMessage += "<li>Try different keywords.</li></ul></div>"
+
+    $(".search-results-container").append(noResultsMessage);
 }
 
 function renderSearchTools() {
@@ -150,23 +177,43 @@ function renderSearchTools() {
 
     var anchor = $(".search-results-tools")
 
-    renderSearchTool(anchor, "sort", [ "Relevance", "Date" ], url)
-    renderSearchTool(anchor, "type", [ "Strict Search", "Fuzzy Search" ], url)
+    var tools = [
+        {
+            name: "sort",
+            options: [
+                { display: "Relevance", value: "relevance" },
+                { display: "Date", value: "date" }
+            ],
+            resetPage: false
+        },
+        {
+            name: "type",
+            options: [
+                { display: "Exact Match", value: "exact" },
+                { display: "Fuzzy Match", value: "fuzzy" }
+            ],
+            resetPage: true
+        }
+    ]
+
+    tools.forEach(function(tool) {
+        renderSearchTool(anchor, tool, url)
+    });
 }
 
-function renderSearchTool(anchor, name, options, url) {
-    var currentOption = url.searchParams.get(name);
-    var toolHtml = "<div class=\"tool-menu\" id=\"search-" + name + "-menu\">"
-    toolHtml += "<select id=\"search-" + name + "\">"
+function renderSearchTool(anchor, tool, url) {
+    var currentOption = url.searchParams.get(tool.name);
+    var toolHtml = "<div class=\"tool-menu\" id=\"search-" + tool.name + "-menu\">"
+    toolHtml += "<select id=\"search-" + tool.name + "\">"
 
-    options.forEach(function(option) {
+    tool.options.forEach(function(option) {
         var selected = ""
 
-        if (currentOption !== null && option.toLowerCase() == currentOption.toLowerCase()) {
+        if (currentOption !== null && option.value.toLowerCase() == currentOption.toLowerCase()) {
             selected = "selected=\"true\""
         }
 
-        toolHtml += "<option value=\"" + option.toLowerCase() + "\"" + selected + ">" + option + "</option>"
+        toolHtml += "<option value=\"" + option.value + "\"" + selected + ">" + option.display + "</option>"
     });
 
     toolHtml += "</select>"
@@ -175,13 +222,16 @@ function renderSearchTool(anchor, name, options, url) {
     anchor.append(toolHtml);
 
     var select = new CustomSelect({
-        elem: "search-" + name
+        elem: "search-" + tool.name
     });
 
-    $('#search-' + name).change(function() {
-        var value = $('#search-' + name).val();
+    $('#search-' + tool.name).change(function() {
+        var value = $('#search-' + tool.name).val();
+        if (tool.resetPage) {
+            url.searchParams.delete("page");
+        }
 
-        url.searchParams.set(name, value);
+        url.searchParams.set(tool.name, value);
         window.location.href = url;
     });
 }
