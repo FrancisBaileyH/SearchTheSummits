@@ -62,13 +62,13 @@ class SearchControllerTest {
         val response = controller.search("some test", null)
 
         val expectedResponse = SummitSearchResponse(
-            hits = listOf(listOf(
+            hits = listOf(
                 SummitSearchHitResponse(
                     highlight = result.hits.first().highlight,
                     source = result.hits.first().source,
                     title = result.hits.first().title,
                     thumbnail = null
-                ))
+                )
             ),
             totalHits = result.totalHits,
             next = 0
@@ -107,13 +107,13 @@ class SearchControllerTest {
         val response = controller.search("some test", null)
 
         val expectedResponse = SummitSearchResponse(
-            hits = listOf(listOf(
+            hits = listOf(
                 SummitSearchHitResponse(
                     highlight = result.hits.first().highlight,
                     source = result.hits.first().source,
                     title = result.hits.first().title,
                     thumbnail = shimmedThumbnailUrl.toString()
-                ))
+                )
             ),
             totalHits = result.totalHits,
             next = 0

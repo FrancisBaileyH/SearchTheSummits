@@ -1,12 +1,8 @@
 package com.francisbailey.summitsearch.frontend.controller
 
-
 import com.francisbailey.summitsearch.frontend.cdn.DigitalOceanCDNShim
 import com.francisbailey.summitsearch.frontend.stats.QueryStatsReporter
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchQueryRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStat
-import com.francisbailey.summitsearch.indexservice.SummitSearchSortType
+import com.francisbailey.summitsearch.indexservice.*
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -27,14 +23,14 @@ class SearchController(
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry
 ) {
-
     private val log = KotlinLogging.logger { }
 
     @GetMapping(path = [SEARCH_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun search(
         @RequestParam(name = "query") requestQuery: String,
         @RequestParam(name = "next", required = false) next: Int?,
-        @RequestParam(name = "sort", required = false) sort: String? = null
+        @RequestParam(name = "sort", required = false) sort: String? = null,
+        @RequestParam(name = "type", required = false) type: String? = null
     ): ResponseEntity<String> {
         log.info { "Querying search service for: $requestQuery and next value: $next" }
 
@@ -43,14 +39,20 @@ class SearchController(
             else -> SummitSearchSortType.BY_RELEVANCE
         }
 
+        val queryType = when(type?.lowercase()) {
+            "fuzzy" -> SummitSearchQueryType.FUZZY
+            else -> SummitSearchQueryType.STRICT
+        }
+
         return try {
             val response = meterRegistry.timer("api.searchindex.query.latency").recordCallable {
                 summitSearchIndexService.query(
                     SummitSearchQueryRequest(
                         term = requestQuery,
                         from = next ?: 0,
-                        sortType = sortType
-                    )
+                        sortType = sortType,
+                        queryType = queryType
+                    ).also { log.info { it } }
                 )
             }!!
 
@@ -58,7 +60,9 @@ class SearchController(
                 query = response.sanitizedQuery.lowercase(),
                 page = next?.toLong(),
                 totalHits = response.totalHits,
-                timestamp = Instant.now().toEpochMilli()
+                timestamp = Instant.now().toEpochMilli(),
+                type = queryType.name,
+                sort = sortType.name
             ))
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
@@ -69,7 +73,7 @@ class SearchController(
                         title = it.title.ifBlank { URL(it.source).host },
                         thumbnail = it.thumbnails?.firstOrNull()?.let { tUrl -> digitalOceanCdnShim.originToCDN(URL(tUrl)).toString() }
                     )
-                }.groupBy { URL(it.source).host }.values,
+                },
                 totalHits = response.totalHits,
                 next = response.next
             )))
@@ -88,7 +92,7 @@ class SearchController(
 
 @Serializable
 data class SummitSearchResponse(
-    val hits: Collection<List<SummitSearchHitResponse>>,
+    val hits: List<SummitSearchHitResponse>,
     val totalHits: Long,
     val next: Int
 )

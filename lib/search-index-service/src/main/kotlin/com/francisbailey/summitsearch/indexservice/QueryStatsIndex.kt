@@ -28,7 +28,9 @@ class QueryStatsIndex(
                         timestamp = it.timestamp,
                         query = it.query,
                         totalHits = it.totalHits,
-                        page = it.page
+                        page = it.page,
+                        type = it.type,
+                        sort = it.sort
                     ))
                 }
             }
@@ -73,7 +75,9 @@ internal data class QueryStat(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,
-    val page: Long?
+    val page: Long?,
+    val type: String?,
+    val sort: String?
 )
 
 data class SummitSearchQueryStatsPutRequest(
@@ -84,5 +88,7 @@ data class SummitSearchQueryStat(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,
-    val page: Long?
+    val page: Long?,
+    val type: String,
+    val sort: String
 )

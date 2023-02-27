@@ -21,7 +21,9 @@ class QueryStatsReporterTest {
             query = "test",
             timestamp = Instant.now().toEpochMilli(),
             totalHits = 1,
-            page = 1
+            page = 1,
+            type = "test",
+            sort = "test"
         )
         reporter.pushQueryStat(stat)
         reporter.flushToIndex()
@@ -43,7 +45,9 @@ class QueryStatsReporterTest {
                 query = "test $it",
                 timestamp = Instant.now().toEpochMilli(),
                 totalHits = 1,
-                page = 1
+                page = 1,
+                type = "test",
+                sort = "test"
             )
         }
 

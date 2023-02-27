@@ -32,7 +32,9 @@ class QueryStatsIndexTest {
                 query = "Some Test $it",
                 page = it.toLong(),
                 timestamp = Instant.now().toEpochMilli(),
-                totalHits = 1
+                totalHits = 1,
+                type = "test",
+                sort = "date"
             )
         }
 
