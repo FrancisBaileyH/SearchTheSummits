@@ -430,7 +430,7 @@ footer {
 }
 
 footer #footer-image {
-    background-image: url(../images/mountains_noBG.svg);
+    background-image: url(/images/mountains_noBG.svg);
     background-repeat: no-repeat;
     background-size: cover;
     min-height: 300px;
