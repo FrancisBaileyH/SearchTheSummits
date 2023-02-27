@@ -159,6 +159,27 @@ class DMYDateExtractor: DateExtractorStrategy {
 }
 
 /**
+ * Same pattern as DMY. In cases where the value is MDY, it will be caught by DMY first,
+ * but if the value is greater than the current time, it will fallback to this value instead
+ * Not ideal, but it's the best we can do with heuristics.
+ */
+class MDYDateExtractor: DateExtractorStrategy {
+    override fun find(value: String): LocalDateTime? {
+        val matcher = DateExtractorPatterns.DMY_PATTERN.matcher(value)
+
+        if (!matcher.hasGroupCount(3)) {
+            return null
+        }
+
+        val year = HeuristicDateCorrector.fixYear(matcher.group(3).toInt())
+        val month = matcher.group(1).toInt()
+        val day = matcher.group(2).toInt()
+
+        return LocalDateTimeBuilder.of(year, month, day)
+    }
+}
+
+/**
  * Extract dates in the form:
  * - 1990-02-01
  */

@@ -158,6 +158,28 @@ class DateExtractorTest {
     }
 
     @Test
+    fun `retrieves date from in the form M-D-Y`() {
+        val extractor = MDYDateExtractor()
+
+        assertEquals(LocalDateTimeBuilder.of(2022, 4, 1), extractor.find("4-1-22"))
+        assertEquals(LocalDateTimeBuilder.of(1993, 4, 1), extractor.find("4-1-93"))
+        assertEquals(LocalDateTimeBuilder.of(1993, 4, 1), extractor.find("4.1.93"))
+        assertEquals(LocalDateTimeBuilder.of(1993, 4, 1), extractor.find("4/1/93"))
+        assertEquals(LocalDateTimeBuilder.of(2022, 12, 15), extractor.find("12-15-22"))
+        assertEquals(LocalDateTimeBuilder.of(2022, 4, 1), extractor.find("04-01-2022"))
+
+        val expectedNonMatches = listOf(
+            "2022041",
+            "202204",
+            "2A02204011"
+        )
+
+        expectedNonMatches.forEach {
+            assertNull(extractor.find(it))
+        }
+    }
+
+    @Test
     fun `retrieves date from in the form Y-M`() {
         val extractor = YMDateExtractor()
 

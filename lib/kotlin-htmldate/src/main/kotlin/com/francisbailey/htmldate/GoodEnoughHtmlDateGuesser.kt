@@ -34,14 +34,21 @@ class GoodEnoughHtmlDateGuesser {
     }
 
     fun findDate(source: URL, document: Document): LocalDateTime? {
+        val currentDate = LocalDateTime.now()
         val urlDate = urlExtractor.find(source.toString())
 
-        if (urlDate != null) {
+        if (urlDate != null && urlDate < currentDate) {
             return urlDate
         }
 
         return dateValueSearchers.firstNotNullOfOrNull { searcher ->
-            searcher.getDateValue(document)
+            searcher.getDateValue(document)?.let {
+                if (it > currentDate) {
+                    null
+                } else {
+                    it
+                }
+            }
         }
     }
 
@@ -53,6 +60,7 @@ class GoodEnoughHtmlDateGuesser {
                     YYYYMMDDNoSeparatorDateExtractor(),
                     YMDDateExtractor(),
                     DMYDateExtractor(),
+                    MDYDateExtractor(),
                     YMDateExtractor(),
                     MYDateExtractor(),
                     LongMDYDateExtractor(),

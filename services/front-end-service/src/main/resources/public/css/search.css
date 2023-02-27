@@ -327,8 +327,9 @@ nav.header-menu ul > li a.current-nav-page {
 
 .search-results-tools {
     margin-bottom: 0.5em;
-    display: flex;
+    /* display: flex; */
     align-items: center;
+    display: none;
 }
 
 .search-results-tools .tool-menu,

@@ -13,7 +13,7 @@ class HtmlMetaSearcher(
 ): HtmlDateSearcher {
 
     override fun getDateValue(document: Document): LocalDateTime? {
-        val metaDataElements = document.select("meta")
+        val metaDataElements = document.select("head meta")
 
         return metaDataElements.firstNotNullOfOrNull {
             getDateValueFromMetaElement(it)?.let(parser::parse)

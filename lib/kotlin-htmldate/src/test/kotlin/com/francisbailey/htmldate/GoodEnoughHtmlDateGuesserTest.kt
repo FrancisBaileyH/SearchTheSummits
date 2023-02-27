@@ -54,6 +54,16 @@ class GoodEnoughHtmlDateGuesserTest {
                 url = URL("https://www.nwhikers.net/forums/viewtopic.php?t=8036796"),
                 localName = "phpbb.html",
                 date = LocalDateTimeBuilder.of(2023, 2, 13)
+            ),
+            ResourceDateMapping(
+                url = URL("https://forums.clubtread.com/35-other-regions/41834-wiggle-wiggle-wiggle-zion.html"),
+                localName = "clubtread-future.html",
+                date = LocalDateTimeBuilder.of(2012, 6, 14)
+            ),
+            ResourceDateMapping(
+                url = URL("https://forums.clubtread.com/37-washington-state/65706-11-3-15-bagley-lakes-artist-point.html"),
+                localName = "clubtread-bad-url.html",
+                date = LocalDateTimeBuilder.of(2015, 7, 11) // the actual date is Nov, 7, 2023 but there's no way to detect this...
             )
         )
 

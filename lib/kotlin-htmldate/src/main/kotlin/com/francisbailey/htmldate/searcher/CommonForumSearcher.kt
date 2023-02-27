@@ -13,8 +13,17 @@ class CommonForumSearcher(
             !it.text().lowercase().contains("joined")
         }
 
-        return postDateElement?.let {
-            parser.parse(it.text())
+        val dateCreatedSpan = document.selectFirst("span[itemprop=\"dateCreated\"]")
+
+        val searchableElements = listOf(
+            postDateElement,
+            dateCreatedSpan
+        )
+
+        return searchableElements.firstNotNullOfOrNull {
+            it?.let {
+                parser.parse(it.text())
+            }
         }
     }
 }
