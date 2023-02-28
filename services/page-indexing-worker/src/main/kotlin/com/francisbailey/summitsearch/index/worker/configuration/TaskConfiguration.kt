@@ -59,8 +59,8 @@ open class TaskConfiguration {
 
 
     companion object {
-        const val INDEX_TASK_THREAD_COUNT = 100
-        const val LINK_DISCOVERY_THREAD_COUNT = 10
+        const val INDEX_TASK_THREAD_COUNT = 20
+        const val LINK_DISCOVERY_THREAD_COUNT = 2
         val INDEX_TASK_INTERVAL: Duration = Duration.ofSeconds(2)
     }
 
