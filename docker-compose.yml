@@ -48,6 +48,8 @@ services:
     profiles: ["backend"]
     image: search-the-summits/page-indexing-worker
     env_file: variables.env
+    environment:
+      - JAVA_OPTS=-XXMaxRam=600m
     ports:
       - "8081:8080"
       - "9091:9090"

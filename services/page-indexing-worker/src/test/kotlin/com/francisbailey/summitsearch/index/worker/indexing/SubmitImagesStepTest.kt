@@ -1,6 +1,5 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
-import com.francisbailey.summitsearch.index.worker.configuration.ImageConfiguration
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitImagesStep
 import com.francisbailey.summitsearch.index.worker.task.ImageDiscovery
@@ -15,18 +14,12 @@ import java.time.ZoneOffset
 
 class SubmitImagesStepTest: StepTest() {
 
-    private val configuration = mock<ImageConfiguration> {
-        on(mock.imageGenerationAllowList).thenReturn(emptySet())
-    }
-
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
-    private val step = SubmitImagesStep(linkDiscoveryService, configuration)
+    private val step = SubmitImagesStep(linkDiscoveryService)
 
     @Test
     fun `submits expected images to link discovery service`() {
-        whenever(configuration.imageGenerationAllowList).thenReturn(setOf(defaultIndexTask.details.pageUrl.host))
-
         val html = """
                 <figure>
                     <img id="good-image" src="a-good-source.png" />
@@ -70,15 +63,5 @@ class SubmitImagesStepTest: StepTest() {
             assertTrue(it.containsAll(expectedDiscoveries))
         })
     }
-
-    @Test
-    fun `skips site if its not in the allow list`() {
-        val item = PipelineItem<DatedDocument>(task = defaultIndexTask, payload = null)
-
-        step.process(item, monitor)
-
-        verifyNoInteractions(linkDiscoveryService)
-    }
-
 
 }

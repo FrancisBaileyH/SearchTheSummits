@@ -28,22 +28,4 @@ open class ImageConfiguration(
         environment.getRequiredProperty("S3_STORE_NAME"),
         URL(environment.getRequiredProperty("S3_ENDPOINT"))
     )
-
-    val imageGenerationAllowList = setOf(
-        "www.francisbaileyh.com",
-        "stevensong.com",
-        "alpinebaking.com",
-        "www.desertmountaineer.com",
-        "www.lemkeclimbs.com",
-        "www.countryhighpoints.com",
-        "besthikesbc.ca",
-        "www.drdirtbag.com",
-        "climberkyle.com",
-        "havetent.com",
-        "alpinejournals.com",
-        "alpinevagabonds.com",
-        "www.akmountain.com",
-        "colinhaley.com"
-    )
-
 }

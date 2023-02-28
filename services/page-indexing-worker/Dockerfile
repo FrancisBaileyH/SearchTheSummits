@@ -8,4 +8,4 @@ RUN mkdir /service
 RUN mkdir -p /service/var/logs
 
 COPY build/libs/page-indexing-worker-1.0-SNAPSHOT.jar /service/page-indexing-worker.jar
-ENTRYPOINT ["java", "-Xmx650m", "-Xms500m", "-jar", "/service/page-indexing-worker.jar"]
+ENTRYPOINT java $JAVA_OPTS -jar /service/page-indexing-worker.jar
