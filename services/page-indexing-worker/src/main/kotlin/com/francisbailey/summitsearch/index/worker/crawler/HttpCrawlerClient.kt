@@ -54,4 +54,4 @@ class HttpCrawlerClient(
 open class NonRetryableEntityException(message: String): RuntimeException(message)
 open class RetryableEntityException(message: String): RuntimeException(message)
 open class UnparsableEntityException(message: String): NonRetryableEntityException(message)
-open class RedirectedEntityException(val location: String?, message: String): RuntimeException(message)
+open class RedirectedEntityException(val location: String?, message: String): NonRetryableEntityException(message)
