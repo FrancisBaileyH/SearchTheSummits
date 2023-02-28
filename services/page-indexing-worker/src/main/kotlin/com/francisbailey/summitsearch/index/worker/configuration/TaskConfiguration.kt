@@ -1,7 +1,10 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import com.francisbailey.summitsearch.index.worker.task.TaskPermitService
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
+import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.ratelimiter.RateLimiterConfig
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import org.springframework.context.annotation.Bean
@@ -20,7 +23,19 @@ open class TaskConfiguration {
     open fun linkDiscoveryTaskExecutor(): Executor = Executors.newFixedThreadPool(LINK_DISCOVERY_THREAD_COUNT)
 
     @Bean
-    open fun circuitBreakerRegistry(): CircuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults()
+    open fun circuitBreakerRegistry(): CircuitBreakerRegistry = CircuitBreakerRegistry.of(
+        CircuitBreakerConfig
+            .from(CircuitBreakerConfig.ofDefaults())
+            .enableAutomaticTransitionFromOpenToHalfOpen()
+            .ignoreExceptions(NonRetryableEntityException::class.java)
+            .waitIntervalFunctionInOpenState(
+                IntervalFunction.ofExponentialBackoff(
+                    Duration.ofMinutes(15),
+                    2.0
+                )
+            )
+            .build()
+    )
 
     /**
      * Limit to 2 requests per second with at most 2 tasks in the queue at once

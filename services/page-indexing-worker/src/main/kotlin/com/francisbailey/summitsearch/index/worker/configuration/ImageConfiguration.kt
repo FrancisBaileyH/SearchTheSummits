@@ -40,7 +40,10 @@ open class ImageConfiguration(
         "www.drdirtbag.com",
         "climberkyle.com",
         "havetent.com",
-        "alpinejournals.com"
+        "alpinejournals.com",
+        "alpinevagabonds.com",
+        "www.akmountain.com",
+        "colinhaley.com"
     )
 
 }

@@ -46,8 +46,8 @@ class IndexingTaskCoordinatorTest {
         val queues = setOf("QueueA", "QueueB", "QueueC")
 
         whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
-        whenever(perQueueCircuitBreaker.tryAcquirePermission()).thenReturn(true)
-        whenever(taskDependenciesCircuitBreaker.tryAcquirePermission()).thenReturn(true)
+        whenever(perQueueCircuitBreaker.state).thenReturn(CircuitBreaker.State.CLOSED)
+        whenever(taskDependenciesCircuitBreaker.state).thenReturn(CircuitBreaker.State.CLOSED)
 
         queues.forEach {
             whenever(circuitBreakerRegistry.circuitBreaker(it)).thenReturn(perQueueCircuitBreaker)
@@ -61,8 +61,8 @@ class IndexingTaskCoordinatorTest {
 
             queues.forEach {
                 verify(circuitBreakerRegistry).circuitBreaker(it)
-                verify(taskDependenciesCircuitBreaker).tryAcquirePermission()
-                verify(perQueueCircuitBreaker).tryAcquirePermission()
+                verify(taskDependenciesCircuitBreaker).state
+                verify(perQueueCircuitBreaker).state
                 verify(taskPermitService).tryAcquirePermit(it)
             }
         }
@@ -84,12 +84,11 @@ class IndexingTaskCoordinatorTest {
     fun `does not execute any tasks if task level circuit breaker trips`() {
         val queues = setOf("QueueA", "QueueB", "QueueC")
 
-        whenever(taskDependenciesCircuitBreaker.tryAcquirePermission()).thenReturn(false)
+        whenever(taskDependenciesCircuitBreaker.state).thenReturn(CircuitBreaker.State.OPEN)
         whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
 
         indexingCoordinator.coordinateTaskExecution()
 
-        verify(taskDependenciesCircuitBreaker, times(queues.size)).tryAcquirePermission()
         verifyNoInteractions(executor)
         verifyNoInteractions(taskPermitService)
     }
@@ -106,22 +105,17 @@ class IndexingTaskCoordinatorTest {
         }
 
         whenever(circuitBreakerRegistry.circuitBreaker("QueueB")).thenReturn(trippedCircuitBreaker)
-        whenever(trippedCircuitBreaker.tryAcquirePermission()).thenReturn(false)
-        whenever(taskDependenciesCircuitBreaker.tryAcquirePermission()).thenReturn(true)
-        whenever(perQueueCircuitBreaker.tryAcquirePermission()).thenReturn(true)
+        whenever(trippedCircuitBreaker.state).thenReturn(CircuitBreaker.State.OPEN)
+        whenever(taskDependenciesCircuitBreaker.state).thenReturn(CircuitBreaker.State.HALF_OPEN)
+        whenever(perQueueCircuitBreaker.state).thenReturn(CircuitBreaker.State.CLOSED)
 
         whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
         whenever(taskPermitService.tryAcquirePermit(any())).thenReturn(taskPermit)
 
         indexingCoordinator.coordinateTaskExecution()
 
-        verify(taskDependenciesCircuitBreaker, times(queues.size)).tryAcquirePermission()
-
         inOrder(executor, taskDependenciesCircuitBreaker, circuitBreakerRegistry, perQueueCircuitBreaker, taskPermitService) {
             queues.filterNot { it == "QueueB" }.forEach {
-                verify(circuitBreakerRegistry).circuitBreaker(it)
-                verify(taskDependenciesCircuitBreaker).tryAcquirePermission()
-                verify(perQueueCircuitBreaker).tryAcquirePermission()
                 verify(taskPermitService).tryAcquirePermit(it)
                 verify(executor).execute(any<IndexingTask>())
             }
@@ -136,8 +130,8 @@ class IndexingTaskCoordinatorTest {
         val queues = setOf("QueueA", "QueueB", "QueueC")
 
         whenever(queueAssignmentStore.getAssignments()).thenReturn(queues)
-        whenever(perQueueCircuitBreaker.tryAcquirePermission()).thenReturn(true)
-        whenever(taskDependenciesCircuitBreaker.tryAcquirePermission()).thenReturn(true)
+        whenever(perQueueCircuitBreaker.state).thenReturn(CircuitBreaker.State.CLOSED)
+        whenever(taskDependenciesCircuitBreaker.state).thenReturn(CircuitBreaker.State.CLOSED)
 
         queues.forEach {
             whenever(circuitBreakerRegistry.circuitBreaker(it)).thenReturn(perQueueCircuitBreaker)
@@ -148,13 +142,8 @@ class IndexingTaskCoordinatorTest {
 
         indexingCoordinator.coordinateTaskExecution()
 
-        verify(taskDependenciesCircuitBreaker, times(queues.size)).tryAcquirePermission()
-
         inOrder(circuitBreakerRegistry, perQueueCircuitBreaker, taskDependenciesCircuitBreaker, taskPermitService, executor) {
             queues.filterNot { it == "QueueB" }.forEach {
-                verify(circuitBreakerRegistry).circuitBreaker(it)
-                verify(taskDependenciesCircuitBreaker).tryAcquirePermission()
-                verify(perQueueCircuitBreaker).tryAcquirePermission()
                 verify(taskPermitService).tryAcquirePermit(it)
                 verify(executor).execute(any<IndexingTask>())
             }

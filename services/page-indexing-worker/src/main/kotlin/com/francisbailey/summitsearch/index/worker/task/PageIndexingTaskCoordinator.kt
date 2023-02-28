@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueuePollingClient
 import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import com.francisbailey.summitsearch.index.worker.store.QueueAssignmentStore
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry
@@ -52,11 +53,11 @@ class PageIndexingTaskCoordinator(
             val perQueueCircuitBreaker = circuitBreakerRegistry.circuitBreaker(queue)
 
             when {
-                !taskDependencyCircuitBreaker.tryAcquirePermission() -> {
+                taskDependencyCircuitBreaker.state !in ALLOWED_STATES -> {
                     meterRegistry.counter("$TASK_METRIC.cb.dependency.tripped").increment()
                     log.warn { "Skipping tasks because task Dependency circuit breaker has tripped" }
                 }
-                !perQueueCircuitBreaker.tryAcquirePermission() -> {
+                perQueueCircuitBreaker.state !in ALLOWED_STATES -> {
                     meterRegistry.counter("$TASK_METRIC.cb.queue.tripped", "queue", queue).increment()
                     log.warn { "Skipping: $queue, because per queue circuit breaker has tripped" }
                 }
@@ -88,5 +89,7 @@ class PageIndexingTaskCoordinator(
     companion object {
         const val TASK_METRIC = "task.coordinating"
         const val DEPENDENCY_CB_KEY = "PageIndexingTaskDependencies"
+
+        val ALLOWED_STATES = listOf(CircuitBreaker.State.HALF_OPEN, CircuitBreaker.State.CLOSED)
     }
 }
