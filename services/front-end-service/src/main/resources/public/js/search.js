@@ -32,7 +32,7 @@ $(document).ready(function() {
         query = $("#search-bar").val()
 
         if (query != urlQuery) {
-            window.location.href = "/?query=" + query.replace(" ", "+")
+            window.location.href = "/?query=" + query.replaceAll(" ", "+")
         }
     });
 
