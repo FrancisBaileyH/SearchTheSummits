@@ -23,6 +23,8 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersFilter)
             addFilterChain(URL("https://peakbagger.com"), PeakBaggerFilter)
             addFilterChain(URL("http://www.alpinejournal.org.uk"), AlpineJournalUKFilter)
+            addFilterChain(URL("https://alpinebenny.com"), AlpineBennyFilter)
+            addFilterChain(URL("http://www.alpenglow.org"), AlpenGlowFilter)
         }
     }
 
