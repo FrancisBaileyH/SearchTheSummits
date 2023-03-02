@@ -7,7 +7,6 @@ import java.util.regex.Pattern
 object AlpenGlowFilter: DocumentFilterChain(exclusive = false) {
 
     init {
-        merge(DefaultFilterChain)
         addFilter(PathMatchingDocumentFilter(Pattern.compile("^/nwmj(?:|/.*)\$")))
     }
 }

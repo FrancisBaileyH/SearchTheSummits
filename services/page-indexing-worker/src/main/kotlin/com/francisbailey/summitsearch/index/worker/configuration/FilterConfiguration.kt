@@ -38,6 +38,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationIndexFilter)
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersIndexFilter)
             addFilterChain(URL("https://peakbagger.com"), PeakBaggerIndexFilter)
+            addFilterChain(URL("https://www.explor8ion.com"), Explor8ionIndexFilter)
         }
     }
 }
