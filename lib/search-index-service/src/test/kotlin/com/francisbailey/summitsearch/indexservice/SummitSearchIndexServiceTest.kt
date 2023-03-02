@@ -615,14 +615,6 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
-    fun `sanitize query produces clean query term with escaped characters`() {
-        val query = "Term-with-hyphen *produces| this (query) ~here and tom's 0123456789’"
-        val expectedQuery = """Term\-with\-hyphen produces this query here and tom's 0123456789’"""
-
-        assertEquals(expectedQuery, SummitSearchIndexService.sanitizeQuery(query))
-    }
-
-    @Test
     fun `sorts by date when request specifies sortByDate type`() {
         val index = "sort-by-date-test"
         val testIndexService = createIndex(index)

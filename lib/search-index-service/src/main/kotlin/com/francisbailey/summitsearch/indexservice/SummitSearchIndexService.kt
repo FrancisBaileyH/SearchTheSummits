@@ -13,6 +13,9 @@ import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
+import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.HIGHLIGHT_DELIMITER
+import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
+import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_LAST_NAME
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -33,7 +36,7 @@ class SummitSearchIndexService(
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun query(queryRequest: SummitSearchQueryRequest): SummitSearchPaginatedResult {
+    fun query(queryRequest: SummitSearchQueryRequest): SummitSearchPaginatedResult<SummitSearchHit> {
         require(queryRequest.from in 0..MAX_FROM_VALUE) {
             "Query from value of: ${queryRequest.from} is invalid. Value must be from 0 to $MAX_FROM_VALUE"
         }
@@ -282,16 +285,11 @@ class SummitSearchIndexService(
     }
 
     private fun buildSimpleQueryStringQuery(request: SummitSearchQueryRequest): SummitSearchQuery {
-        val term = sanitizeQuery(request.term)
-        val words = term.words()
-        val sanitizedQuery = StringBuilder()
-
-        sanitizedQuery.append(words.take(PHRASE_TERM_THRESHOLD).joinToString(prefix = "\"", postfix = "\"", separator = " "))
-        sanitizedQuery.append(words.drop(PHRASE_TERM_THRESHOLD).joinToString(separator = "") { " \"$it\"" })
+        val sanitizedQuery = SimpleQueryString(PHRASE_TERM_THRESHOLD, request.term).sanitizedQuery()
 
         val query = Query.of { query ->
             query.simpleQueryString { match ->
-                match.query(sanitizedQuery.toString())
+                match.query(sanitizedQuery)
                 match.fields(
                     HtmlMapping::title.name.plus("^10"), // boost title the highest
                     HtmlMapping::rawTextContent.name,
@@ -304,7 +302,7 @@ class SummitSearchIndexService(
             }
         }
 
-        return SummitSearchQuery(rawQueryString = sanitizedQuery.toString(), query = query)
+        return SummitSearchQuery(rawQueryString = sanitizedQuery, query = query)
     }
 
    internal companion object {
@@ -316,12 +314,7 @@ class SummitSearchIndexService(
        const val HIGHLIGHT_FRAGMENT_SIZE = 200
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
        const val PHRASE_TERM_THRESHOLD = 2
-       const val HIGHLIGHT_DELIMITER = "<em>"
-       const val SORT_DATE_FORMAT = "strict_date_optional_time_nanos"
-       const val SORT_LAST_NAME = "_last"
 
-       private val RESERVED_QUERY_REGEX = Regex("[-+|*()~]")
-       private val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\\s]")
 
        private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
@@ -329,14 +322,6 @@ class SummitSearchIndexService(
            override fun matches(root: Element, element: Element): Boolean {
                return excludedTags.contains(element.normalName())
            }
-       }
-
-       internal fun sanitizeQuery(query: String): String {
-           return query
-               .replace(QUERY_SANITIZATION_REGEX, "")
-               .replace(RESERVED_QUERY_REGEX) {
-                   "\\${it.value}"
-               }
        }
    }
 }
@@ -346,8 +331,8 @@ internal data class SummitSearchQuery(
     val query: Query
 )
 
-data class SummitSearchPaginatedResult(
-    val hits: List<SummitSearchHit>,
+data class SummitSearchPaginatedResult<T>(
+    val hits: List<T>,
     val next: Int = 0,
     val totalHits: Long = 0,
     val sanitizedQuery: String
