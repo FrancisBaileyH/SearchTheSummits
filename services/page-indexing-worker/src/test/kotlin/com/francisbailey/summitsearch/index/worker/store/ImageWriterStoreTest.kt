@@ -8,11 +8,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest
-import software.amazon.awssdk.services.s3.model.HeadBucketRequest
-import software.amazon.awssdk.services.s3.model.NoSuchBucketException
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.*
 import java.net.URL
 
 class ImageWriterStoreTest {
@@ -34,10 +30,10 @@ class ImageWriterStoreTest {
     }
 
     @Test
-    fun `exists returns false if NoSuchBucketFoundException is thrown`() {
+    fun `storeExists returns false if NoSuchBucketFoundException is thrown`() {
         whenever(storageClient.headBucket(any<HeadBucketRequest>())).thenThrow(NoSuchBucketException.builder().build())
 
-        assertFalse(writerStore.exists())
+        assertFalse(writerStore.storeExists())
 
         verify(storageClient).headBucket(org.mockito.kotlin.check<HeadBucketRequest> {
             assertEquals(it.bucket(), storeName)
@@ -45,11 +41,35 @@ class ImageWriterStoreTest {
     }
 
     @Test
-    fun `exists returns true if NoSuchBucketFoundException is not thrown`() {
-        assertTrue(writerStore.exists())
+    fun `storeExists returns true if NoSuchBucketFoundException is not thrown`() {
+        assertTrue(writerStore.storeExists())
 
         verify(storageClient).headBucket(org.mockito.kotlin.check<HeadBucketRequest> {
             assertEquals(it.bucket(), storeName)
+        })
+    }
+
+    @Test
+    fun `exists returns false if NoSuchKeyException is thrown`() {
+        val url = URL("https://www.somewhere.com/image.png")
+        whenever(storageClient.headObject(any<HeadObjectRequest>())).thenThrow(NoSuchKeyException.builder().build())
+        assertFalse(writerStore.exists(url, ImageStoreType.STANDARD))
+
+        verify(storageClient).headObject(org.mockito.kotlin.check<HeadObjectRequest> {
+            assertEquals(it.bucket(), storeName)
+            assertEquals(it.key(), "standard/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
+        })
+    }
+
+    @Test
+    fun `exists returns true if NoSuchKeyException is not thrown`() {
+        val url = URL("https://www.somewhere.com/image.png")
+
+        assertTrue(writerStore.exists(url, ImageStoreType.STANDARD))
+
+        verify(storageClient).headObject(org.mockito.kotlin.check<HeadObjectRequest> {
+            assertEquals(it.bucket(), storeName)
+            assertEquals(it.key(), "standard/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
         })
     }
 
@@ -57,7 +77,7 @@ class ImageWriterStoreTest {
     fun `creates bucket if it does not exist`() {
         whenever(storageClient.headBucket(any<HeadBucketRequest>())).thenThrow(NoSuchBucketException.builder().build())
 
-        writerStore.createIfNotExists()
+        writerStore.createStoreIfNotExists()
 
         verify(storageClient).createBucket(org.mockito.kotlin.check<CreateBucketRequest> {
             assertEquals(storeName, it.bucket())

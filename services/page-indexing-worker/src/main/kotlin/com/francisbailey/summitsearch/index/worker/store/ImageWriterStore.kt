@@ -33,7 +33,20 @@ class ImageWriterStore(
         return resolve(path)
     }
 
-    fun exists(): Boolean {
+    fun exists(source: URL, type: ImageStoreType): Boolean {
+        return try {
+            storageClient.headObject(HeadObjectRequest.builder()
+                .bucket(storeName)
+                .key(buildPathFromUrl(source, type))
+                .build()
+            )
+            true
+        } catch (e: NoSuchKeyException) {
+            false
+        }
+    }
+
+    fun storeExists(): Boolean {
         return try {
             storageClient.headBucket(HeadBucketRequest.builder()
                 .bucket(storeName)
@@ -45,9 +58,9 @@ class ImageWriterStore(
         }
     }
 
-    fun createIfNotExists() {
+    fun createStoreIfNotExists() {
         log.info { "Checking if store: $storeName exists" }
-        if (!exists()) {
+        if (!storeExists()) {
             log.info { "Store not found. Creating store now." }
             storageClient.createBucket(CreateBucketRequest.builder()
                 .bucket(storeName)
