@@ -36,6 +36,7 @@ class PipelineConfigurationTest: StepTest() {
     private val saveImageStep = mock<SaveImageStep>()
     private val generateImagePreviewStep = mock<GenerateImagePreviewStep>()
     private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
+    private val checkImageExistsStep = mock<CheckImageExistsStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -55,6 +56,7 @@ class PipelineConfigurationTest: StepTest() {
         generateImagePreviewStep = generateImagePreviewStep,
         submitImagesStep = submitImagesStep,
         saveImageStep = saveImageStep,
+        checkImageExistsStep = checkImageExistsStep,
         cascadeClimbersSubmitThumbnailStep = cascadeClimbersSubmitThumbnailStep
     )
 
@@ -150,12 +152,14 @@ class PipelineConfigurationTest: StepTest() {
         whenever(fetchImageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(generateImagePreviewStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(saveImageStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(checkImageExistsStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchImageStep, generateImagePreviewStep, saveImageStep) {
+        inOrder(fetchImageStep, generateImagePreviewStep, saveImageStep, checkImageExistsStep) {
+            verify(checkImageExistsStep).process(any(), any())
             verify(fetchImageStep).process(any(), any())
             verify(generateImagePreviewStep).process(any(), any())
             verify(saveImageStep).process(any(), any())

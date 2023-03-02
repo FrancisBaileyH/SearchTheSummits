@@ -29,6 +29,7 @@ open class PipelineConfiguration(
     private val generateImagePreviewStep: GenerateImagePreviewStep,
     private val saveImageStep: SaveImageStep,
     private val submitImagesStep: SubmitImagesStep,
+    private val checkImageExistsStep: CheckImageExistsStep,
     private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep
 ) {
 
@@ -58,7 +59,8 @@ open class PipelineConfiguration(
                     .finally(closePDFStep)
             }
             route(IndexTaskType.IMAGE) {
-                firstRun(fetchImageStep)
+                firstRun(checkImageExistsStep)
+                    .then(fetchImageStep)
                     .then(generateImagePreviewStep)
                     .then(saveImageStep)
             }
