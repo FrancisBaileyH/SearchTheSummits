@@ -10,8 +10,9 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
-import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_LAST_NAME
+import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
+import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_LAST_NAME
+import com.francisbailey.summitsearch.indexservice.common.SimpleQueryString
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -27,7 +28,7 @@ import java.net.URL
 class ImageIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    private val indexName: String = INDEX_NAME
+    val indexName: String = INDEX_NAME
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -241,5 +242,5 @@ data class SummitSearchImage(
     val dataStoreReference: String,
     val description: String,
     val source: String,
-    val referencingDocument: String?
+    val referencingDocument: String
 )

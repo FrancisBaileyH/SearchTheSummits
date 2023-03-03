@@ -5,6 +5,8 @@ import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
 import java.time.Instant
 
 class QueryStatsIndexTest {
@@ -34,7 +36,8 @@ class QueryStatsIndexTest {
                 timestamp = Instant.now().toEpochMilli(),
                 totalHits = 1,
                 type = "test",
-                sort = "date"
+                sort = "date",
+                index = "some index"
             )
         }
 
@@ -56,6 +59,18 @@ class QueryStatsIndexTest {
 
         val queries = result.hits().hits().map { it.source()!!.query }.toSet()
         assertEquals(data.map { it.query }.toSet(), queries)
+    }
+
+    @Test
+    fun `throws IllegalArgumentException if stats size exceeds 50`() {
+        val stats = (0..121).map {
+            mock<SummitSearchQueryStat>()
+        }
+
+        val index = "test"
+        val service = QueryStatsIndex(client, index)
+
+        assertThrows<IllegalArgumentException> { service.pushStats(SummitSearchQueryStatsPutRequest(stats)) }
     }
 
     companion object {

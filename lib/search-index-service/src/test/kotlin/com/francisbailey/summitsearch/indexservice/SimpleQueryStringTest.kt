@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.indexservice
 
+import com.francisbailey.summitsearch.indexservice.common.SimpleQueryString
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

@@ -182,8 +182,8 @@ class ImageIndexServiceTest {
 
         val sortByDateQueryResult = testIndexService.query(SummitSearchImagesQueryRequest(term = searchTerm, sortType = SummitSearchSortType.BY_DATE))
 
-        normalScoreRequests.reversed().forEachIndexed { index, it ->
-            assertEquals(it.source.toString(), sortByDateQueryResult.hits[index].source)
+        normalScoreRequests.reversed().forEachIndexed { i, it ->
+            assertEquals(it.source.toString(), sortByDateQueryResult.hits[i].source)
         }
         assertEquals("https://www.francisbaileyh.com/2", sortByDateQueryResult.hits.first().source)
         assertEquals("https://www.francisbaileyh.com/0", sortByDateQueryResult.hits.last().source)

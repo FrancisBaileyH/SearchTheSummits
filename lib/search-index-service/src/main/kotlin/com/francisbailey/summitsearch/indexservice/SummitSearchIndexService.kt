@@ -13,9 +13,10 @@ import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
-import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.HIGHLIGHT_DELIMITER
-import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
-import com.francisbailey.summitsearch.indexservice.ElasticSearchConstants.Companion.SORT_LAST_NAME
+import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.HIGHLIGHT_DELIMITER
+import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
+import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_LAST_NAME
+import com.francisbailey.summitsearch.indexservice.common.SimpleQueryString
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging

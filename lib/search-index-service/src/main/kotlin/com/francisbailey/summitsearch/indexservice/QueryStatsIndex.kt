@@ -16,11 +16,11 @@ class QueryStatsIndex(
 
     private val log = KotlinLogging.logger { }
 
-    /**
-     * Check that query is not too long
-     * Check that num of stats is not too many
-     */
     fun pushStats(request: SummitSearchQueryStatsPutRequest) {
+        require(request.stats.size <= MAX_STATS_PER_UPDATE) {
+            "Exceeded number of stats to push on bulk. Value: ${request.stats.size}. Max: $MAX_STATS_PER_UPDATE"
+        }
+
         val indexOperations = request.stats.map {
             BulkOperation.of { operation ->
                 operation.index { indexOp ->
@@ -30,7 +30,8 @@ class QueryStatsIndex(
                         totalHits = it.totalHits,
                         page = it.page,
                         type = it.type,
-                        sort = it.sort
+                        sort = it.sort,
+                        index = it.index
                     ))
                 }
             }
@@ -67,6 +68,7 @@ class QueryStatsIndex(
 
     companion object {
         const val INDEX_NAME = "query-stats-index"
+        const val MAX_STATS_PER_UPDATE = 120
     }
 }
 
@@ -77,7 +79,8 @@ internal data class QueryStat(
     val totalHits: Long,
     val page: Long?,
     val type: String?,
-    val sort: String?
+    val sort: String?,
+    val index: String?
 )
 
 data class SummitSearchQueryStatsPutRequest(
@@ -90,5 +93,6 @@ data class SummitSearchQueryStat(
     val totalHits: Long,
     val page: Long?,
     val type: String,
-    val sort: String
+    val sort: String,
+    val index: String
 )

@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexservice
+package com.francisbailey.summitsearch.indexservice.common
 
 import com.francisbailey.summitsearch.indexservice.extension.words
 
