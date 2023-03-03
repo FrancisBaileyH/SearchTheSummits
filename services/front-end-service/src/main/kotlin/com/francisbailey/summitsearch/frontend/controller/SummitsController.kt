@@ -17,9 +17,8 @@ import java.net.URL
 import java.time.Instant
 
 @RestController
-class SearchController(
+class SummitsController(
     private val summitSearchIndexService: SummitSearchIndexService,
-    private val imageIndexService: ImageIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry
@@ -86,67 +85,8 @@ class SearchController(
         }
     }
 
-    @GetMapping(path = [IMAGE_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun searchImages(
-        @RequestParam(name = "query") requestQuery: String,
-        @RequestParam(name = "next", required = false) next: Int?,
-        @RequestParam(name = "sort", required = false) sort: String? = null,
-        @RequestParam(name = "type", required = false) type: String? = null
-    ): ResponseEntity<String> {
-        log.info { "Querying search service for: $requestQuery and next value: $next" }
-
-        val sortType = when (sort?.lowercase()) {
-            "date" -> SummitSearchSortType.BY_DATE
-            else -> SummitSearchSortType.BY_RELEVANCE
-        }
-
-        val queryType = when(type?.lowercase()) {
-            "fuzzy" -> SummitSearchQueryType.FUZZY
-            else -> SummitSearchQueryType.STRICT
-        }
-
-        return try {
-            val response = meterRegistry.timer("api.imageindex.query.latency").recordCallable {
-                imageIndexService.query(SummitSearchImagesQueryRequest(
-                    queryType = queryType,
-                    sortType = sortType,
-                    term = requestQuery,
-                    from = next ?: 0
-                ))
-            }!!
-
-            queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
-                query = response.sanitizedQuery.lowercase(),
-                page = next?.toLong(),
-                totalHits = response.totalHits,
-                timestamp = Instant.now().toEpochMilli(),
-                type = queryType.name,
-                sort = sortType.name,
-                index = imageIndexService.indexName
-            ))
-
-            ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
-                hits = response.hits.map {
-                    SummitSearchImageHitResponse(
-                        description = it.description,
-                        source = it.source,
-                        thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
-                        referencingDocument = it.referencingDocument
-                    )
-                },
-                totalHits = response.totalHits,
-                next = response.next
-            )))
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
-                message = "Invalid argument: ${e.message}"
-            )))
-        }
-    }
-
     companion object {
         const val SEARCH_API_PATH = "/api/summits"
-        const val IMAGE_API_PATH = "/api/images"
     }
 
 }
@@ -164,14 +104,6 @@ data class SummitSearchHitResponse(
     val source: String,
     val title: String,
     val thumbnail: String? = null
-)
-
-@Serializable
-data class SummitSearchImageHitResponse(
-    val source: String,
-    val description: String,
-    val thumbnail: String,
-    val referencingDocument: String
 )
 
 @Serializable

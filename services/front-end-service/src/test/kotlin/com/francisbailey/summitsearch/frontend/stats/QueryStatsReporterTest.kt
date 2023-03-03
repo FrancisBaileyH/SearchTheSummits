@@ -23,7 +23,8 @@ class QueryStatsReporterTest {
             totalHits = 1,
             page = 1,
             type = "test",
-            sort = "test"
+            sort = "test",
+            index = "test"
         )
         reporter.pushQueryStat(stat)
         reporter.flushToIndex()
@@ -47,7 +48,8 @@ class QueryStatsReporterTest {
                 totalHits = 1,
                 page = 1,
                 type = "test",
-                sort = "test"
+                sort = "test",
+                index = "test"
             )
         }
 

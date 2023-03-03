@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.frontend.configuration
 
-import com.francisbailey.summitsearch.frontend.controller.SearchController
+import com.francisbailey.summitsearch.frontend.controller.SummitImagesController
+import com.francisbailey.summitsearch.frontend.controller.SummitsController
 import com.francisbailey.summitsearch.frontend.throttling.ThrottlingService
 import io.github.resilience4j.ratelimiter.RateLimiterConfig
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
@@ -10,12 +11,11 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Configuration
-open class ThrottlingConfiguration(
-    private val rateLimiterFactory: RateLimiterFactory
-) {
+open class ThrottlingConfiguration {
 
     val apiRequestPerSecondMap = hashMapOf(
-        ThrottlingService.rateLimiterKey(HttpMethod.GET, SearchController.SEARCH_API_PATH) to 5
+        ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitsController.SEARCH_API_PATH) to 3,
+        ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_API_PATH) to 3
     )
 }
 

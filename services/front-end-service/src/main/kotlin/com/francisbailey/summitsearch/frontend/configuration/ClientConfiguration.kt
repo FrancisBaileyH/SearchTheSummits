@@ -61,4 +61,29 @@ open class ClientConfiguration(
             it.createIfNotExists()
         }
     }
+
+    @Bean
+    open fun imageIndexService(): ImageIndexService {
+        return when {
+            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildImageIndex(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    paginationResultSize = 30
+                ))
+            else -> SummitSearchIndexServiceFactory.buildImageIndex(
+                SearchIndexServiceConfiguration(
+                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+                    username = environment.getRequiredProperty("ES_USERNAME"),
+                    password = environment.getRequiredProperty("ES_PASSWORD"),
+                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+                    scheme = "http",
+                    paginationResultSize = 30
+                ))
+        }.also {
+            it.createIfNotExists()
+        }
+    }
 }

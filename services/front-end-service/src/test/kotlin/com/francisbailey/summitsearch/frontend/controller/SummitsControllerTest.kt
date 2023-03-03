@@ -15,14 +15,16 @@ import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.net.URL
 
-class SearchControllerTest {
+class SummitsControllerTest {
 
-    private val summitSearchIndexService = mock<SummitSearchIndexService>()
+    private val summitSearchIndexService = mock<SummitSearchIndexService> {
+        on(mock.indexName).thenReturn("summit-index")
+    }
     private val queryStatsReporter = mock<QueryStatsReporter>()
     private val digitalOceanCdnShim = mock<DigitalOceanCDNShim>()
     private val meterRegistry = SimpleMeterRegistry()
 
-    private val controller = SearchController(
+    private val controller = SummitsController(
         summitSearchIndexService = summitSearchIndexService,
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
