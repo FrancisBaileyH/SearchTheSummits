@@ -3,7 +3,7 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexHtmlPageRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
@@ -43,7 +43,7 @@ class IndexHtmlPageStepTest: StepTest() {
 
         verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
-        verify(indexService).indexPageContents(SummitSearchIndexHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
+        verify(indexService).putPageContents(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
     }
 
     @Test

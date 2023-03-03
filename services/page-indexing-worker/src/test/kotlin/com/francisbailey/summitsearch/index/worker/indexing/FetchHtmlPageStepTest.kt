@@ -11,10 +11,9 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageSt
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexHtmlPageRequest
+import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.Jsoup
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -65,7 +64,7 @@ class FetchHtmlPageStepTest: StepTest() {
         assertFalse(result.continueProcessing)
         assertFalse(result.canRetry)
 
-        verify(indexService, never()).indexPageContents(any<SummitSearchIndexHtmlPageRequest>())
+        verify(indexService, never()).putPageContents(any<SummitSearchPutHtmlPageRequest>())
         verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.pageUrl)))
     }
 

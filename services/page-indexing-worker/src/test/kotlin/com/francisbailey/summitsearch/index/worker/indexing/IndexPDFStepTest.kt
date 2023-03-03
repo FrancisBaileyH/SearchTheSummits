@@ -51,7 +51,7 @@ class IndexPDFStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        verify(summitSearchIndexService).indexPageContents(check<SummitSearchIndexRequest> {
+        verify(summitSearchIndexService).putPageContents(check<SummitSearchIndexRequest> {
             assertEquals("test value", it.title)
             assertEquals("", it.seoDescription)
             assertEquals("", it.paragraphContent)

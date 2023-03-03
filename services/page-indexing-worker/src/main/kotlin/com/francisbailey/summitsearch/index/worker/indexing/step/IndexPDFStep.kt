@@ -3,8 +3,8 @@ package com.francisbailey.summitsearch.index.worker.indexing.step
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.SummitSearchPutRequest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.stereotype.Component
 import org.apache.pdfbox.text.PDFTextStripper
@@ -32,8 +32,8 @@ class IndexPDFStep(
 
             monitor.meter.timer("$metricPrefix.indexservice.add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
                 monitor.dependencyCircuitBreaker.executeCallable {
-                    summitSearchIndexService.indexPageContents(
-                        request = SummitSearchIndexRequest(
+                    summitSearchIndexService.putPageContents(
+                        request = SummitSearchPutRequest(
                             source = entity.task.details.pageUrl,
                             rawTextContent = condensedContent,
                             paragraphContent = "",

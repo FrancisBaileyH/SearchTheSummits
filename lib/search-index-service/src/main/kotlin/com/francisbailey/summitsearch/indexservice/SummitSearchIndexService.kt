@@ -6,10 +6,8 @@ import co.elastic.clients.elasticsearch._types.mapping.DateProperty
 import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty
 import co.elastic.clients.elasticsearch._types.query_dsl.*
-import co.elastic.clients.elasticsearch.core.DeleteRequest
-import co.elastic.clients.elasticsearch.core.ExistsRequest
-import co.elastic.clients.elasticsearch.core.SearchRequest
-import co.elastic.clients.elasticsearch.core.UpdateRequest
+import co.elastic.clients.elasticsearch.core.*
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
@@ -149,7 +147,37 @@ class SummitSearchIndexService(
         return result.value()
     }
 
-    fun indexPageContents(request: SummitSearchIndexRequest) {
+    /**
+     * Unlike the put calls, this operation is index only meaning the entire
+     * document gets re-indexed. This is an unfortunate limitiation of the es java
+     * client as the update call does not seem to work/be exposed.
+     */
+    fun indexPageContents(requests: List<SummitSearchIndexRequest>) {
+        val indexOperations: List<BulkOperation> = requests.map { request ->
+            BulkOperation.of { operation ->
+                operation.index { indexOp ->
+                    indexOp.document(HtmlMapping(
+                        title = Jsoup.clean(request.title, Safelist.none()),
+                        source = request.source,
+                        host = request.source.host,
+                        rawTextContent = Jsoup.clean(request.rawTextContent, Safelist.none()),
+                        paragraphContent = Jsoup.clean(request.paragraphContent, Safelist.none()),
+                        seoDescription = Jsoup.clean(request.seoDescription, Safelist.none()),
+                        pageCreationDate = request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli(),
+                    ))
+                }
+            }
+        }
+
+        elasticSearchClient.bulk(BulkRequest.of {
+            it.index(indexName)
+            it.operations(indexOperations)
+            it.source { source ->
+                source.fetch(false)
+            }
+        })
+    }
+    fun putPageContents(request: SummitSearchPutRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
         val result = elasticSearchClient.update(
@@ -175,7 +203,7 @@ class SummitSearchIndexService(
         log.info { "Result: ${result.result().name}" }
     }
 
-    fun indexPageContents(request: SummitSearchIndexHtmlPageRequest) {
+    fun putPageContents(request: SummitSearchPutHtmlPageRequest) {
         request.htmlDocument.body().select(EXCLUDED_TAG_EVALUATOR).forEach {
             it.remove()
         }
@@ -188,7 +216,7 @@ class SummitSearchIndexService(
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
-        indexPageContents(
+        putPageContents(
             SummitSearchIndexRequest(
                 source = request.source,
                 title = title,
@@ -351,6 +379,7 @@ enum class SummitSearchQueryType {
     STRICT
 }
 
+typealias SummitSearchPutRequest = SummitSearchIndexRequest
 data class SummitSearchQueryRequest(
     val term: String,
     val from: Int = 0,
@@ -358,7 +387,7 @@ data class SummitSearchQueryRequest(
     val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT
 )
 
-data class SummitSearchIndexHtmlPageRequest(
+data class SummitSearchPutHtmlPageRequest(
     val source: URL,
     val htmlDocument: Document,
     val pageCreationDate: LocalDateTime? = null

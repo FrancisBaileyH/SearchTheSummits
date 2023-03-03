@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.indexservice
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.FieldAndFormat
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchAllQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.Operator
 import co.elastic.clients.elasticsearch.core.GetRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
@@ -173,7 +174,7 @@ class SummitSearchIndexServiceTest {
         val page = loadHtml("LibertyBell")
 
         assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = URL("$sourceUrlString/LibertyBell"), htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/LibertyBell"), htmlDocument = page))
         refreshIndex(index)
 
         val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
@@ -201,7 +202,7 @@ class SummitSearchIndexServiceTest {
         val page = loadHtml("LibertyBell")
 
         assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(
             source = URL("$sourceUrlString/LibertyBell"),
             htmlDocument = page,
             pageCreationDate = date
@@ -238,8 +239,8 @@ class SummitSearchIndexServiceTest {
            </html>
         """
 
-        testIndexService.indexPageContents(
-            SummitSearchIndexHtmlPageRequest(
+        testIndexService.putPageContents(
+            SummitSearchPutHtmlPageRequest(
             source = sourceURL,
             htmlDocument = Jsoup.parse(html)
         ))
@@ -277,8 +278,8 @@ class SummitSearchIndexServiceTest {
         val index = "test-index-malicious-html"
         val testIndexService = createIndex(index)
 
-        testIndexService.indexPageContents(
-            SummitSearchIndexHtmlPageRequest(
+        testIndexService.putPageContents(
+            SummitSearchPutHtmlPageRequest(
             sourceUrl,
             Jsoup.parse(maliciousHtml)
         ))
@@ -303,7 +304,7 @@ class SummitSearchIndexServiceTest {
         val index = "test-index-malicious-text"
         val testIndexService = createIndex(index)
 
-        testIndexService.indexPageContents(
+        testIndexService.putPageContents(
             SummitSearchIndexRequest(
                 source = sourceUrl,
                 rawTextContent = "<p>There is some content here.</p> <p>Here <script>alert('test');</script>too.</p>",
@@ -346,8 +347,8 @@ class SummitSearchIndexServiceTest {
         val index = "test-index-excluded-tags"
         val testIndexService = createIndex(index)
 
-        testIndexService.indexPageContents(
-            SummitSearchIndexHtmlPageRequest(
+        testIndexService.putPageContents(
+            SummitSearchPutHtmlPageRequest(
                 sourceUrl,
                 Jsoup.parse(htmlWithExcludedTags)
             ))
@@ -372,7 +373,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
@@ -395,7 +396,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
@@ -415,7 +416,7 @@ class SummitSearchIndexServiceTest {
         val page = loadHtml("LibertyBell")
         val url = URL("$sourceUrlString/LibertyBell")
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         assertEquals(url.toString(), testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.first().source)
@@ -491,6 +492,36 @@ class SummitSearchIndexServiceTest {
     }
 
     @Test
+    fun `pushes query stats on bulk into the index`() {
+        val index = "bulk-test"
+        val testIndexService = createIndex(index)
+
+        val data = (0..4).map {
+            SummitSearchIndexRequest(
+                source = URL("https://abc.com/$it"),
+                rawTextContent = "TEST$it",
+                title = "Some title$it",
+                seoDescription = "",
+                paragraphContent = ""
+            )
+        }
+
+        testIndexService.indexPageContents(data)
+
+        refreshIndex(index)
+
+        val result = client.search(SearchRequest.of {
+            it.index(index)
+            it.query { query ->
+                query.matchAll(MatchAllQuery.Builder().build())
+            }
+        }, HtmlMapping::class.java)
+
+        val sources = result.hits().hits().map { it.source()!!.source }.toSet()
+        assertEquals(data.map { it.source}.toSet(), sources)
+    }
+
+    @Test
     fun `adds thumbnails to document on update call`() {
         val index = "thumbnail-index-test"
         val testIndexService = createIndex(index)
@@ -500,7 +531,7 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         val document = client.get(
@@ -542,7 +573,7 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         val document = client.get(
@@ -579,7 +610,7 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         testIndexService.putThumbnails(
@@ -590,7 +621,7 @@ class SummitSearchIndexServiceTest {
         )
         refreshIndex(index)
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
@@ -608,7 +639,7 @@ class SummitSearchIndexServiceTest {
 
         assertFalse(testIndexService.pageExists(SummitSearchExistsRequest(url)))
 
-        testIndexService.indexPageContents(SummitSearchIndexHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.putPageContents(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         assertTrue(testIndexService.pageExists(SummitSearchExistsRequest(url)))
@@ -642,7 +673,7 @@ class SummitSearchIndexServiceTest {
         }
 
         normalScoreRequests.plus(highScoreRequest).forEach {
-            testIndexService.indexPageContents(it)
+            testIndexService.putPageContents(it)
         }
 
         refreshIndex(index)
@@ -804,7 +835,7 @@ class SummitSearchIndexServiceTest {
         indexedPages.forEach {
             val sourceURL = URL("$sourceUrlString/$it")
             val html = loadHtml(it)
-            indexService.indexPageContents(SummitSearchIndexHtmlPageRequest(sourceURL, html))
+            indexService.putPageContents(SummitSearchPutHtmlPageRequest(sourceURL, html))
         }
 
         refreshIndex(indexService.indexName)
