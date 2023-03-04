@@ -104,7 +104,9 @@ class ImageIndexService(
                 description = Jsoup.clean(request.description, Safelist.none()),
                 referencingDocument = request.referencingDocument.toString(),
                 referencingDocumentDate = request.referencingDocumentDate,
-                referencingDocumentHost = request.referencingDocument.host
+                referencingDocumentHost = request.referencingDocument.host,
+                heightPx = request.heightPx,
+                widthPx = request.widthPx
             ))
         })
 
@@ -216,7 +218,9 @@ internal data class ImageMapping(
     val referencingDocument: String,
     val referencingDocumentHost: String,
     val referencingDocumentDate: Long?,
-    val type: ImageType
+    val type: ImageType,
+    val heightPx: Int,
+    val widthPx: Int
 )
 
 internal enum class ImageType {
@@ -230,7 +234,9 @@ data class SummitSearchImagePutRequest(
     val dataStoreReference: String,
     val description: String,
     val referencingDocument: URL,
-    val referencingDocumentDate: Long? = null
+    val referencingDocumentDate: Long? = null,
+    val heightPx: Int,
+    val widthPx: Int
 )
 data class SummitSearchImagesQueryRequest(
     val term: String,

@@ -4,7 +4,6 @@ import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
-import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.indexing.step.SaveImageStep
 import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
@@ -26,7 +25,10 @@ import java.util.*
 
 class SaveImageStepTest: StepTest() {
 
-    private val image = mock<ImmutableImage>()
+    private val image = mock<ImmutableImage> {
+//        on(mock.height).thenReturn(120)
+//        on(mock.width).thenReturn(200)
+    }
 
     private val imageStore = mock<ImageWriterStore>()
 
@@ -81,6 +83,8 @@ class SaveImageStepTest: StepTest() {
             assertEquals(task.details.pageUrl, it.source)
             assertEquals(context.pageCreationDate, it.referencingDocumentDate)
             assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
+            assertEquals(0, it.heightPx) // this is not super ideal, but can't mock final properties
+            assertEquals(0, it.widthPx)  // for now just rely on the mocks default of 0...
         })
 
     }

@@ -1,7 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
 import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
-import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.extension.stripQueryAndFragment
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
@@ -39,7 +38,9 @@ class SaveImageStep(
                         dataStoreReference = reference.toString(),
                         description = context.description,
                         referencingDocument = context.referencingURL,
-                        referencingDocumentDate = context.pageCreationDate
+                        referencingDocumentDate = context.pageCreationDate,
+                        heightPx = entity.payload!!.height,
+                        widthPx = entity.payload!!.width
                     ))
                 }!!
             }

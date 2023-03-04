@@ -36,7 +36,9 @@ class ImageIndexServiceTest {
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
             description = "This is a mountain!",
             dataStoreReference = "https://some-reference-here",
-            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg")
+            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
+            heightPx = 200,
+            widthPx = 500
         )
 
         val index = "create-image-index"
@@ -68,7 +70,9 @@ class ImageIndexServiceTest {
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
             description = "This is a mountain!<script>alert(something);</script><p>Hello?</p>",
             dataStoreReference = "https://some-reference-here",
-            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg")
+            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
+            heightPx = 100,
+            widthPx = 500
         )
 
         val index = "create-image-index-bad-text"
@@ -114,7 +118,9 @@ class ImageIndexServiceTest {
             referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
             dataStoreReference = "some-reference",
             referencingDocumentDate = Instant.now().toEpochMilli(),
-            normalizedSource = URL("https://www.francisbaileyh.com/test.png")
+            normalizedSource = URL("https://www.francisbaileyh.com/test.png"),
+            heightPx = 200,
+            widthPx = 400
         )
 
         testIndexService.indexImage(indexRequest)
@@ -141,7 +147,9 @@ class ImageIndexServiceTest {
             referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
             dataStoreReference = "some-reference",
             referencingDocumentDate = Instant.now().toEpochMilli(),
-            normalizedSource = URL("https://www.francisbaileyh.com/test.png")
+            normalizedSource = URL("https://www.francisbaileyh.com/test.png"),
+            heightPx = 200,
+            widthPx = 400
         )
 
         testIndexService.indexImage(indexRequest)
@@ -170,7 +178,9 @@ class ImageIndexServiceTest {
                 referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
                 dataStoreReference = "some-reference",
                 referencingDocumentDate = instant.plus(Duration.ofDays(it)).toEpochMilli(),
-                normalizedSource = URL("https://www.francisbaileyh.com/high-score/test$it.png")
+                normalizedSource = URL("https://www.francisbaileyh.com/high-score/test$it.png"),
+                heightPx = 200,
+                widthPx = 400
             )
         }
 
@@ -232,6 +242,7 @@ class ImageIndexServiceTest {
             assertEquals(Operator.And, it.query()?.match()?.operator())
         }, any<Class<ImageMapping>>())
     }
+
     companion object {
         private val testServer = ElasticSearchTestServer.global()
 
