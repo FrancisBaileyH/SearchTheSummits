@@ -5,3 +5,4 @@
 */*/build/*
 gradle.properties
 variables.env
+.DS_Store

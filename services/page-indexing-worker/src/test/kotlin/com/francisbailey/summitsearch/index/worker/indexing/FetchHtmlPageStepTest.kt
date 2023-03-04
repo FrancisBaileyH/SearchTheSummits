@@ -64,7 +64,7 @@ class FetchHtmlPageStepTest: StepTest() {
         assertFalse(result.continueProcessing)
         assertFalse(result.canRetry)
 
-        verify(indexService, never()).putPageContents(any<SummitSearchPutHtmlPageRequest>())
+        verify(indexService, never()).indexContent(any<SummitSearchPutHtmlPageRequest>())
         verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.pageUrl)))
     }
 

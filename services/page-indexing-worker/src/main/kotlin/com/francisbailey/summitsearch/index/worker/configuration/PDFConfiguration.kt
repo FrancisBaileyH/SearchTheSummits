@@ -9,4 +9,7 @@ open class PDFConfiguration {
 
     @Bean
     open fun pdfTextStripper() = PDFTextStripper()
+
+    @Bean
+    open fun pdfPagePartitionThreshold(): Int = 10
 }

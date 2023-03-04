@@ -35,6 +35,8 @@ class SummitSearchIndexService(
 ) {
     private val log = KotlinLogging.logger { }
 
+    val maxBulkIndexRequests = 100
+
     fun query(queryRequest: SummitSearchQueryRequest): SummitSearchPaginatedResult<SummitSearchHit> {
         require(queryRequest.from in 0..MAX_FROM_VALUE) {
             "Query from value of: ${queryRequest.from} is invalid. Value must be from 0 to $MAX_FROM_VALUE"
@@ -149,13 +151,23 @@ class SummitSearchIndexService(
 
     /**
      * Unlike the put calls, this operation is index only meaning the entire
-     * document gets re-indexed. This is an unfortunate limitiation of the es java
+     * document gets re-indexed. This is an unfortunate limitation of the es java
      * client as the update call does not seem to work/be exposed.
      */
-    fun indexPageContents(requests: List<SummitSearchIndexRequest>) {
-        val indexOperations: List<BulkOperation> = requests.map { request ->
+    fun indexPartitionedContent(requests: List<SummitSearchIndexRequest>) {
+
+        require(requests.size <= maxBulkIndexRequests) {
+            "Too many requests: ${requests.size}. Max supported: $maxBulkIndexRequests"
+        }
+
+        require(requests.all { it.source == requests.first().source }) {
+            "Source document must be the same for all requests"
+        }
+
+        val indexOperations: List<BulkOperation> = requests.mapIndexed { partition, request ->
             BulkOperation.of { operation ->
                 operation.index { indexOp ->
+                    indexOp.id("${generateIdFromUrl(request.source)}-$partition")
                     indexOp.document(HtmlMapping(
                         title = Jsoup.clean(request.title, Safelist.none()),
                         source = request.source,
@@ -177,7 +189,7 @@ class SummitSearchIndexService(
             }
         })
     }
-    fun putPageContents(request: SummitSearchPutRequest) {
+    fun indexContent(request: SummitSearchPutRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
         val result = elasticSearchClient.update(
@@ -203,7 +215,7 @@ class SummitSearchIndexService(
         log.info { "Result: ${result.result().name}" }
     }
 
-    fun putPageContents(request: SummitSearchPutHtmlPageRequest) {
+    fun indexContent(request: SummitSearchPutHtmlPageRequest) {
         request.htmlDocument.body().select(EXCLUDED_TAG_EVALUATOR).forEach {
             it.remove()
         }
@@ -216,7 +228,7 @@ class SummitSearchIndexService(
         val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
-        putPageContents(
+        indexContent(
             SummitSearchIndexRequest(
                 source = request.source,
                 title = title,
@@ -413,11 +425,13 @@ data class SummitSearchDeleteIndexRequest(
 
 data class SummitSearchPutThumbnailRequest(
     val source: URL,
-    val dataStoreReferences: List<String>
+    val dataStoreReferences: List<String>,
+    val partition: Int? = null
 )
 
 data class SummitSearchExistsRequest(
-    val source: URL
+    val source: URL,
+    val partition: Int? = null
 )
 
 internal data class HtmlMapping(

@@ -43,7 +43,7 @@ class IndexHtmlPageStepTest: StepTest() {
 
         verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
-        verify(indexService).putPageContents(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
+        verify(indexService).indexContent(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
     }
 
     @Test

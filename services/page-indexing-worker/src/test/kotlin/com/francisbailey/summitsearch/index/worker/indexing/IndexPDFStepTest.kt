@@ -16,7 +16,9 @@ import java.net.URL
 
 class IndexPDFStepTest: StepTest() {
 
-    private val summitSearchIndexService = mock<SummitSearchIndexService>()
+    private val summitSearchIndexService = mock<SummitSearchIndexService> {
+        on(mock.maxBulkIndexRequests).thenReturn(100)
+    }
 
     private val textStripper = mock<PDFTextStripper>()
 
@@ -24,7 +26,13 @@ class IndexPDFStepTest: StepTest() {
         on(mock.invoke()).thenReturn(textStripper)
     }
 
-    private val step = IndexPDFStep(summitSearchIndexService = summitSearchIndexService, textStripper = textStripperGenerator)
+    private val pdfPartitionThreshold = 3
+
+    private val step = IndexPDFStep(
+        summitSearchIndexService = summitSearchIndexService,
+        textStripper = textStripperGenerator,
+        pdfPagePartitionThreshold = pdfPartitionThreshold
+    )
 
     private val document = mock<PDDocument>()
 
@@ -44,14 +52,15 @@ class IndexPDFStepTest: StepTest() {
 
 
     @Test
-    fun `saves document with url decoded title`() {
+    fun `saves document with url decoded title using put call`() {
         val content = "Some Test Content Here"
 
+        whenever(document.numberOfPages).thenReturn(pdfPartitionThreshold.dec())
         whenever(textStripper.getText(any())).thenReturn(content)
 
         val result = step.process(item, monitor)
 
-        verify(summitSearchIndexService).putPageContents(check<SummitSearchIndexRequest> {
+        verify(summitSearchIndexService).indexContent(check<SummitSearchIndexRequest> {
             assertEquals("test value", it.title)
             assertEquals("", it.seoDescription)
             assertEquals("", it.paragraphContent)
@@ -63,4 +72,94 @@ class IndexPDFStepTest: StepTest() {
         assertFalse(result.canRetry)
     }
 
+    @Test
+    fun `partitions pdf when more than pdf partition threshold pages present`() {
+        val content = "Some Test Content Here"
+        val content2 = "Some other content"
+
+        whenever(document.numberOfPages).thenReturn(pdfPartitionThreshold.inc())
+        whenever(textStripper.getText(any()))
+            .thenReturn(content)
+            .thenReturn(content2)
+
+        val result = step.process(item, monitor)
+
+        argumentCaptor<List<SummitSearchIndexRequest>> {
+            verify(summitSearchIndexService).indexPartitionedContent(capture())
+
+            assertEquals(firstValue.first(), SummitSearchIndexRequest(
+                title = "test value (pages 1-3)",
+                seoDescription = "",
+                paragraphContent = "",
+                source = task.details.pageUrl,
+                rawTextContent = content
+            ))
+
+            assertEquals(firstValue[1], SummitSearchIndexRequest(
+                title = "test value (page 4)",
+                seoDescription = "",
+                paragraphContent = "",
+                source = task.details.pageUrl,
+                rawTextContent = content2
+            ))
+        }
+
+        assertTrue(result.continueProcessing)
+        assertFalse(result.canRetry)
+    }
+
+    @Test
+    fun `partitions pdf with title page 1,2 if only two pages in partition`() {
+        val content = "Some Test Content Here"
+        val content2 = "Some other content"
+
+        whenever(document.numberOfPages).thenReturn(pdfPartitionThreshold + 2)
+        whenever(textStripper.getText(any()))
+            .thenReturn(content)
+            .thenReturn(content2)
+
+        val result = step.process(item, monitor)
+
+        argumentCaptor<List<SummitSearchIndexRequest>> {
+            verify(summitSearchIndexService).indexPartitionedContent(capture())
+
+            assertEquals(firstValue.first(), SummitSearchIndexRequest(
+                title = "test value (pages 1-3)",
+                seoDescription = "",
+                paragraphContent = "",
+                source = task.details.pageUrl,
+                rawTextContent = content
+            ))
+
+            assertEquals(firstValue[1], SummitSearchIndexRequest(
+                title = "test value (pages 4,5)",
+                seoDescription = "",
+                paragraphContent = "",
+                source = task.details.pageUrl,
+                rawTextContent = content2
+            ))
+        }
+
+        assertTrue(result.continueProcessing)
+        assertFalse(result.canRetry)
+    }
+
+    @Test
+    fun `partitions requests to index when they exceed bulk request threshold`() {
+        val content = "Some Test Content Here"
+        val content2 = "Some other content"
+
+        whenever(summitSearchIndexService.maxBulkIndexRequests).thenReturn(2)
+        whenever(document.numberOfPages).thenReturn(6 * pdfPartitionThreshold)
+        whenever(textStripper.getText(any()))
+            .thenReturn(content)
+            .thenReturn(content2)
+
+        val result = step.process(item, monitor)
+
+        verify(summitSearchIndexService, times(3)).indexPartitionedContent(any())
+
+        assertTrue(result.continueProcessing)
+        assertFalse(result.canRetry)
+    }
 }

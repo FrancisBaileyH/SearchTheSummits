@@ -22,7 +22,7 @@ class IndexHtmlPageStep(
 
         monitor.meter.timer("$metricPrefix.indexservice.add.latency").recordCallable {
             monitor.dependencyCircuitBreaker.executeCallable {
-                summitSearchIndexService.putPageContents(
+                summitSearchIndexService.indexContent(
                     SummitSearchPutHtmlPageRequest(
                         source = entity.task.details.pageUrl,
                         htmlDocument = entity.payload!!.document,
