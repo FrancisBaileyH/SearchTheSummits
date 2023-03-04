@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
+import com.francisbailey.summitsearch.services.common.RegionConfig
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.ImmutableImageLoader
 import com.sksamuel.scrimage.nio.JpegWriter
@@ -13,7 +14,8 @@ import java.net.URL
 @Configuration
 open class ImageConfiguration(
     private val s3Client: S3Client,
-    private val environment: Environment
+    private val environment: Environment,
+    private val regionConfig: RegionConfig
 ) {
 
     @Bean
@@ -24,8 +26,9 @@ open class ImageConfiguration(
 
     @Bean
     open fun imageWriterStore() = ImageWriterStore(
-        s3Client,
-        environment.getRequiredProperty("S3_STORE_NAME"),
-        URL(environment.getRequiredProperty("S3_ENDPOINT"))
+        storageClient = s3Client,
+        storeName = environment.getRequiredProperty("S3_STORE_NAME"),
+        endpoint = URL(environment.getRequiredProperty("S3_ENDPOINT")),
+        domain = regionConfig.environmentType
     )
 }

@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.store
 
 import com.francisbailey.summitsearch.index.worker.extension.toSha1
+import com.francisbailey.summitsearch.services.common.RegionConfig
 import mu.KotlinLogging
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -11,12 +12,18 @@ import java.net.URL
 class ImageWriterStore(
     private val storageClient: S3Client,
     private val storeName: String,
-    private val endpoint: URL
+    private val endpoint: URL,
+    domain: RegionConfig.EnvironmentType
 ) {
     private val log = KotlinLogging.logger { }
 
+    private val pathPrefix = when (domain) {
+        RegionConfig.EnvironmentType.PROD -> ""
+        else -> "${domain.name.lowercase()}-"
+    }
+
     fun save(source: URL, imageData: ByteArray, imageStoreType: ImageStoreType): URL {
-        return save(buildPathFromUrl(source, imageStoreType), imageData)
+        return save(buildPathFromUrl(pathPrefix, source, imageStoreType), imageData)
     }
 
     fun save(path: String, imageData: ByteArray): URL {
@@ -37,7 +44,7 @@ class ImageWriterStore(
         return try {
             storageClient.headObject(HeadObjectRequest.builder()
                 .bucket(storeName)
-                .key(buildPathFromUrl(source, type))
+                .key(buildPathFromUrl(pathPrefix, source, type))
                 .build()
             )
             true
@@ -74,8 +81,8 @@ class ImageWriterStore(
     }
 
     companion object {
-        fun buildPathFromUrl(url: URL, type: ImageStoreType, extension: String = "jpg"): String {
-            return "${type.path}/${url.host.toSha1()}/${url.path.toSha1()}.$extension"
+        fun buildPathFromUrl(pathPrefix: String, url: URL, type: ImageStoreType, extension: String = "jpg"): String {
+            return "$pathPrefix${type.path}/${url.host.toSha1()}/${url.path.toSha1()}.$extension"
         }
     }
 }
