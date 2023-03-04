@@ -181,13 +181,15 @@ class SummitSearchIndexService(
             }
         }
 
-        elasticSearchClient.bulk(BulkRequest.of {
+        val result = elasticSearchClient.bulk(BulkRequest.of {
             it.index(indexName)
             it.operations(indexOperations)
             it.source { source ->
                 source.fetch(false)
             }
         })
+
+        log.info { "Bulk index result had error: ${result.errors()}" }
     }
     fun indexContent(request: SummitSearchPutRequest) {
         log.info { "Indexing content from: ${request.source}" }

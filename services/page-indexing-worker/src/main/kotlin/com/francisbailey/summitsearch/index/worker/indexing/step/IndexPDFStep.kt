@@ -36,6 +36,8 @@ class IndexPDFStep(
             val textStripper = textStripper()
             val pageRange = (1..it.numberOfPages)
 
+            log.info { "Indexing ${entity.task.details.pageUrl}" }
+
             if (it.numberOfPages <= pdfPagePartitionThreshold) {
                 monitor.meter.timer("$metricPrefix.indexservice.add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
                     monitor.dependencyCircuitBreaker.executeCallable {
@@ -46,6 +48,7 @@ class IndexPDFStep(
                     }
                 }
             } else {
+                log.info { "Partition threshold reached. Partitioning PDF document: ${entity.task.details.pageUrl}" }
                 val requests = pageRange.chunked(pdfPagePartitionThreshold).map { pagePartition ->
                     textStripper.apply {
                         startPage = pagePartition.first()
@@ -59,7 +62,10 @@ class IndexPDFStep(
                         else -> " (page ${pagePartition.first()})"
 
                     }
-                    buildRequest(textContent, entity.task.details.pageUrl, suffix)
+
+                    val anchoredPdf = URL("${entity.task.details.pageUrl}#page=${pagePartition.first()}")
+
+                    buildRequest(textContent, anchoredPdf, suffix)
                 }
 
                 requests.chunked(summitSearchIndexService.maxBulkIndexRequests).forEach {
