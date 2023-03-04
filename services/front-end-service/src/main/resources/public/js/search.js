@@ -21,6 +21,7 @@ $(document).ready(function() {
     } else {
          $(".search-form-container").removeClass("invisible");
          $(".search-form-tagline").removeClass("invisible");
+         $('#search-bar').focus();
          runSearchAnimations();
     }
 
