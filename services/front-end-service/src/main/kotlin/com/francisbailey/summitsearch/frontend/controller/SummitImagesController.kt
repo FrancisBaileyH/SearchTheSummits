@@ -72,7 +72,9 @@ class SummitImagesController(
                         description = it.description,
                         source = it.source,
                         thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
-                        referencingDocument = it.referencingDocument
+                        referencingDocument = it.referencingDocument,
+                        imageHeight = it.heightPx,
+                        imageWidth = it.widthPx
                     )
                 },
                 totalHits = response.totalHits,
@@ -95,5 +97,7 @@ data class SummitSearchImageHitResponse(
     val source: String,
     val description: String,
     val thumbnail: String,
-    val referencingDocument: String
+    val referencingDocument: String,
+    val imageHeight: Int,
+    val imageWidth: Int
 )

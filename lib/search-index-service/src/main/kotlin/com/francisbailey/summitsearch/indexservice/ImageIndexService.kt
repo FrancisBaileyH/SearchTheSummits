@@ -74,11 +74,14 @@ class ImageIndexService(
 
         return SummitSearchPaginatedResult(
             hits = response.hits().hits().map {
+                val source = it.source()!!
                  SummitSearchImage(
-                     dataStoreReference = it.source()!!.dataStoreReference,
-                     description = it.source()!!.description,
-                     source = it.source()!!.source,
-                     referencingDocument = it.source()!!.referencingDocument
+                     dataStoreReference = source.dataStoreReference,
+                     description = source.description,
+                     source = source.source,
+                     referencingDocument = source.referencingDocument,
+                     heightPx = source.heightPx,
+                     widthPx = source.widthPx
                  )
             },
             next = queryRequest.from + paginationResultSize,
@@ -248,5 +251,7 @@ data class SummitSearchImage(
     val dataStoreReference: String,
     val description: String,
     val source: String,
-    val referencingDocument: String
+    val referencingDocument: String,
+    val heightPx: Int,
+    val widthPx: Int
 )

@@ -160,6 +160,8 @@ class ImageIndexServiceTest {
         assertEquals(1, result.hits.size)
         assertEquals(indexRequest.source.toString(), result.hits.first().source)
         assertEquals(indexRequest.description, result.hits.first().description)
+        assertEquals(indexRequest.heightPx, result.hits.first().heightPx)
+        assertEquals(indexRequest.widthPx, result.hits.first().widthPx)
     }
 
     @Test

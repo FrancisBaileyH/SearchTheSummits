@@ -49,7 +49,9 @@ class SummitImagesControllerTest {
                     description = "test",
                     referencingDocument = "test",
                     source = "https://somewhere.com",
-                    dataStoreReference = "https://123.com"
+                    dataStoreReference = "https://123.com",
+                    heightPx = 120,
+                    widthPx = 200
                 )
             ),
             totalHits = 1,
@@ -67,7 +69,9 @@ class SummitImagesControllerTest {
                     description = result.hits.first().description,
                     referencingDocument = result.hits.first().referencingDocument,
                     source = result.hits.first().source,
-                    thumbnail = shimmedThumbnailUrl.toString()
+                    thumbnail = shimmedThumbnailUrl.toString(),
+                    imageHeight = result.hits.first().heightPx,
+                    imageWidth = result.hits.first().widthPx
                 )
             ),
             totalHits = result.totalHits,
