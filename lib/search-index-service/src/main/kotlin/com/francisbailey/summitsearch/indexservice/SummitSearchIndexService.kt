@@ -155,12 +155,13 @@ class SummitSearchIndexService(
      * client as the update call does not seem to work/be exposed.
      */
     fun indexPartitionedContent(requests: List<SummitSearchIndexRequest>) {
+        val firstSource = generateIdFromUrl(requests.first().source)
 
         require(requests.size <= maxBulkIndexRequests) {
             "Too many requests: ${requests.size}. Max supported: $maxBulkIndexRequests"
         }
 
-        require(requests.all { it.source == requests.first().source }) {
+        require(requests.all { generateIdFromUrl(it.source) ==  firstSource }) {
             "Source document must be the same for all requests"
         }
 

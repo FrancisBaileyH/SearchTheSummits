@@ -552,7 +552,9 @@ class SummitSearchIndexServiceTest {
         val service = SummitSearchIndexService(mockClient, 10)
 
         val requests = (0..service.maxBulkIndexRequests).map {
-            mock<SummitSearchIndexRequest>()
+            mock<SummitSearchIndexRequest> {
+                on(mock.source).thenReturn(URL("https://www.example.com"))
+            }
         }
 
         assertThrows<IllegalArgumentException> { service.indexPartitionedContent(requests) }
