@@ -34,6 +34,15 @@
     <div class="column">
       <article>
         <h4 style="text-align: center; margin-top: 2em;">Latest Updates</h4>
+        <h5>March 4th, 2023</h5>
+        <ul>
+          <li>Well it's been a busy week of development, but mostly behind the scenes on things you can't see</li>
+          <li>Firstly, I've had to start the image indexing from scratch and delete all already indexed images</li>
+          <li>Simply put: I did not have enough metadata stored on the images to make searching and displaying easy. The good news is the fix was simple and it should only take about 3 days to rebuild the entire index. I've been hard at work designing and developing the front end for images in the meantime. I'm getting very close to having something live.</li>
+          <li>I fixed a long standing bug with the mechanism that prevents overloading websites if they're experiencing issues.</li>
+          <li>I've improved PDF indexing. Previously I would index the entire document as one entity, however many pdfs can be 100+ pages and this is usually beyond the limits of my index. To fix that, I now partition the document every 10 pages into a separate entity and so it will appear as a separate page result. It was tricky finding the balance between too many search results and too large of a partition, but I feel 10 pages nicely finds the compromise.</li>
+          <li>On the more technical side, I did some memory usage tuning to fix issues with memory exhausting on my indexing workers. I still needed a more powerful and therefore expensive host type to handle image processing, but it's only a few extra dollars, per month, for an excellent feature addition to the site.</li>
+        </ul>
         <h5>February 27th, 2023</h5>
         <ul>
           <li>Fuzzy searching is now available!! Previously, your searches would only match exact values to ensure relevant results. Often times however, you may not be sure of the exact spelling or you want a more expansive search. Fuzzy searches now solve this!</li>
