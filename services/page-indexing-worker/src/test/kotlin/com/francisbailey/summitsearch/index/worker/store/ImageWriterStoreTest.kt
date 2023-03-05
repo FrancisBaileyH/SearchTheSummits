@@ -58,7 +58,7 @@ class ImageWriterStoreTest {
 
         verify(storageClient).headObject(org.mockito.kotlin.check<HeadObjectRequest> {
             assertEquals(it.bucket(), storeName)
-            assertEquals(it.key(), "dev-standard/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
+            assertEquals(it.key(), "dev-preview/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
         })
     }
 
@@ -70,7 +70,7 @@ class ImageWriterStoreTest {
 
         verify(storageClient).headObject(org.mockito.kotlin.check<HeadObjectRequest> {
             assertEquals(it.bucket(), storeName)
-            assertEquals(it.key(), "dev-standard/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
+            assertEquals(it.key(), "dev-preview/203050d8f0d1cc842097714456125122a57eb61a/15bb72369ef45318f3556c9cd563aa393f1216d9.jpg")
         })
     }
 

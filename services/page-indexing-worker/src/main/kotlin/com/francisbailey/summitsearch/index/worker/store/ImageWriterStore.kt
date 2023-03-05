@@ -92,5 +92,5 @@ enum class ImageStoreType(
     val path: String
 ) {
     THUMBNAIL("thumbnails"),
-    STANDARD("standard")
+    STANDARD("preview")
 }

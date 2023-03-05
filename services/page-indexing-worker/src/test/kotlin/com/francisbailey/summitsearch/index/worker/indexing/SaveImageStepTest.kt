@@ -25,10 +25,7 @@ import java.util.*
 
 class SaveImageStepTest: StepTest() {
 
-    private val image = mock<ImmutableImage> {
-//        on(mock.height).thenReturn(120)
-//        on(mock.width).thenReturn(200)
-    }
+    private val image = mock<ImmutableImage>()
 
     private val imageStore = mock<ImageWriterStore>()
 
