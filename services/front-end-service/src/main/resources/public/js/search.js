@@ -58,7 +58,7 @@ function updateSearchResults(query, page, sort, type) {
     $(".search-pagination-container").html("")
 
     var startTime = new Date().getTime();
-    var endpoint = "api/summits?query=" + query
+    var endpoint = "api/images?query=" + query
 
     if (page > 1) {
         endpoint += "&next=" + ((page - 1) * perPageResult)
@@ -92,50 +92,73 @@ function updateSearchResults(query, page, sort, type) {
             renderSearchTools();
          }
 
+         var searchResults = "<div class=\"image-results-grid\">";
+
          json.hits.forEach(function(hit) {
-            var thumbnailHtml = ""
-            var mobileThumbnailHtml = ""
-            var linkHtml = ""
 
-            if (hit.thumbnail != null) {
-                thumbnailHtml += "<div class=\"search-highlight-image-group\">"
-                thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
-                thumbnailHtml += "</div>"
-                mobileThumbnailHtml += "<div class=\"search-highlight-mobile-image-group\">"
-                mobileThumbnailHtml += "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
-                mobileThumbnailHtml += "</div>"
-            }
+            console.log(hit);
 
-            linkHtml += "  <div class=\"search-result-link\">"
-            linkHtml += "    <div class=\"search-result-link-value\">"
-            linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
-            linkHtml += "    </div>"
+            searchResults += "<div class=\"search-image-container\" data-fld-width=\"" + hit.imageWidth +"\" data-fld-height=\"" + hit.imageHeight + "\">"
+            searchResults += "<img src=\"" + hit.thumbnail + "\" />"
+            searchResults += "</div>"
 
-            if (hit.source.toLowerCase().endsWith(".pdf")) {
-                linkHtml += "<div class=\"search-result-link-label\">"
-                linkHtml += "  <span>PDF</span>"
-                linkHtml += "</div>"
-            }
-
-            linkHtml += "</div>"
-
-            var searchResult = "<div class=\"search-result\">"
-            searchResult += linkHtml
-            searchResult += "  <div class=\"search-result-highlight-group\">"
-            searchResult += "    <div class=\"search-result-highlight-text-group\">"
-            searchResult += "      <div class=\"search-result-title\">"
-            searchResult += "        <h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
-            searchResult += "      </div>"
-            searchResult += "      <div class=\"search-result-highlight\">"
-            searchResult += "        <p>" + hit.highlight + "...</p>"
-            searchResult +=          mobileThumbnailHtml
-            searchResult += "      </div>"
-            searchResult += "    </div>"
-            searchResult += thumbnailHtml
-            searchResult += "  </div>"
-            searchResult += "</div>"
-            $(".search-results-container").append(searchResult)
+//            var thumbnailHtml = ""
+//            var mobileThumbnailHtml = ""
+//            var linkHtml = ""
+//
+//            if (hit.thumbnail != null) {
+//                thumbnailHtml += "<div class=\"search-highlight-image-group\">"
+//                thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+//                thumbnailHtml += "</div>"
+//                mobileThumbnailHtml += "<div class=\"search-highlight-mobile-image-group\">"
+//                mobileThumbnailHtml += "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+//                mobileThumbnailHtml += "</div>"
+//            }
+//
+//            linkHtml += "  <div class=\"search-result-link\">"
+//            linkHtml += "    <div class=\"search-result-link-value\">"
+//            linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+//            linkHtml += "    </div>"
+//
+//            if (hit.source.toLowerCase().endsWith(".pdf")) {
+//                linkHtml += "<div class=\"search-result-link-label\">"
+//                linkHtml += "  <span>PDF</span>"
+//                linkHtml += "</div>"
+//            }
+//
+//            linkHtml += "</div>"
+//
+//            var searchResult = "<div class=\"search-result\">"
+//            searchResult += linkHtml
+//            searchResult += "  <div class=\"search-result-highlight-group\">"
+//            searchResult += "    <div class=\"search-result-highlight-text-group\">"
+//            searchResult += "      <div class=\"search-result-title\">"
+//            searchResult += "        <h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
+//            searchResult += "      </div>"
+//            searchResult += "      <div class=\"search-result-highlight\">"
+//            searchResult += "        <p>" + hit.highlight + "...</p>"
+//            searchResult +=          mobileThumbnailHtml
+//            searchResult += "      </div>"
+//            searchResult += "    </div>"
+//            searchResult += thumbnailHtml
+//            searchResult += "  </div>"
+//            searchResult += "</div>"
+//            $(".search-results-container").append(searchResult)
          });
+         searchResults += "</div>"
+
+         $('.search-results-container').append(searchResults)
+
+         var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
+             rowHeight: 200,
+             rowHeightOrphan: rows => Math.round(rows.heightAvg),
+             objSelector: 'img',
+             dataWidth: 'data-fld-width',
+             dataHeight: 'data-fld-height',
+         });
+
+         fldGrd.update();
+
 
          if (json.totalHits > perPageResult && json.hits.length > 0) {
              renderPagination(json, page, query)
