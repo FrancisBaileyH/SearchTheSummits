@@ -25,7 +25,7 @@ class ElementExtensionTest {
         """
 
         val document = Jsoup.parse(html)
-        val images = document.getCaptionedImages()
+        val images = document.getFigCaptionedImages()
 
         assertEquals(1, images.size)
         assertEquals("a-good-source.png", images.first().imageSrc)
@@ -45,7 +45,7 @@ class ElementExtensionTest {
         """
 
         val document = Jsoup.parse(html)
-        val images = document.getCaptionedImages()
+        val images = document.getCaptionedImages("figure", "figcaption")
 
         assertTrue(images.isEmpty())
     }
@@ -78,7 +78,7 @@ class ElementExtensionTest {
            <html>
                 <body>
                     <div class="wp-caption aligncenter">
-                        <a href="#"><img id="good-image" src="a-good-source.png" /></a>
+                        <a href="#"><img id="good-image" src="a-good-source.PNG" /></a>
                         <p class="wp-caption-text">Hello world</p>
                     </div>
                 </body>
@@ -88,8 +88,30 @@ class ElementExtensionTest {
         val document = Jsoup.parse(html)
         val captionedImage = document.getWPCaptionedImages().first()
 
-        assertEquals("a-good-source.png", captionedImage.imageSrc)
+        assertEquals("a-good-source.PNG", captionedImage.imageSrc)
         assertEquals("Hello world", captionedImage.caption)
+    }
+
+    @Test
+    fun `fetches dl captioned images`() {
+        val html = """
+            <html>
+                <body>
+                    <div>
+                        <dl id="attachment_4741">
+                            <dt><img decoding="async" class="alignnone lazy loaded" src="https://i0.wp.com/trailcatjim.com/wp-content/uploads/2015/08/IMG_2322.jpg?resize=1170%2C878&amp;ssl=1" data-src="https://i0.wp.com/trailcatjim.com/wp-content/uploads/2015/08/IMG_2322.jpg?resize=1170%2C878&amp;ssl=1" alt="Welch Peak as seen from Williamson Lake in the Cheam Range" data-was-processed="true" width="750" height="563"></dt>
+                            <dd>Welch Peak From Williamson Lake Camp</dd>
+                        </dl>
+                    </div>
+                </body>
+            </html>    
+        """.trimIndent()
+
+        val document = Jsoup.parse(html)
+        val captionedImage = document.getDlCaptionedImages().first()
+
+        assertEquals("https://i0.wp.com/trailcatjim.com/wp-content/uploads/2015/08/IMG_2322.jpg?resize=1170%2C878&ssl=1", captionedImage.imageSrc)
+        assertEquals("Welch Peak From Williamson Lake Camp", captionedImage.caption)
     }
 
 }

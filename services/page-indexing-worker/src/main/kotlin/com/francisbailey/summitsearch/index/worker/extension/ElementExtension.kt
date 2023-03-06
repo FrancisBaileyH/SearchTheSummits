@@ -22,12 +22,12 @@ fun Element.getOGImage(): CaptionedImage? {
     }
 }
 
-fun Element.getCaptionedImages(): List<CaptionedImage> {
-    val figures = this.select("figure") as List<Element>
+fun Element.getCaptionedImages(parentSelector: String, captionSelector: String): List<CaptionedImage> {
+    val figures = this.select(parentSelector) as List<Element>
 
     return figures.mapNotNull {
         val image = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
-        val caption = it.selectFirst("figcaption")?.text()
+        val caption = it.selectFirst(captionSelector)?.text()
 
         if (image.isNullOrBlank() || caption.isNullOrBlank()) {
             null
@@ -41,21 +41,15 @@ fun Element.getCaptionedImages(): List<CaptionedImage> {
 }
 
 fun Element.getWPCaptionedImages(): List<CaptionedImage> {
-    val captions = this.select(".wp-caption")
+    return getCaptionedImages(".wp-caption", ".wp-caption-text")
+}
 
-    return captions.mapNotNull {
-        val image = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
-        val caption = it.selectFirst(".wp-caption-text")?.text()
+fun Element.getFigCaptionedImages(): List<CaptionedImage> {
+    return getCaptionedImages("figure", "figcaption")
+}
 
-        if (image.isNullOrBlank() || caption.isNullOrBlank()) {
-            null
-        } else {
-            CaptionedImage(
-                imageSrc = image,
-                caption = caption
-            )
-        }
-    }
+fun Element.getDlCaptionedImages(): List<CaptionedImage> {
+    return getCaptionedImages("dl", "dd")
 }
 
 data class CaptionedImage(

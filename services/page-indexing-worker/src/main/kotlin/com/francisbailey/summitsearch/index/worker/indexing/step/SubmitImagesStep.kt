@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
-import com.francisbailey.summitsearch.index.worker.extension.getCaptionedImages
+import com.francisbailey.summitsearch.index.worker.extension.getDlCaptionedImages
+import com.francisbailey.summitsearch.index.worker.extension.getFigCaptionedImages
 import com.francisbailey.summitsearch.index.worker.extension.getWPCaptionedImages
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
@@ -18,7 +19,7 @@ class SubmitImagesStep(
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         entity.payload?.document?.let {
-            val images = it.getWPCaptionedImages() + it.getCaptionedImages()
+            val images = it.getWPCaptionedImages() + it.getFigCaptionedImages() + it.getDlCaptionedImages()
 
             val imageDiscoveries = images.map { image ->
                 ImageDiscovery(

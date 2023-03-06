@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
 import com.francisbailey.summitsearch.index.worker.client.*
-import com.francisbailey.summitsearch.index.worker.extension.getCaptionedImages
+import com.francisbailey.summitsearch.index.worker.extension.getFigCaptionedImages
 import com.francisbailey.summitsearch.index.worker.extension.getOGImage
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
@@ -18,7 +18,7 @@ class SubmitThumbnailStep(
 ): Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         val thumbnailCandidate = entity.payload?.document?.getOGImage()
-            ?: entity.payload?.document?.getCaptionedImages()?.firstOrNull()
+            ?: entity.payload?.document?.getFigCaptionedImages()?.firstOrNull()
 
         thumbnailCandidate?.let {
             monitor.dependencyCircuitBreaker.executeCallable {
