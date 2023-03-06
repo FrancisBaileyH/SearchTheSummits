@@ -25,6 +25,7 @@ open class FilterConfiguration {
             addFilterChain(URL("http://www.alpinejournal.org.uk"), AlpineJournalUKFilter)
             addFilterChain(URL("https://alpinebenny.com"), AlpineBennyFilter)
             addFilterChain(URL("http://www.alpenglow.org"), AlpenGlowFilter)
+            addFilterChain(URL("https://altusmountainguides.com"), AltusMountainGuidesFilter)
         }
     }
 
@@ -39,6 +40,8 @@ open class FilterConfiguration {
             addFilterChain(URL("https://www.nwhikers.net"), NWHikersIndexFilter)
             addFilterChain(URL("https://peakbagger.com"), PeakBaggerIndexFilter)
             addFilterChain(URL("https://www.explor8ion.com"), Explor8ionIndexFilter)
+            addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
+            addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
         }
     }
 }
