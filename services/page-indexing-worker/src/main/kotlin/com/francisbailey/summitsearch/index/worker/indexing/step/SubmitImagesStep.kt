@@ -29,7 +29,7 @@ class SubmitImagesStep(
                     pageCreationDate = entity.payload?.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
                 )
             }.toSet()
-
+            log.info { "Found: ${imageDiscoveries.size} candidate images from: ${entity.task.details.pageUrl}" }
             linkDiscoveryService.submitImages(entity.task, imageDiscoveries)
         }
 
