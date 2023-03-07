@@ -33,26 +33,24 @@ article li {
 }
 
 .container {
-    flex: 1 0 auto;
     max-width: 800px;
 }
 
-nav.header-menu {
-    text-align: center;
-    padding-top: 2em;
+.flex-auto-container {
+    flex: 1 0 auto;
 }
 
-nav.header-menu ul {
+nav ul {
     margin: 0;
 }
 
-nav.header-menu ul > li {
+nav ul > li {
     display: inline-block;
     text-align: right;
     padding: 0;
 }
 
-nav.header-menu ul > li:nth-child(n+2) {
+nav ul > li:nth-child(n+2) {
     padding-left: 0.5em;
 }
 
@@ -72,6 +70,57 @@ nav.header-menu ul > li a.current-nav-page {
     text-decoration: underline;
     pointer-events: none;
 }
+
+nav.header-menu {
+    text-align: center;
+    padding-top: 2em;
+}
+
+nav.resource-menu {
+    margin: 0;
+}
+
+nav.resource-menu ul > li a {
+    font-size: 1.5rem;
+    color:#576574;
+}
+
+nav.resource-menu ul > li a:hover {
+    text-decoration: none;
+    color: #576574;
+}
+
+nav.resource-menu ul > li {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 0;
+    padding-bottom: 0.5em;
+    display: inline-flex;
+    align-items: center;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+nav.resource-menu .icon {
+    display: inline-flex;
+    padding-right: 0.4em;
+}
+
+nav.resource-menu ul > li.current-nav-page, nav.resource-menu ul > li:hover {
+    border-bottom: 3px solid #5EA99C;
+    cursor: pointer;
+}
+
+hr.sub-menu-divider {
+    border: none;
+    margin-top: 0em;
+    border-bottom: 1px solid #ebebeb;
+    margin-bottom: 0.5em;
+    font-size: 1.5rem;
+    width: 100%;
+    color: transparent;
+}
+
 
 .about-text {
     text-align: justify;
@@ -323,6 +372,8 @@ nav.header-menu ul > li a.current-nav-page {
 
 .search-results-details p {
     margin-bottom: 0.5em;
+    color: #576574;
+    font-size: 1.3rem;
 }
 
 .search-results-tools {

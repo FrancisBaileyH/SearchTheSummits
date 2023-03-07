@@ -4,12 +4,14 @@ var maxPaginatedResults = 1000;
 $(document).ready(function() {
     var queries = new URLSearchParams(window.location.search)
     var urlQuery = queries.get("query")
+    var resource = queries.get("resource")
 
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
+        $(".header-menu").addClass("invisible");
         $("#search-bar").val(urlQuery);
-
+        renderResourceMenu(resource);
         updateSearchResults();
     } else {
          $(".search-form-container").removeClass("invisible");
@@ -25,7 +27,13 @@ $(document).ready(function() {
         query = $("#search-bar").val()
 
         if (query != urlQuery) {
-            window.location.href = "/?query=" + query.replaceAll(" ", "+")
+            var searchParams = new URLSearchParams();
+            searchParams.set("query", query)
+            if (resource != null) {
+                searchParams.set("resource", resource)
+            }
+
+            window.location.href = "/?" + searchParams.toString();
         }
     });
 
@@ -38,11 +46,36 @@ $(document).ready(function() {
         renderClearButton();
         $("#search-bar").focus();
     });
+
+    $('.resource-menu li').on('click', function(e) {
+        e.preventDefault();
+        var selectedElement = $(this)
+        var selectedResource = selectedElement.data('resource')
+        var resource = queries.get("resource")
+
+        if (resource != selectedElement.data('resource')) {
+            var searchParams = new URLSearchParams()
+            searchParams.set("query", urlQuery)
+            searchParams.set("resource", selectedResource)
+            window.location.href = "/?" + searchParams.toString();
+        }
+    });
 });
 
 function renderClearButton() {
     var hasContent = $("#search-bar").val();
     $('.search-clear-button').toggle(Boolean(hasContent));
+}
+
+function renderResourceMenu(resource) {
+    $(".resource-menu").removeClass("invisible");
+    $(".sub-menu-divider").removeClass("invisible");
+
+    if (resource == null) {
+        resource = "sites"
+    }
+
+    $('.resource-menu li[data-resource=' + resource + ']').addClass('current-nav-page');
 }
 
 function updateSearchResults() {
@@ -57,7 +90,9 @@ function updateSearchResults() {
         case "images":
             updateImageResults(searchParams);
             break;
-        default: updateDocumentResults(searchParams);
+        default:
+            updateDocumentResults(searchParams)
+            break;
     }
 }
 
@@ -90,23 +125,25 @@ function updateImageResults(searchParams) {
         renderSearchResults({
             totalHits: json.totalHits,
             requestTime: totalTime,
-            currentHits: json.hits.size,
+            currentHits: json.hits.length,
             resultsPerPage: json.resultsPerPage,
             postRenderCallback: function() {
-                var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
-                    rowHeight: 200,
-                    rowHeightOrphan: rows => Math.round(rows.heightAvg),
-                    itemSelector: '*',
-                    objSelector: 'figure',
-                    dataWidth: 'data-fld-width',
-                    dataHeight: 'data-fld-height',
-                });
-                fldGrd.update();
+                if (json.hits.length > 0) {
+                    var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
+                        rowHeight: 200,
+                        rowHeightOrphan: rows => Math.round(rows.heightAvg),
+                        itemSelector: '*',
+                        objSelector: 'figure',
+                        dataWidth: 'data-fld-width',
+                        dataHeight: 'data-fld-height',
+                    });
+                    fldGrd.update();
 
-                $('.search-image').on('click', function() {
-                    var imageTarget = $(this);
-                    renderImageModal(imageTarget);
-                });
+                    $('.search-image').on('click', function() {
+                        var imageTarget = $(this);
+                        renderImageModal(imageTarget);
+                    });
+                }
             }
         }, searchResults)
     });
