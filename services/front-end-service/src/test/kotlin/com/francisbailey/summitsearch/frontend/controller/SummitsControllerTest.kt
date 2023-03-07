@@ -28,7 +28,8 @@ class SummitsControllerTest {
         summitSearchIndexService = summitSearchIndexService,
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
-        meterRegistry = meterRegistry
+        meterRegistry = meterRegistry,
+        documentResultsPerPage = 10
     )
 
 
@@ -70,7 +71,8 @@ class SummitsControllerTest {
                 )
             ),
             totalHits = result.totalHits,
-            next = 0
+            next = 0,
+            resultsPerPage = 10
         )
 
         assertEquals(Json.encodeToString(expectedResponse), response.body)
@@ -116,7 +118,8 @@ class SummitsControllerTest {
                 )
             ),
             totalHits = result.totalHits,
-            next = 0
+            next = 0,
+            resultsPerPage = 10
         )
 
         assertEquals(Json.encodeToString(expectedResponse), response.body)

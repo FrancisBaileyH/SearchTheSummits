@@ -26,8 +26,11 @@ fun Element.getCaptionedImages(parentSelector: String, captionSelector: String):
     val figures = this.select(parentSelector) as List<Element>
 
     return figures.mapNotNull {
-        val image = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
+        val imageSrc = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
+        val dataSrc = it.selectFirst("img[data-src~=(?i)\\.(png|jpe?g)]")?.attr("data-src")
         val caption = it.selectFirst(captionSelector)?.text()
+
+        val image = imageSrc ?: dataSrc // fallback to data-src if it's present
 
         if (image.isNullOrBlank() || caption.isNullOrBlank()) {
             null

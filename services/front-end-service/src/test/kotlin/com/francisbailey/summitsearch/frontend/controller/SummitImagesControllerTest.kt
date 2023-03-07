@@ -28,7 +28,8 @@ class SummitImagesControllerTest {
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
         meterRegistry = meterRegistry,
-        imageIndexService = imageIndexService
+        imageIndexService = imageIndexService,
+        imageResultsPerPage = 20
     )
 
     @Test
@@ -75,7 +76,8 @@ class SummitImagesControllerTest {
                 )
             ),
             totalHits = result.totalHits,
-            next = 0
+            next = 0,
+            resultsPerPage = 20
         )
 
         assertEquals(Json.encodeToString(expectedResponse), response.body)
@@ -91,7 +93,7 @@ class SummitImagesControllerTest {
 
         whenever(imageIndexService.query(any())).thenReturn(result)
 
-        controller.search("some query", next = 0)
+        controller.search("some query", page = 0)
 
         verify(queryStatsReporter).pushQueryStat(org.mockito.kotlin.check {
             assertEquals(result.sanitizedQuery, it.query)

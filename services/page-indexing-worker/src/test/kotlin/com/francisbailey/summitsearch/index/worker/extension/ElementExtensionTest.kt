@@ -114,4 +114,26 @@ class ElementExtensionTest {
         assertEquals("Welch Peak From Williamson Lake Camp", captionedImage.caption)
     }
 
+    @Test
+    fun `fetches dl captioned images with data-src`() {
+        val html = """
+            <html>
+                <body>
+                    <div>
+                        <dl id="attachment_7510">
+                            <dt><img decoding="async" class="alignnone lazy" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201170%20878'%3E%3C/svg%3E" data-src="https://i0.wp.com/trailcatjim.com/wp-content/uploads/2012/09/IMG_7710.jpg?resize=1170%2C878&#038;ssl=1" alt="mountain climbers camp in a grassy basin with linguring snow patches in the Mt Baker Wilderness" width="1170" height="878"  data-recalc-dims="1"></dt>
+                            <dd>Camp In Gargett Basin</dd>
+                        </dl>
+                    </div>
+                </body>
+            </html>    
+        """.trimIndent()
+
+        val document = Jsoup.parse(html)
+        val captionedImage = document.getDlCaptionedImages().first()
+
+        assertEquals("https://i0.wp.com/trailcatjim.com/wp-content/uploads/2012/09/IMG_7710.jpg?resize=1170%2C878&ssl=1", captionedImage.imageSrc)
+        assertEquals("Camp In Gargett Basin", captionedImage.caption)
+    }
+
 }
