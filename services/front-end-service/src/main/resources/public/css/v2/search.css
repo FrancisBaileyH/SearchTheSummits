@@ -601,8 +601,13 @@ footer #footer-image {
     color: #576574;
 }
 
+@media(min-width: 500px) {
+    .modal {
+        width: auto;
+    }
+}
+
 .modal {
-    width: auto;
     max-width: 1000px;
     max-height: 100%;
 }
@@ -610,6 +615,7 @@ footer #footer-image {
 .modal p {
     margin: 0;
     padding: 0 4px;
+    overflow-wrap: anywhere;
 }
 
 .modal img {
