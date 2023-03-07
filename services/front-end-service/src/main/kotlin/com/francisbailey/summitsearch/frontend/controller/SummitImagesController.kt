@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.time.Instant
+import kotlin.math.absoluteValue
 
 @RestController
 class SummitImagesController(
@@ -30,12 +31,12 @@ class SummitImagesController(
     @GetMapping(path = [SEARCH_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun search(
         @RequestParam(name = "query") requestQuery: String,
-        @RequestParam(name = "next", required = false) next: Int?,
+        @RequestParam(name = "page", required = false) page: Int?,
         @RequestParam(name = "sort", required = false) sort: String? = null,
         @RequestParam(name = "type", required = false) type: String? = null
     ): ResponseEntity<String> {
 
-        log.info { "Querying image service for: $requestQuery and next value: $next" }
+        log.info { "Querying image service for: $requestQuery and next value: $page" }
 
         val sortType = when (sort?.lowercase()) {
             "date" -> SummitSearchSortType.BY_DATE
@@ -53,13 +54,13 @@ class SummitImagesController(
                     queryType = queryType,
                     sortType = sortType,
                     term = requestQuery,
-                    from = next ?: 0
+                    from = page?.absoluteValue?.dec()?.times(imageResultsPerPage) ?: 0,
                 ))
             }!!
 
             queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
                 query = response.sanitizedQuery.lowercase(),
-                page = next?.toLong(),
+                page = page?.toLong(),
                 totalHits = response.totalHits,
                 timestamp = Instant.now().toEpochMilli(),
                 type = queryType.name,

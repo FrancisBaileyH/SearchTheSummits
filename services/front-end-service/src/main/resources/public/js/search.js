@@ -64,15 +64,8 @@ function updateSearchResults() {
 function updateImageResults(searchParams) {
     var startTime = new Date().getTime();
     var endpoint = new URL(window.location.origin + "/api/images");
-    var page = searchParams.get("page")
 
     endpoint.search = "?" + searchParams.toString();
-
-    if (!isNaN(page) && page > 1) {
-        endpoint.searchParams.set("next", ((page - 1) * perPageResult));
-    }
-
-    endpoint.searchParams.delete("page")
 
     $.getJSON(endpoint)
     .fail(function(xhr, status, errorThrown) {
@@ -132,15 +125,8 @@ function renderImageModal(imageTarget) {
 function updateDocumentResults(searchParams) {
     var startTime = new Date().getTime();
     var endpoint = new URL(window.location.origin + "/api/summits");
-    var page = searchParams.get("page")
 
     endpoint.search = "?" + searchParams.toString();
-
-    if (!isNaN(page) && page > 1) {
-        endpoint.searchParams.set("next", ((page - 1) * perPageResult));
-    }
-
-    endpoint.searchParams.delete("page")
 
     $.getJSON(endpoint)
     .fail(function(xhr, status, errorThrown) {
@@ -169,7 +155,7 @@ function updateDocumentResults(searchParams) {
             linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
             linkHtml += "    </div>"
 
-            if (hit.source.toLowerCase().endsWith(".pdf")) {
+            if (hit.source.toLowerCase().includes(".pdf")) {
                 linkHtml += "<div class=\"search-result-link-label\">"
                 linkHtml += "  <span>PDF</span>"
                 linkHtml += "</div>"
@@ -227,7 +213,7 @@ function renderSearchResults(responseData, resultsHtml) {
         responseData.postRenderCallback();
      }
 
-     if (responseData.totalHits > perPageResult) {
+     if (responseData.totalHits > responseData.resultsPerPage) {
          renderPagination(responseData.totalHits, responseData.resultsPerPage)
      }
 

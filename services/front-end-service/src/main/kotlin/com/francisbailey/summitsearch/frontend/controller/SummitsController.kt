@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.time.Instant
+import kotlin.math.absoluteValue
 
 @RestController
 class SummitsController(
@@ -29,11 +30,11 @@ class SummitsController(
     @GetMapping(path = [SEARCH_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun search(
         @RequestParam(name = "query") requestQuery: String,
-        @RequestParam(name = "next", required = false) next: Int?,
+        @RequestParam(name = "page", required = false) page: Int?,
         @RequestParam(name = "sort", required = false) sort: String? = null,
         @RequestParam(name = "type", required = false) type: String? = null
     ): ResponseEntity<String> {
-        log.info { "Querying search service for: $requestQuery and next value: $next" }
+        log.info { "Querying search service for: $requestQuery and page: $page" }
 
         val sortType = when (sort?.lowercase()) {
             "date" -> SummitSearchSortType.BY_DATE
@@ -50,7 +51,7 @@ class SummitsController(
                 summitSearchIndexService.query(
                     SummitSearchQueryRequest(
                         term = requestQuery,
-                        from = next ?: 0,
+                        from = page?.absoluteValue?.dec()?.times(documentResultsPerPage) ?: 0,
                         sortType = sortType,
                         queryType = queryType
                     )
@@ -59,7 +60,7 @@ class SummitsController(
 
             queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
                 query = response.sanitizedQuery.lowercase(),
-                page = next?.toLong(),
+                page = page?.toLong(),
                 totalHits = response.totalHits,
                 timestamp = Instant.now().toEpochMilli(),
                 type = queryType.name,
