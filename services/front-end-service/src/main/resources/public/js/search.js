@@ -116,10 +116,12 @@ function renderImageModal(imageTarget) {
     $(".search-image-modal").remove();
     var modalContent = "<div class=\"search-image-modal\">"
     modalContent += "<div class=\"centered\"><img src=\"" + imageTarget.data('src') + "\" /></div>"
-    modalContent +=  "<p><a href=\"" + imageTarget.data('reference') + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + imageTarget.data('host') + "</span><br />" + imageTarget.data('description') + "</a></p>"
+    modalContent +=  "<p><a href=\"" + imageTarget.data('reference') + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + imageTarget.data('reference') + "</span><br />" + imageTarget.data('description') + "</a></p>"
     modalContent += "</div>"
     $('.modal-holding-zone').html(modalContent);
-    $(".search-image-modal").modal();
+    $(".search-image-modal").modal({
+        fadeDuration: 100
+    });
 }
 
 function updateDocumentResults(searchParams) {
