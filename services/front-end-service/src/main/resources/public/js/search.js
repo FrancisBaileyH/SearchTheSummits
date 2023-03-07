@@ -280,8 +280,8 @@ function renderNoResultsMessage() {
         noResultsMessage += "<li>Expand your search results with <a href=\"" + url + "\" >fuzzy match</a></li>"
     }
 
+    noResultsMessage += "<li>Try fewer keywords. Especially for images. E.g. try: <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
     noResultsMessage += "<li>Make sure all words are spelled correctly.</li>"
-    noResultsMessage += "<li>Try fewer keywords.</li>"
     noResultsMessage += "<li>Try different keywords.</li></ul></div>"
 
     $(".search-results-container").append(noResultsMessage);

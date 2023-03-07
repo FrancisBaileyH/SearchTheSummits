@@ -1,6 +1,7 @@
 version: '3'
 services:
   front-end-service:
+    platform: linux/amd64
     profiles: ["frontend"]
     env_file: variables.env
     ports:
@@ -25,7 +26,7 @@ services:
       - es-volume:/usr/share/elasticsearch/data
 
   kibana:
-    profiles: ["monitoring"]
+    profiles: ["kibana"]
     image: kibana:8.5.2
     ports:
       - "5601:5601"
@@ -45,6 +46,7 @@ services:
     command: redis-server --requirepass redispw
 
   page-indexing-worker:
+    platform: linux/amd64
     profiles: ["backend"]
     image: search-the-summits/page-indexing-worker
     env_file: variables.env
@@ -80,7 +82,7 @@ services:
 
 volumes:
   es-volume:
-    external: true
+    external: false
   redis-volume:
     external: false
   grafana-volume:
