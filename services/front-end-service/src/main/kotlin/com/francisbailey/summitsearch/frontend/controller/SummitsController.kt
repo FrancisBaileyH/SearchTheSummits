@@ -21,7 +21,8 @@ class SummitsController(
     private val summitSearchIndexService: SummitSearchIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
+    private val documentResultsPerPage: Int,
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -76,7 +77,8 @@ class SummitsController(
                     )
                 },
                 totalHits = response.totalHits,
-                next = response.next
+                next = response.next,
+                resultsPerPage = documentResultsPerPage
             )))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
@@ -95,7 +97,8 @@ class SummitsController(
 data class SummitSearchResponse<T>(
     val hits: List<T>,
     val totalHits: Long,
-    val next: Int
+    val next: Int,
+    val resultsPerPage: Int
 )
 
 @Serializable

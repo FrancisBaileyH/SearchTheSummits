@@ -21,7 +21,8 @@ class SummitImagesController(
     private val imageIndexService: ImageIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
+    private val imageResultsPerPage: Int
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -78,7 +79,8 @@ class SummitImagesController(
                     )
                 },
                 totalHits = response.totalHits,
-                next = response.next
+                next = response.next,
+                resultsPerPage = imageResultsPerPage
             )))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(

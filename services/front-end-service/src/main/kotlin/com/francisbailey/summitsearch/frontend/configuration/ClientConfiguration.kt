@@ -10,7 +10,9 @@ import org.springframework.core.env.Environment
 @Configuration
 open class ClientConfiguration(
     private val environment: Environment,
-    private val regionConfig: RegionConfig
+    private val regionConfig: RegionConfig,
+    private val documentResultsPerPage: Int,
+    private val imageResultsPerPage: Int
 ) {
 
     private val log = KotlinLogging.logger {}
@@ -24,7 +26,7 @@ open class ClientConfiguration(
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    paginationResultSize = 10
+                    paginationResultSize = documentResultsPerPage
                 ))
             else -> SummitSearchIndexServiceFactory.build(
                 SearchIndexServiceConfiguration(
@@ -33,7 +35,7 @@ open class ClientConfiguration(
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
                     scheme = "http",
-                    paginationResultSize = 10
+                    paginationResultSize = documentResultsPerPage
                 ))
         }
 
@@ -71,7 +73,7 @@ open class ClientConfiguration(
                     username = environment.getRequiredProperty("ES_USERNAME"),
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    paginationResultSize = 30
+                    paginationResultSize = imageResultsPerPage
                 ))
             else -> SummitSearchIndexServiceFactory.buildImageIndex(
                 SearchIndexServiceConfiguration(
@@ -80,7 +82,7 @@ open class ClientConfiguration(
                     password = environment.getRequiredProperty("ES_PASSWORD"),
                     endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
                     scheme = "http",
-                    paginationResultSize = 30
+                    paginationResultSize = imageResultsPerPage
                 ))
         }.also {
             it.createIfNotExists()

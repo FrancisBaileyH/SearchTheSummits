@@ -1,4 +1,3 @@
-var perPageResult = 10;
 var maxPaginatedResults = 1000;
 
 // I'm not a front-end dev so please don't judge :(
@@ -99,6 +98,7 @@ function updateImageResults(searchParams) {
             totalHits: json.totalHits,
             requestTime: totalTime,
             currentHits: json.hits.size,
+            resultsPerPage: json.resultsPerPage,
             postRenderCallback: function() {
                 var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
                     rowHeight: 200,
@@ -200,7 +200,8 @@ function updateDocumentResults(searchParams) {
             totalHits: json.totalHits,
             requestTime: totalTime,
             currentHits: json.hits.size,
-            postRenderCallback: null
+            postRenderCallback: null,
+            resultsPerPage: json.resultsPerPage
         }, searchResults)
     });
 }
@@ -227,7 +228,7 @@ function renderSearchResults(responseData, resultsHtml) {
      }
 
      if (responseData.totalHits > perPageResult) {
-         renderPagination(responseData.totalHits)
+         renderPagination(responseData.totalHits, responseData.resultsPerPage)
      }
 
      if (responseData.totalHits < 1) {
@@ -330,7 +331,7 @@ function renderSearchTool(anchor, tool, url) {
     });
 }
 
-function renderPagination(totalHits) {
+function renderPagination(totalHits, resultsPerPage) {
     var url = new URL(window.location.href);
     var page = url.searchParams.get("page")
 
@@ -340,7 +341,7 @@ function renderPagination(totalHits) {
 
     page = Number(page) // If we do "10" + 4 we get 104... why javascript?!
 
-    var paginationData = getPaginationDisplayData(Math.min(totalHits, maxPaginatedResults), page, perPageResult)
+    var paginationData = getPaginationDisplayData(Math.min(totalHits, maxPaginatedResults), page, resultsPerPage)
     $(".search-pagination-container").html("");
 
     var paginationHtml = "<ul><li>Pages: </li>"
