@@ -4,20 +4,14 @@ var maxPaginatedResults = 1000;
 // I'm not a front-end dev so please don't judge :(
 $(document).ready(function() {
     var queries = new URLSearchParams(window.location.search)
-
     var urlQuery = queries.get("query")
-    var page = queries.get("page")
-    var sort = queries.get("sort")
-    var type = queries.get("type")
-
-    if (page == null || isNaN(page)) {
-        page = 1
-    }
 
     if (urlQuery != null && urlQuery != "") {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
-        updateSearchResults(urlQuery, Number(page), sort, type) // If we do "10" + 4 we get 104... why javascript?!
+        $("#search-bar").val(urlQuery);
+
+        updateSearchResults();
     } else {
          $(".search-form-container").removeClass("invisible");
          $(".search-form-tagline").removeClass("invisible");
@@ -26,7 +20,6 @@ $(document).ready(function() {
     }
 
     renderClearButton();
-
 
     $('#search-form').submit(function(e) {
         e.preventDefault();
@@ -53,122 +46,199 @@ function renderClearButton() {
     $('.search-clear-button').toggle(Boolean(hasContent));
 }
 
-function updateSearchResults(query, page, sort, type) {
-    $("#search-bar").val(query)
+function updateSearchResults() {
     $(".search-pagination-container").html("")
 
+    var url = new URL(window.location.href);
+    var searchParams = url.searchParams
+
+    var resource = searchParams.get("resource")
+
+    switch(resource) {
+        case "images":
+            updateImageResults(searchParams);
+            break;
+        default: updateDocumentResults(searchParams);
+    }
+}
+
+function updateImageResults(searchParams) {
     var startTime = new Date().getTime();
-    var endpoint = "api/images?query=" + query
+    var endpoint = new URL(window.location.origin + "/api/images");
+    var page = searchParams.get("page")
 
-    if (page > 1) {
-        endpoint += "&next=" + ((page - 1) * perPageResult)
+    endpoint.search = "?" + searchParams.toString();
+
+    if (!isNaN(page) && page > 1) {
+        endpoint.searchParams.set("next", ((page - 1) * perPageResult));
     }
 
-    if (sort != "") {
-        endpoint += "&sort=" + sort
-    }
-
-    if (type != "") {
-        endpoint += "&type=" + type
-    }
+    endpoint.searchParams.delete("page")
 
     $.getJSON(endpoint)
-     .fail(function(xhr, status, errorThrown) {
-        $(".search-results-container").html(
-            "<div class='search-result-error'><p>Unable to process query at this time :(</p></div>"
-        )
+    .fail(function(xhr, status, errorThrown) {
+        renderErrorMessage();
      })
-     .done(function(json) {
-         // update pagination
-         var requestTime = new Date().getTime() - startTime;
-         var searchDetails = "<div class=\"search-results-details\">";
-         searchDetails += "<p>About " + json.totalHits + " result(s) found in " + requestTime + "ms</p>";
-         searchDetails += "</div>";
+    .done(function(json) {
+        var totalTime = new Date().getTime() - startTime;
+        var searchResults = "<div class=\"image-results-grid\">";
 
-         $(".search-results-container").html(searchDetails)
-         $(".search-form-container").addClass("has-query");
-
-         if (json.totalHits > 0) {
-            renderSearchTools();
-         }
-
-         var searchResults = "<div class=\"image-results-grid\">";
-
-         json.hits.forEach(function(hit) {
-
-            console.log(hit);
-
+        json.hits.forEach(function(hit) {
+            var sourceUrl = new URL(hit.referencingDocument);
             searchResults += "<div class=\"search-image-container\" data-fld-width=\"" + hit.imageWidth +"\" data-fld-height=\"" + hit.imageHeight + "\">"
-            searchResults += "<img src=\"" + hit.thumbnail + "\" />"
+            searchResults += "<figure>"
+            searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\"/>"
+            searchResults += "<figcaption><a href=\"" + hit.referencingDocument + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + sourceUrl.host + "</span><br />" + hit.description + "</a></figcaption>"
+            searchResults += "</figure>"
             searchResults += "</div>"
+        });
 
-//            var thumbnailHtml = ""
-//            var mobileThumbnailHtml = ""
-//            var linkHtml = ""
-//
-//            if (hit.thumbnail != null) {
-//                thumbnailHtml += "<div class=\"search-highlight-image-group\">"
-//                thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
-//                thumbnailHtml += "</div>"
-//                mobileThumbnailHtml += "<div class=\"search-highlight-mobile-image-group\">"
-//                mobileThumbnailHtml += "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
-//                mobileThumbnailHtml += "</div>"
-//            }
-//
-//            linkHtml += "  <div class=\"search-result-link\">"
-//            linkHtml += "    <div class=\"search-result-link-value\">"
-//            linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
-//            linkHtml += "    </div>"
-//
-//            if (hit.source.toLowerCase().endsWith(".pdf")) {
-//                linkHtml += "<div class=\"search-result-link-label\">"
-//                linkHtml += "  <span>PDF</span>"
-//                linkHtml += "</div>"
-//            }
-//
-//            linkHtml += "</div>"
-//
-//            var searchResult = "<div class=\"search-result\">"
-//            searchResult += linkHtml
-//            searchResult += "  <div class=\"search-result-highlight-group\">"
-//            searchResult += "    <div class=\"search-result-highlight-text-group\">"
-//            searchResult += "      <div class=\"search-result-title\">"
-//            searchResult += "        <h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
-//            searchResult += "      </div>"
-//            searchResult += "      <div class=\"search-result-highlight\">"
-//            searchResult += "        <p>" + hit.highlight + "...</p>"
-//            searchResult +=          mobileThumbnailHtml
-//            searchResult += "      </div>"
-//            searchResult += "    </div>"
-//            searchResult += thumbnailHtml
-//            searchResult += "  </div>"
-//            searchResult += "</div>"
-//            $(".search-results-container").append(searchResult)
-         });
-         searchResults += "</div>"
+        searchResults += "</div>"
 
-         $('.search-results-container').append(searchResults)
+        renderSearchResults({
+            totalHits: json.totalHits,
+            requestTime: totalTime,
+            currentHits: json.hits.size,
+            postRenderCallback: function() {
+                var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
+                    rowHeight: 200,
+                    rowHeightOrphan: rows => Math.round(rows.heightAvg),
+                    itemSelector: '*',
+                    objSelector: 'figure',
+                    dataWidth: 'data-fld-width',
+                    dataHeight: 'data-fld-height',
+                });
+                fldGrd.update();
 
-         var fldGrd = new FldGrd(document.querySelector('.image-results-grid'), {
-             rowHeight: 200,
-             rowHeightOrphan: rows => Math.round(rows.heightAvg),
-             objSelector: 'img',
-             dataWidth: 'data-fld-width',
-             dataHeight: 'data-fld-height',
-         });
+                $('.search-image').on('click', function() {
+                    var imageTarget = $(this);
+                    renderImageModal(imageTarget);
+                });
+            }
+        }, searchResults)
+    });
+}
 
-         fldGrd.update();
+function renderImageModal(imageTarget) {
+    $(".search-image-modal").remove();
+    var modalContent = "<div class=\"search-image-modal\">"
+    modalContent += "<div class=\"centered\"><img src=\"" + imageTarget.data('src') + "\" /></div>"
+    modalContent +=  "<p><a href=\"" + imageTarget.data('reference') + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + imageTarget.data('host') + "</span><br />" + imageTarget.data('description') + "</a></p>"
+    modalContent += "</div>"
+    $('.modal-holding-zone').html(modalContent);
+    $(".search-image-modal").modal();
+}
 
+function updateDocumentResults(searchParams) {
+    var startTime = new Date().getTime();
+    var endpoint = new URL(window.location.origin + "/api/summits");
+    var page = searchParams.get("page")
 
-         if (json.totalHits > perPageResult && json.hits.length > 0) {
-             renderPagination(json, page, query)
-         }
+    endpoint.search = "?" + searchParams.toString();
 
-         if (json.totalHits < 1) {
-            console.log(json);
-            renderNoResultsMessage();
-         }
-     });
+    if (!isNaN(page) && page > 1) {
+        endpoint.searchParams.set("next", ((page - 1) * perPageResult));
+    }
+
+    endpoint.searchParams.delete("page")
+
+    $.getJSON(endpoint)
+    .fail(function(xhr, status, errorThrown) {
+        renderErrorMessage();
+     })
+    .done(function(json) {
+        var totalTime = new Date().getTime() - startTime;
+        var searchResults = "";
+
+        json.hits.forEach(function(hit) {
+            var thumbnailHtml = ""
+            var mobileThumbnailHtml = ""
+            var linkHtml = ""
+
+            if (hit.thumbnail != null) {
+                thumbnailHtml += "<div class=\"search-highlight-image-group\">"
+                thumbnailHtml += "  <a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+                thumbnailHtml += "</div>"
+                mobileThumbnailHtml += "<div class=\"search-highlight-mobile-image-group\">"
+                mobileThumbnailHtml += "<a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\"><img class=\"search-highlight-thumbnail\" src=\""+ hit.thumbnail + "\" /></a>"
+                mobileThumbnailHtml += "</div>"
+            }
+
+            linkHtml += "  <div class=\"search-result-link\">"
+            linkHtml += "    <div class=\"search-result-link-value\">"
+            linkHtml += "        <a href=\"" + hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.source + "</a>"
+            linkHtml += "    </div>"
+
+            if (hit.source.toLowerCase().endsWith(".pdf")) {
+                linkHtml += "<div class=\"search-result-link-label\">"
+                linkHtml += "  <span>PDF</span>"
+                linkHtml += "</div>"
+            }
+
+            linkHtml += "</div>"
+
+            var searchResult = "<div class=\"search-result\">"
+            searchResult += linkHtml
+            searchResult += "  <div class=\"search-result-highlight-group\">"
+            searchResult += "    <div class=\"search-result-highlight-text-group\">"
+            searchResult += "      <div class=\"search-result-title\">"
+            searchResult += "        <h5><a href=\""+ hit.source + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + hit.title + "</a></h5>"
+            searchResult += "      </div>"
+            searchResult += "      <div class=\"search-result-highlight\">"
+            searchResult += "        <p>" + hit.highlight + "...</p>"
+            searchResult +=          mobileThumbnailHtml
+            searchResult += "      </div>"
+            searchResult += "    </div>"
+            searchResult += thumbnailHtml
+            searchResult += "  </div>"
+            searchResult += "</div>"
+
+            searchResults += searchResult
+        });
+
+        renderSearchResults({
+            totalHits: json.totalHits,
+            requestTime: totalTime,
+            currentHits: json.hits.size,
+            postRenderCallback: null
+        }, searchResults)
+    });
+}
+
+function renderSearchResults(responseData, resultsHtml) {
+      var container = $('.search-results-container');
+      var searchFormContainer = $('.search-form-container')
+
+      var searchDetails = "<div class=\"search-results-details\">";
+      searchDetails += "<p>About " + responseData.totalHits + " result(s) found in " + responseData.requestTime + "ms</p>";
+      searchDetails += "</div>";
+
+      container.html(searchDetails)
+      searchFormContainer.addClass("has-query");
+
+     if (responseData.totalHits > 0) {
+        renderSearchTools();
+     }
+
+     container.append(resultsHtml)
+
+     if (responseData.postRenderCallback != null) {
+        responseData.postRenderCallback();
+     }
+
+     if (responseData.totalHits > perPageResult) {
+         renderPagination(responseData.totalHits)
+     }
+
+     if (responseData.totalHits < 1) {
+        renderNoResultsMessage();
+     }
+}
+
+function renderErrorMessage() {
+    $(".search-results-container").html(
+        "<div class='search-result-error'><p>Unable to process query at this time :(</p></div>"
+    )
 }
 
 function renderNoResultsMessage() {
@@ -260,10 +330,18 @@ function renderSearchTool(anchor, tool, url) {
     });
 }
 
-function renderPagination(json, page, query) {
+function renderPagination(totalHits) {
     var url = new URL(window.location.href);
-    var paginationData = getPaginationDisplayData(Math.min(json.totalHits, maxPaginatedResults), page, perPageResult)
-    $(".search-pagination-container").html("test")
+    var page = url.searchParams.get("page")
+
+    if (page == null || isNaN(page)) {
+        page = 1
+    }
+
+    page = Number(page) // If we do "10" + 4 we get 104... why javascript?!
+
+    var paginationData = getPaginationDisplayData(Math.min(totalHits, maxPaginatedResults), page, perPageResult)
+    $(".search-pagination-container").html("");
 
     var paginationHtml = "<ul><li>Pages: </li>"
 
