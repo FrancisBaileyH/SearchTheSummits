@@ -115,7 +115,7 @@ function updateImageResults(searchParams) {
             searchResults += "<div class=\"search-image-container\" data-fld-width=\"" + hit.imageWidth +"\" data-fld-height=\"" + hit.imageHeight + "\">"
             searchResults += "<figure>"
             searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\"/>"
-            searchResults += "<figcaption><a href=\"" + hit.referencingDocument + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + sourceUrl.host + "</span><br />" + hit.description + "</a></figcaption>"
+            searchResults += "<figcaption style=\"max-width: " + hit.imageWidth + "px;\"><a href=\"" + hit.referencingDocument + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + sourceUrl.host + "</span><br />" + hit.description + "</a></figcaption>"
             searchResults += "</figure>"
             searchResults += "</div>"
         });

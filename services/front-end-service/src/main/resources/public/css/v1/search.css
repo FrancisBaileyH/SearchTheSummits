@@ -106,9 +106,23 @@ nav.resource-menu .icon {
     padding-right: 0.4em;
 }
 
-nav.resource-menu ul > li.current-nav-page, nav.resource-menu ul > li:hover {
+nav.resource-menu ul > li.current-nav-page {
     border-bottom: 3px solid #5EA99C;
+}
+
+nav.resource-menu ul > li.current-nav-page, nav.resource-menu ul > li:hover {
     cursor: pointer;
+}
+
+.beta-label {
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #45626e;
+  color: white;
+  padding: 0 4px;
+  margin-left: 8px;
+  margin-top: 2px;
 }
 
 hr.sub-menu-divider {
