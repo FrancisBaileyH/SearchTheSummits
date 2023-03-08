@@ -31,7 +31,9 @@ import java.time.Duration
 open class HttpEngineConfiguration {
 
     @Bean
-    open fun httpClientEngine(): HttpClientEngine = CIO.create {  }
+    open fun httpClientEngine(): HttpClientEngine = CIO.create {
+        requestTimeout = 0 // let the retry plugin handle this
+    }
 }
 
 
@@ -58,13 +60,10 @@ open class ClientConfiguration(
             install(UserAgent) {
                 agent = CRAWLING_AGENT
             }
-            install(HttpRequestRetry) {
-                retryOnServerErrors(3)
-                exponentialDelay()
-            }
-           install(HttpTimeout) {
+            install(HttpTimeout) {
                requestTimeoutMillis = Duration.ofSeconds(30).toMillis()
-           }
+               socketTimeoutMillis = Duration.ofSeconds(30).toMillis()
+            }
             install(ContentEncoding) {
                 gzip()
                 deflate()
