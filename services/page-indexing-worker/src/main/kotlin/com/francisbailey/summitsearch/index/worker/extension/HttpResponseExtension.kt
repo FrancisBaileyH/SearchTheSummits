@@ -34,3 +34,7 @@ fun HttpStatusCode.isRedirect(): Boolean = when (value) {
     HttpStatusCode.SeeOther.value -> true
     else -> false
 }
+
+object ExperimentalContentType {
+    val xPdf = ContentType("application", "x-pdf")
+}

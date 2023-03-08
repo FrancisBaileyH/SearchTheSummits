@@ -3,17 +3,20 @@ package com.francisbailey.summitsearch.index.worker.crawler
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.engine.mock.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.plugins.*
 import io.ktor.client.statement.*
-import io.ktor.client.network.sockets.SocketTimeoutException
-import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.core.env.Environment
 import java.net.URL
+import java.time.Duration
 
 class HttpCrawlerClientTest {
 
@@ -127,7 +130,6 @@ class HttpCrawlerClientTest {
 
     @Test
     fun `throws RetryableEntityException when timeout occurs`() {
-
         val execeptions = listOf(
             SocketTimeoutException("test"),
             ConnectTimeoutException("test", null),
@@ -176,5 +178,25 @@ class HttpCrawlerClientTest {
         verify(transformer).invoke(check {
             assertEquals(ContentType.Text.Html, it.contentType())
         })
+    }
+
+    @Test
+    fun `times out on custom duration if one is supplied`() {
+        val engine = MockEngine(MockEngineConfig().apply {
+            addHandler {
+                withContext(Dispatchers.IO) {
+                    Thread.sleep(100) // this is not ideal...
+                }
+                respondOk("test")
+            }
+        })
+
+        val service = HttpCrawlerClient(clientConfiguration.httpClient(engine).config {
+            install(HttpRequestRetry) {
+                noRetry() // disable for timeout errors to speed up tests
+            }
+        })
+
+        assertThrows<RetryableEntityException> { service.get(url, validator, transformer, Duration.ofMillis(25)) }
     }
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.time.Duration
 
 @Service
 class HttpCrawlerClient(
@@ -19,8 +20,17 @@ class HttpCrawlerClient(
     private val log = KotlinLogging.logger { }
 
     fun <T> get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit, transformer: (HttpResponse) -> T): T {
+        return get(pageUrl, contentValidationInterceptor, transformer, null)
+    }
+
+    fun <T> get(
+        pageUrl: URL,
+        contentValidationInterceptor: (HttpResponse) -> Unit,
+        transformer: (HttpResponse) -> T,
+        timeout: Duration?
+    ): T {
         log.info { "Fetching content from: $pageUrl" }
-        val response = get(pageUrl, contentValidationInterceptor)
+        val response = get(pageUrl, contentValidationInterceptor, timeout)
 
         return try {
             transformer(response)
@@ -29,9 +39,15 @@ class HttpCrawlerClient(
         }
     }
 
-    private fun get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit): HttpResponse {
+    private fun get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit, requestTimeout: Duration?): HttpResponse {
         val response = try {
-            runBlocking { httpClient.get(pageUrl) }
+            runBlocking { httpClient.get(pageUrl) {
+                requestTimeout?.let {
+                    timeout {
+                        requestTimeoutMillis = requestTimeout.toMillis()
+                    }
+                }
+            }}
         } catch (e: Exception) {
             when (e) {
                 is HttpRequestTimeoutException,

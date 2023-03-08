@@ -1,12 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.extension.getLinks
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions

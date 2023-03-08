@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
+import com.francisbailey.summitsearch.index.worker.extension.ExperimentalContentType
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -7,11 +8,9 @@ import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.net.URL
+import java.time.Duration
 
 class PDFCrawlerServiceTest {
 
@@ -19,7 +18,9 @@ class PDFCrawlerServiceTest {
 
     private val httpCrawlerClient = mock<HttpCrawlerClient>()
 
-    private val pdfCrawler = PDFCrawlerService(httpCrawlerClient, pdfLoader)
+    private val timeout = Duration.ofSeconds(5)
+
+    private val pdfCrawler = PDFCrawlerService(httpCrawlerClient, pdfLoader, timeout)
 
     private val url = URL("https://francisbaileyh.com")
 
@@ -30,7 +31,7 @@ class PDFCrawlerServiceTest {
         val data = ByteArray(1)
         val response = getResponse(url, data, ContentType.Application.Pdf)
 
-        whenever(httpCrawlerClient.get<PDDocument>(any(), any(), any())).then {
+        whenever(httpCrawlerClient.get<PDDocument>(any(), any(), any(), any())).then {
             it.getArgument<(HttpResponse) -> Unit>(1).invoke(response)
             it.getArgument<(HttpResponse) -> Document>(2).invoke(response)
         }
@@ -41,6 +42,26 @@ class PDFCrawlerServiceTest {
 
         assertEquals(document, result)
         verify(pdfLoader).invoke(data)
+        verify(httpCrawlerClient).get(eq(url), any(), any<(HttpResponse) -> Document>(), eq(timeout))
+    }
+
+    @Test
+    fun `returns PDDocument when x-pdf type returned`() {
+        val data = ByteArray(1)
+        val response = getResponse(url, data, ExperimentalContentType.xPdf)
+
+        whenever(httpCrawlerClient.get<PDDocument>(any(), any(), any(), any())).then {
+            it.getArgument<(HttpResponse) -> Unit>(1).invoke(response)
+            it.getArgument<(HttpResponse) -> Document>(2).invoke(response)
+        }
+
+        whenever(pdfLoader(any())).thenReturn(document)
+
+        val result = pdfCrawler.get(url)
+
+        assertEquals(document, result)
+        verify(pdfLoader).invoke(data)
+        verify(httpCrawlerClient).get(eq(url), any(), any<(HttpResponse) -> Document>(), eq(timeout))
     }
 
     @Test
@@ -48,7 +69,7 @@ class PDFCrawlerServiceTest {
         val data = ByteArray(1)
         val response = getResponse(url, data, ContentType.Application.Json)
 
-        whenever(httpCrawlerClient.get<PDDocument>(any(), any(), any())).then {
+        whenever(httpCrawlerClient.get<PDDocument>(any(), any(), any(), any())).then {
             it.getArgument<(HttpResponse) -> Unit>(1).invoke(response)
             it.getArgument<(HttpResponse) -> Document>(2).invoke(response)
         }

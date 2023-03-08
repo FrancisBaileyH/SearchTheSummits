@@ -31,10 +31,7 @@ import java.time.Duration
 open class HttpEngineConfiguration {
 
     @Bean
-    open fun httpClientEngine() = CIO.create {
-        requestTimeout = Duration.ofSeconds(30).toMillis()
-        endpoint.socketTimeout = Duration.ofSeconds(30).toMillis()
-    }
+    open fun httpClientEngine(): HttpClientEngine = CIO.create {  }
 }
 
 
@@ -65,6 +62,9 @@ open class ClientConfiguration(
                 retryOnServerErrors(3)
                 exponentialDelay()
             }
+           install(HttpTimeout) {
+               requestTimeoutMillis = Duration.ofSeconds(30).toMillis()
+           }
             install(ContentEncoding) {
                 gzip()
                 deflate()

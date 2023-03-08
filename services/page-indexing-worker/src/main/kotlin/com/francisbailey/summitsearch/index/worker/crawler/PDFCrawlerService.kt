@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.crawler
 
+import com.francisbailey.summitsearch.index.worker.extension.ExperimentalContentType
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -9,23 +10,27 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.time.Duration
 
 @Service
 class PDFCrawlerService(
     private val httpCrawlerClient: HttpCrawlerClient,
-    private val pdfLoader: (ByteArray) -> PDDocument
+    private val pdfLoader: (ByteArray) -> PDDocument,
+    private val pdfFetchTimeout: Duration
 ) {
     private val log = KotlinLogging.logger { }
 
     @Autowired
     constructor(
-        httpCrawlerClient: HttpCrawlerClient
-    ): this(httpCrawlerClient, { PDDocument.load(it) })
+        httpCrawlerClient: HttpCrawlerClient,
+        pdfFetchTimeout: Duration
+    ): this(httpCrawlerClient, { PDDocument.load(it) }, pdfFetchTimeout)
 
     private val validator: (HttpResponse) -> Unit = {
         val isPDF = it.contentType()?.match(ContentType.Application.Pdf) ?: false
+        val isXPdf = it.contentType()?.match(ExperimentalContentType.xPdf) ?: false
 
-        if (!isPDF) {
+        if (!isPDF && !isXPdf) {
             throw UnparsableEntityException("Content type is not PDF: ${it.contentType()}")
         }
     }
@@ -38,7 +43,12 @@ class PDFCrawlerService(
     }
 
     fun get(url: URL): PDDocument {
-        return httpCrawlerClient.get(url, contentValidationInterceptor = validator, transformer = transformer)
+        return httpCrawlerClient.get(
+            url,
+            contentValidationInterceptor = validator,
+            transformer = transformer,
+            timeout = pdfFetchTimeout
+        )
     }
 
 }
