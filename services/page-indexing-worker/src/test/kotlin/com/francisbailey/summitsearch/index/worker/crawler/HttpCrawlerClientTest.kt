@@ -5,6 +5,8 @@ import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.*
 import io.ktor.client.statement.*
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.http.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -121,6 +123,32 @@ class HttpCrawlerClientTest {
         verify(validator).invoke(check {
             assertEquals(ContentType.Application.Rss, it.contentType())
         })
+    }
+
+    @Test
+    fun `throws RetryableEntityException when timeout occurs`() {
+
+        val execeptions = listOf(
+            SocketTimeoutException("test"),
+            ConnectTimeoutException("test", null),
+            HttpRequestTimeoutException("test", null)
+        )
+
+        execeptions.forEach { exception ->
+            val engine = MockEngine(MockEngineConfig().apply {
+                addHandler {
+                    throw exception
+                }
+            })
+
+            val service = HttpCrawlerClient(clientConfiguration.httpClient(engine).config {
+                install(HttpRequestRetry) {
+                    noRetry() // disable for timeout errors to speed up tests
+                }
+            })
+
+            assertThrows<RetryableEntityException> { service.get(url, validator, transformer) }
+        }
     }
 
     @Test

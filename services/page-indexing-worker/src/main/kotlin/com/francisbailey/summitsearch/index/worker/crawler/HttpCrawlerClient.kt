@@ -2,6 +2,8 @@ package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.extension.isRedirect
 import io.ktor.client.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -28,7 +30,18 @@ class HttpCrawlerClient(
     }
 
     private fun get(pageUrl: URL, contentValidationInterceptor: (HttpResponse) -> Unit): HttpResponse {
-        val response = runBlocking { httpClient.get(pageUrl) }
+        val response = try {
+            runBlocking { httpClient.get(pageUrl) }
+        } catch (e: Exception) {
+            when (e) {
+                is HttpRequestTimeoutException,
+                is ConnectTimeoutException,
+                is SocketTimeoutException -> {
+                    throw RetryableEntityException("Request timeout on: $pageUrl. ${e.localizedMessage}")
+                }
+                else -> throw e
+            }
+        }
 
         if (response.status.value < 300) {
             contentValidationInterceptor(response)
