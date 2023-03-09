@@ -64,6 +64,10 @@ open class ClientConfiguration(
                requestTimeoutMillis = Duration.ofSeconds(30).toMillis()
                socketTimeoutMillis = Duration.ofSeconds(30).toMillis()
             }
+            install(HttpRequestRetry) {
+               retryOnServerErrors(2)
+               exponentialDelay()
+            }
             install(ContentEncoding) {
                 gzip()
                 deflate()

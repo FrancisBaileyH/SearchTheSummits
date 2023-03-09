@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.index.worker.indexing
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KLogger
@@ -123,7 +124,7 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
                 meter.counter("pipeline.step.success", *tags).increment()
             }
         } catch (e: Exception) {
-            if (e is NonRetryableException) {
+            if (e is NonRetryableEntityException) {
                 processedItem.shouldRetry = false
                 log.debug(e) { "Failed to execute step: ${step::class.simpleName}" }
                 meter.counter("pipeline.step.noretry", *tags).increment()

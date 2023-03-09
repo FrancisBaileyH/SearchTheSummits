@@ -3,7 +3,8 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
@@ -196,6 +197,48 @@ class PipelineTest: StepTest() {
         verify(finalStep).process(org.mockito.kotlin.check {
             assertEquals(item, it)
         }, any())
+    }
+
+    @Test
+    fun `does not retry on NonRetryableEntityException`() {
+        val pipeline = pipeline {
+            route(IndexTaskType.PDF) {
+                firstRun(step)
+                    .then(nextStep)
+            }
+        }
+
+        whenever(step.process(any(), any())).thenThrow(NonRetryableEntityException("Test"))
+
+        val result = pipeline.process(task, monitor)
+
+        verify(step).process(org.mockito.kotlin.check {
+            assertEquals(task, it.task)
+        }, any())
+
+        verifyNoInteractions(nextStep)
+        assertFalse(result)
+    }
+
+    @Test
+    fun `does retry on other exceptions`() {
+        val pipeline = pipeline {
+            route(IndexTaskType.PDF) {
+                firstRun(step)
+                    .then(nextStep)
+            }
+        }
+
+        whenever(step.process(any(), any())).thenThrow(RuntimeException("Test"))
+
+        val result = pipeline.process(task, monitor)
+
+        verify(step).process(org.mockito.kotlin.check {
+            assertEquals(task, it.task)
+        }, any())
+
+        verifyNoInteractions(nextStep)
+        assertTrue(result)
     }
 
 }
