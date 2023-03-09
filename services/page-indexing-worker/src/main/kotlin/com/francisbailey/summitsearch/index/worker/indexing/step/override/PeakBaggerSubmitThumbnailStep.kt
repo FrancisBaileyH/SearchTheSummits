@@ -54,7 +54,7 @@ class PeakBaggerSubmitThumbnailStep(
             }
         }
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 
 }

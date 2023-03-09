@@ -20,7 +20,7 @@ class IndexHtmlPageStep(
             return entity
         }
 
-        monitor.meter.timer("$metricPrefix.indexservice.add.latency").recordCallable {
+        monitor.meter.timer("indexservice.add.latency").recordCallable {
             monitor.dependencyCircuitBreaker.executeCallable {
                 summitSearchIndexService.indexContent(
                     SummitSearchPutHtmlPageRequest(
@@ -33,8 +33,8 @@ class IndexHtmlPageStep(
         }
 
         log.info { "Successfully completed indexing task for: ${entity.task.source} with ${entity.task.details.pageUrl}" }
-        monitor.meter.counter("$metricPrefix.indexservice.add.success", "host" , entity.task.details.pageUrl.host).increment()
+        monitor.meter.counter("indexservice.add.success", "host" , entity.task.details.pageUrl.host).increment()
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 }

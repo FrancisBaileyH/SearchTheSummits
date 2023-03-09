@@ -45,6 +45,6 @@ class SubmitThumbnailStep(
             }
         }
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 }

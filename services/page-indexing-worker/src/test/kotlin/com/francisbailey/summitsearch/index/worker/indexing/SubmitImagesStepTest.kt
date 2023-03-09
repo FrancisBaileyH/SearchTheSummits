@@ -56,12 +56,14 @@ class SubmitImagesStepTest: StepTest() {
 
         val item = PipelineItem(task = defaultIndexTask, payload = document)
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
         verify(linkDiscoveryService).submitImages(eq(defaultIndexTask), org.mockito.kotlin.check {
             assertEquals(2, it.size)
             assertTrue(it.containsAll(expectedDiscoveries))
         })
+
+        assertTrue(result.continueProcessing)
     }
 
 }

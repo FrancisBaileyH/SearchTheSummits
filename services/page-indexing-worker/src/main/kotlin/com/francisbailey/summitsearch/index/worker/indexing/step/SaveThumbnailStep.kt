@@ -19,30 +19,25 @@ class SaveThumbnailStep(
     private val summitSearchIndexService: SummitSearchIndexService
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        return try {
-            val context = entity.task.details.getContext<ImageTaskContext>()!!
+        val context = entity.task.details.getContext<ImageTaskContext>()!!
 
-            monitor.dependencyCircuitBreaker.executeCallable {
-                val reference = monitor.meter.timer("$metricPrefix.imagestore.latency").recordCallable {
-                    imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter), ImageStoreType.THUMBNAIL)
-                }!!
+        monitor.dependencyCircuitBreaker.executeCallable {
+            val reference = monitor.meter.timer("imagestore.latency").recordCallable {
+                imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter), ImageStoreType.THUMBNAIL)
+            }!!
 
-                monitor.meter.timer("$metricPrefix.indexservice.latency").recordCallable {
-                    summitSearchIndexService.putThumbnails(
-                        SummitSearchPutThumbnailRequest(
-                            source = context.referencingURL,
-                            dataStoreReferences = listOf(reference.toString())
-                        )
+            monitor.meter.timer("indexservice.latency").recordCallable {
+                summitSearchIndexService.putThumbnails(
+                    SummitSearchPutThumbnailRequest(
+                        source = context.referencingURL,
+                        dataStoreReferences = listOf(reference.toString())
                     )
-                }!!
-            }
-            monitor.meter.counter("$metricPrefix.indexservice.add.success", "host", entity.task.details.pageUrl.host)
-
-            entity
-        } catch (e: Exception) {
-            log.error(e) { "Failed to save thumbnail from: ${entity.task.details.pageUrl}" }
-            entity
+                )
+            }!!
         }
+        monitor.meter.counter("indexservice.add.success", "host", entity.task.details.pageUrl.host)
+
+        return entity.apply { continueProcessing = true }
     }
 
 

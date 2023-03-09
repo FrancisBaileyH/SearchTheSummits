@@ -39,7 +39,7 @@ class IndexPDFStep(
             log.info { "Indexing ${entity.task.details.pageUrl}" }
 
             if (it.numberOfPages <= pdfPagePartitionThreshold) {
-                monitor.meter.timer("$metricPrefix.indexservice.add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+                monitor.meter.timer("indexservice.add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
                     monitor.dependencyCircuitBreaker.executeCallable {
                         summitSearchIndexService.indexContent(buildRequest(
                             textStripper.getText(it),
@@ -69,7 +69,7 @@ class IndexPDFStep(
                 }
 
                 requests.chunked(summitSearchIndexService.maxBulkIndexRequests).forEach {
-                    monitor.meter.timer("$metricPrefix.indexservice.bulk-add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+                    monitor.meter.timer("indexservice.bulk-add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
                         monitor.dependencyCircuitBreaker.executeCallable {
                             summitSearchIndexService.indexPartitionedContent(it)
                         }
@@ -78,8 +78,9 @@ class IndexPDFStep(
             }
         }
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
+
     private fun buildRequest(textContent: String, pdfUrl: URL, titleSuffix: String? = ""): SummitSearchIndexRequest {
         val condensedContent = textContent.replace("\r\n", " ")
 

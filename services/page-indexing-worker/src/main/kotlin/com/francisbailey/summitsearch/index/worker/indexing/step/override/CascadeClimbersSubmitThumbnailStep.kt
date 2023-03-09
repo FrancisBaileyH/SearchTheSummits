@@ -14,6 +14,6 @@ import org.springframework.stereotype.Component
 class CascadeClimbersSubmitThumbnailStep: Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         log.warn { "Skipping thumbnail for CascadeClimbers" }
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 }

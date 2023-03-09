@@ -33,7 +33,7 @@ class SubmitImagesStep(
             linkDiscoveryService.submitImages(entity.task, imageDiscoveries)
         }
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 
 }

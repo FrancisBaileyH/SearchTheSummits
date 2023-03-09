@@ -75,13 +75,17 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
+        val pipelineItem = mock<PipelineItem<DatedDocument>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(contentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitImagesStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
@@ -112,7 +116,10 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<ImmutableImage>(task = task, payload = null)
+        val pipelineItem = mock<PipelineItem<ImmutableImage>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchImageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(generateThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
@@ -147,7 +154,10 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<ImmutableImage>(task = task, payload = null)
+        val pipelineItem = mock<PipelineItem<ImmutableImage>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchImageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(generateImagePreviewStep.process(any(), any())).thenReturn(pipelineItem)
@@ -181,7 +191,11 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<PDDocument>(task = task, payload = null)
+
+        val pipelineItem = mock<PipelineItem<PDDocument>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchPDFStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexPDFStep.process(any(), any())).thenReturn(pipelineItem)
@@ -214,13 +228,17 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
+        val pipelineItem = mock<PipelineItem<DatedDocument>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(peakBaggerSubmitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(peakBaggerContentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitImagesStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
@@ -253,13 +271,17 @@ class PipelineConfigurationTest: StepTest() {
             )
         )
 
-        val pipelineItem = PipelineItem<DatedDocument>(task = task, payload = null)
+        val pipelineItem = mock<PipelineItem<DatedDocument>> {
+            on(mock.task).thenReturn(task)
+            on(mock.continueProcessing).thenReturn(true)
+        }
 
         whenever(fetchHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(submitLinksStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(indexHtmlPageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(cascadeClimbersSubmitThumbnailStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(contentValidatorStep.process(any(), any())).thenReturn(pipelineItem)
+        whenever(submitImagesStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 

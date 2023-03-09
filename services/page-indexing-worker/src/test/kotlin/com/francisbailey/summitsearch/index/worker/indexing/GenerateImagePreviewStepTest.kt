@@ -3,7 +3,9 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.indexing.step.GenerateImagePreviewStep
 import com.sksamuel.scrimage.ImmutableImage
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -25,15 +27,12 @@ class GenerateImagePreviewStepTest: StepTest() {
         val modifiedItem = step.process(item, monitor)
 
         verify(image).scaleToHeight(200)
-        Assertions.assertTrue(modifiedItem.continueProcessing)
+        assertTrue(modifiedItem.continueProcessing)
     }
 
     @Test
     fun `should stop processing if scaling fails`() {
         whenever(image.scaleToHeight(any())).thenThrow(RuntimeException("Test"))
-
-        val modifiedItem = step.process(item, monitor)
-
-        Assertions.assertFalse(modifiedItem.continueProcessing)
+        assertThrows<RuntimeException> { step.process(item, monitor) }
     }
 }

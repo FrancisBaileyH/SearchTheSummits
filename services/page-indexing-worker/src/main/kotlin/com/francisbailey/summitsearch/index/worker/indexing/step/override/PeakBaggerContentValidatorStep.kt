@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 class PeakBaggerContentValidatorStep: Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         val page = entity.task.details.pageUrl
+        entity.continueProcessing = true
 
         if (page.path.startsWith("/climber/ascent.aspx")) {
             val reportContentTitle = entity.payload?.document?.selectFirst("h2:contains(Ascent Trip Report)")

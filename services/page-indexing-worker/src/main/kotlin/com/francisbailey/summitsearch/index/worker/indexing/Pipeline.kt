@@ -21,7 +21,16 @@ interface ChainableRoute<T> {
     fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
 }
 
-
+/**
+ * Step executed by the pipeline.
+ *
+ * Each step must expliclity set item.continueProcessing to true
+ * in order for the pipeline to continue on to the next step.
+ *
+ * NonRetryableEntityException will result in the task being deleted
+ * All other exceptions will result in the task being retried until it
+ * is sent to the DLQ. On any exception, the pipeline will be aborted.
+ */
 interface Step<T> {
     fun process(entity: PipelineItem<T>, monitor: PipelineMonitor): PipelineItem<T>
     val log: KLogger
@@ -35,7 +44,7 @@ data class PipelineItem<T> (
     val task: IndexTask,
     var payload: T?,
     var continueProcessing: Boolean = false,
-    var canRetry: Boolean = true
+    var shouldRetry: Boolean = false
 )
 
 data class PipelineMonitor(
@@ -63,7 +72,7 @@ class Pipeline {
             "Task type: ${task.details.taskType} has no handler in pipeline"
         }
 
-        return mappedRoute.execute(task, monitor).canRetry
+        return mappedRoute.execute(task, monitor).shouldRetry
     }
 }
 
@@ -78,17 +87,15 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
 
 
     /**
-     * For now, an exception does not stop continuation of the pipeline. Each step
-     * must explicitly call for process continuation to stop. This can be changed in
-     * the future, but for now we'll leave it as is.
+     * Each step must explicitly set continueProcessing to true
      */
     fun execute(task: IndexTask, monitor: PipelineMonitor): PipelineItem<T> {
         val meter = monitor.meter
         var item: PipelineItem<T> = PipelineItem(task, null)
 
         for (nextStep in steps) {
+            item.continueProcessing = false
             val step = getOverrideOrElse(nextStep, item)
-            println(step.metricPrefix)
             val tags = arrayOf("step", step.metricPrefix, "queue", task.source)
 
             item = executeStep(step, item, monitor, *tags)
@@ -117,8 +124,12 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
             }
         } catch (e: Exception) {
             if (e is NonRetryableException) {
+                processedItem.shouldRetry = false
+                log.debug(e) { "Failed to execute step: ${step::class.simpleName}" }
                 meter.counter("pipeline.step.noretry", *tags).increment()
-                processedItem.canRetry = false
+            } else {
+                processedItem.shouldRetry = true
+                log.error(e) { "Failed to execute step: ${step::class.simpleName} on: ${item.task.details}" }
             }
 
             meter.counter("pipeline.step.failure", *tags, "exception", e::class.simpleName).increment()

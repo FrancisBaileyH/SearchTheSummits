@@ -28,8 +28,8 @@ class SubmitLinksStep(
         }
 
         linkDiscoveryService.submitDiscoveries(entity.task, discoveries)
-        monitor.meter.counter("$metricPrefix.links.discovered").increment(discoveries.size.toDouble())
+        monitor.meter.counter("links.discovered").increment(discoveries.size.toDouble())
 
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 }

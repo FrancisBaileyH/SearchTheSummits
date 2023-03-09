@@ -23,11 +23,6 @@ class CheckImageExistsStepTest: StepTest() {
         payload = null,
         task = defaultIndexTask
     )
-    @Test
-    fun `aborts processing if exception thrown when checking image store`() {
-        whenever(imageWriterStore.exists(any(), any())).thenThrow(RuntimeException("Test"))
-        assertFalse(step.process(item, monitor).continueProcessing)
-    }
 
     @Test
     fun `aborts processing if image already exists in store`() {

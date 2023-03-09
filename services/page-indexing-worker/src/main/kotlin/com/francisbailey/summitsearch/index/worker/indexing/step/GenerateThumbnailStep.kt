@@ -10,12 +10,9 @@ import org.springframework.stereotype.Component
 class GenerateThumbnailStep: Step<ImmutableImage> {
 
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        return try {
-            entity.apply {
-                payload = payload?.scaleToHeight(DEFAULT_HEIGHT)
-            }
-        } catch (e: Exception) {
-            entity.apply { continueProcessing = false }
+        return entity.apply {
+            payload = payload?.scaleToHeight(DEFAULT_HEIGHT)
+            continueProcessing = true
         }
     }
 

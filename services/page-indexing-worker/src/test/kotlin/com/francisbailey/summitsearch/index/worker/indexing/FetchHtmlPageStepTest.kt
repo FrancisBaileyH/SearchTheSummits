@@ -16,6 +16,7 @@ import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import java.time.LocalDateTime
 
@@ -49,7 +50,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
         assertEquals(htmlContent, result.payload!!.document)
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
 
         verify(perQueuecircuitBreaker).executeCallable<Unit>(any())
         verifyNoInteractions(indexService)
@@ -59,23 +60,17 @@ class FetchHtmlPageStepTest: StepTest() {
     fun `deletes page contents from index when 40X error is encountered`() {
         whenever(pageCrawlerService.get(any())).thenThrow(NonRetryableEntityException("test"))
 
-        val result = step.process(pipelineItem, monitor)
-
-        assertFalse(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
         verify(indexService, never()).indexContent(any<SummitSearchPutHtmlPageRequest>())
         verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.pageUrl)))
     }
 
     @Test
-    fun `does not delete task when retryable exceptions occur`() {
+    fun `does not throw nonretryableexception when retryable exceptions occur`() {
         whenever(pageCrawlerService.get(any())).thenThrow(RetryableEntityException("test"))
 
-        val result = step.process(pipelineItem, monitor)
-
-        assertFalse(result.continueProcessing)
-        assertTrue(result.canRetry)
+        assertThrows<RetryableEntityException> { step.process(pipelineItem, monitor) }
 
         verifyNoInteractions(indexService)
     }
@@ -86,11 +81,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
         whenever(pageCrawlerService.get(any())).thenThrow(RedirectedEntityException(location, "test"))
 
-        val result = step.process(pipelineItem, monitor)
-
-
-        assertFalse(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
         verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.HTML, location)))
         verifyNoInteractions(indexService)
@@ -110,10 +101,9 @@ class FetchHtmlPageStepTest: StepTest() {
         assertEquals(htmlContent, result.payload!!.document)
         assertEquals(date, result.payload!!.pageCreationDate)
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
 
         verify(perQueuecircuitBreaker).executeCallable<Unit>(any())
         verifyNoInteractions(indexService)
-
     }
 }

@@ -31,45 +31,51 @@ class FetchHtmlPageStep(
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        return try {
-            monitor.meter.timer("$metricPrefix.latency.page", "host", entity.task.details.pageUrl.host).recordCallable {
-                monitor.sourceCircuitBreaker.executeCallable {
-                    getDocument(entity, monitor)
-                }
-            }!!
-        } catch (e: Exception) {
-            log.error(e) { "Failed to fetch page: ${entity.task.details.pageUrl}" }
-            entity.apply { canRetry = true }
-            entity.apply { continueProcessing = false }
-        }
+        return monitor.meter.timer("page.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+            monitor.sourceCircuitBreaker.executeCallable {
+                getDocument(entity, monitor)
+            }
+        }!!
     }
 
     private fun getDocument(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
+        val host = entity.task.details.pageUrl.host
+
         return try {
             val document = pageCrawlerService.get(entity.task.details.pageUrl)
-
-            val date = monitor.meter.timer("${metricPrefix}.dateguess.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+            val date = monitor.meter.timer("dateguess.latency", "host", host).recordCallable {
                 htmlDateGuesser.findDate(entity.task.details.pageUrl, document)
             }
 
             if (date == null) {
-                monitor.meter.counter("${metricPrefix}.dateguess.miss", "host", entity.task.details.pageUrl.host).increment()
+                monitor.meter.counter("dateguess.miss", "host", host).increment()
             }
 
-            entity.apply { payload = DatedDocument(pageCreationDate = date, document = document) }
-        } catch (e: RedirectedEntityException) {
-            e.location?.run {
-                monitor.meter.counter("$metricPrefix.redirects").increment()
-                linkDiscoveryService.submitDiscoveries(entity.task, listOf(Discovery(IndexTaskType.HTML, this)))
+            entity.apply {
+                payload = DatedDocument(
+                    pageCreationDate = date,
+                    document = document
+                )
+                continueProcessing = true
             }
-            entity.apply { continueProcessing = false }
-        } catch (e: NonRetryableEntityException) {
-            monitor.dependencyCircuitBreaker.executeCallable {
-                indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
-                monitor.meter.counter("$metricPrefix.indexservice.delete").increment()
-                log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
+        } catch (e: Exception) {
+            when (e) {
+                is RedirectedEntityException -> {
+                    e.location?.run {
+                        monitor.meter.counter("page.redirects").increment()
+                        linkDiscoveryService.submitDiscoveries(entity.task, listOf(Discovery(IndexTaskType.HTML, this)))
+                    }
+                }
+                is NonRetryableEntityException -> {
+                    monitor.dependencyCircuitBreaker.executeCallable {
+                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
+                        monitor.meter.counter("indexservice.delete").increment()
+                        log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
+                    }
+                }
             }
-            entity.apply { continueProcessing = false }
+
+            throw e
         }
     }
 }

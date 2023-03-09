@@ -6,7 +6,6 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitLinksStep
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -44,7 +43,7 @@ class SubmitLinksStepTest: StepTest() {
         val result = step.process(item, monitor)
 
         Assertions.assertTrue(result.continueProcessing)
-        Assertions.assertFalse(result.canRetry)
+        Assertions.assertFalse(result.shouldRetry)
         verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, links)
     }
 
@@ -74,7 +73,7 @@ class SubmitLinksStepTest: StepTest() {
         val result = step.process(item, monitor)
 
         Assertions.assertTrue(result.continueProcessing)
-        Assertions.assertFalse(result.canRetry)
+        Assertions.assertFalse(result.shouldRetry)
         verify(linkDiscoveryService).submitDiscoveries(any(), org.mockito.kotlin.check {
             assertEquals(expectedLinks.first(), it.first())
             assertEquals(expectedLinks.component2(), it.component2())

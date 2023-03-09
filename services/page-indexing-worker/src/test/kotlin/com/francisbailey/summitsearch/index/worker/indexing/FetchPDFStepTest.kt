@@ -9,6 +9,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.FetchPDFStep
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -52,22 +53,7 @@ class FetchPDFStepTest: StepTest() {
 
         val item = PipelineItem<PDDocument>(task, null)
 
-        val result = step.process(item, monitor)
-
-        assertFalse(result.continueProcessing)
-        assertTrue(result.canRetry)
-    }
-
-    @Test
-    fun `does not continue processing on any exception`() {
-        whenever(pdfCrawlerService.get(any())).thenThrow(RetryableEntityException("test"))
-
-        val item = PipelineItem<PDDocument>(task, null)
-
-        val result = step.process(item, monitor)
-
-        assertFalse(result.continueProcessing)
-        assertTrue(result.canRetry)
+        assertThrows<RetryableEntityException> { step.process(item, monitor) }
     }
 
 }

@@ -6,14 +6,15 @@ import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitThumbnailStep
 import org.jsoup.Jsoup
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 
 class SubmitThumbnailStepTest: StepTest() {
-
 
     private val indexingTaskQueueClient = mock<IndexingTaskQueueClient>()
 
@@ -31,8 +32,9 @@ class SubmitThumbnailStepTest: StepTest() {
             )
         )
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
+        assertTrue(result.continueProcessing)
         verifyNoInteractions(indexingTaskQueueClient)
     }
 
@@ -65,7 +67,7 @@ class SubmitThumbnailStepTest: StepTest() {
             )
         )
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
         verify(indexingTaskQueueClient).addTask(org.mockito.kotlin.check {
             assertEquals(image.imageSrc, it.details.pageUrl.toString())
@@ -74,5 +76,6 @@ class SubmitThumbnailStepTest: StepTest() {
             assertEquals(defaultIndexTask.details.pageUrl, context!!.referencingURL)
             assertEquals(image.caption, context.description)
         })
+        assertTrue(result.continueProcessing)
     }
 }

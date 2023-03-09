@@ -53,6 +53,6 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
         })
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
     }
 }

@@ -4,6 +4,9 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Timer
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -16,6 +19,16 @@ import java.util.*
 
 open class StepTest {
 
+    class TestMeterRegistry: SimpleMeterRegistry() {
+        override fun timer(name: String, vararg tags: String?): Timer {
+            return super.timer(name)
+        }
+
+        override fun counter(name: String, vararg tags: String?): Counter {
+            return super.counter(name)
+        }
+    }
+
     protected val perQueuecircuitBreaker = mock<CircuitBreaker> {
         on(mock.executeCallable<Unit>(any())).thenCallRealMethod()
     }
@@ -27,7 +40,7 @@ open class StepTest {
     protected val monitor = PipelineMonitor(
         sourceCircuitBreaker = perQueuecircuitBreaker,
         dependencyCircuitBreaker = depencencyCircuitBreaker,
-        meter = SimpleMeterRegistry()
+        meter = TestMeterRegistry()
     )
 
     protected val defaultIndexTask = IndexTask(

@@ -14,20 +14,16 @@ class ThumbnailValidationStep(
     private val summitSearchIndexService: SummitSearchIndexService
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        try {
-            val referencingUrl = entity.task.details.getContext<ImageTaskContext>()?.referencingURL!!
-            val request = SummitSearchExistsRequest(referencingUrl)
+        val referencingUrl = entity.task.details.getContext<ImageTaskContext>()?.referencingURL!!
+        val request = SummitSearchExistsRequest(referencingUrl)
 
-            monitor.dependencyCircuitBreaker.executeCallable {
-                if (!summitSearchIndexService.pageExists(request)) {
-                    log.warn { "Thumbnail has no associated document: $referencingUrl in the index. Skipping." }
-                    entity.continueProcessing = false
-                }
+        monitor.dependencyCircuitBreaker.executeCallable {
+            if (!summitSearchIndexService.pageExists(request)) {
+                log.warn { "Thumbnail has no associated document: $referencingUrl in the index. Skipping." }
+                entity.continueProcessing = false
+            } else {
+                entity.continueProcessing = true
             }
-
-        } catch (e: Exception) {
-            log.error(e) { "Failed to check if referencing URL is indexed already" }
-            entity.continueProcessing = false
         }
 
         return entity

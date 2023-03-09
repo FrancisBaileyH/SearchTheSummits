@@ -11,6 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -47,13 +48,7 @@ class ThumbnailValidationStepTest: StepTest() {
     @Test
     fun `does not continue processing on exception`() {
         whenever(indexService.pageExists(any())).thenThrow(RuntimeException("Test Failure"))
-
-        val result = step.process(item, monitor)
-
-        assertFalse(result.continueProcessing)
-        verify(indexService).pageExists(org.mockito.kotlin.check {
-            assertEquals(task.details.getContext<ImageTaskContext>()?.referencingURL, it.source)
-        })
+        assertThrows<RuntimeException> { step.process(item, monitor) }
     }
 
     @Test

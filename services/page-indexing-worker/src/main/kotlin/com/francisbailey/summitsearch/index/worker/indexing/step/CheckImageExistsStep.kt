@@ -6,7 +6,6 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
-import com.francisbailey.summitsearch.indexservice.extension.normalizeWithoutSlash
 import com.sksamuel.scrimage.ImmutableImage
 import org.springframework.stereotype.Component
 
@@ -21,25 +20,21 @@ class CheckImageExistsStep(
     private val imageWriterStore: ImageWriterStore
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        return try {
-            val normalizedUrl = entity.task.details.pageUrl.stripQueryAndFragment()
+        val normalizedUrl = entity.task.details.pageUrl.stripQueryAndFragment()
 
-            val exists = monitor.dependencyCircuitBreaker.executeCallable {
-                log.info { "Checking if $normalizedUrl exists in image store" }
-                imageWriterStore.exists(normalizedUrl, ImageStoreType.STANDARD)
-            }
-
-            if (exists) {
-                monitor.meter.counter("image.skipped" , "reason", "exists", "step", metricPrefix).increment()
-                log.warn { "File: $normalizedUrl exists in image store. Skipping" }
-                entity.apply { continueProcessing = false }
-            } else {
-                entity.apply { continueProcessing = true }
-            }
-        } catch (e: Exception) {
-            log.error(e) { "Failed to check if image exists. Aborting pipeline" }
-            entity.apply { continueProcessing = false }
+        val exists = monitor.dependencyCircuitBreaker.executeCallable {
+            log.info { "Checking if $normalizedUrl exists in image store" }
+            imageWriterStore.exists(normalizedUrl, ImageStoreType.STANDARD)
         }
 
+        if (exists) {
+            monitor.meter.counter("image.skipped" , "reason", "exists").increment()
+            log.warn { "File: $normalizedUrl exists in image store. Skipping" }
+            entity.continueProcessing = false
+        } else {
+            entity.continueProcessing = true
+        }
+
+        return entity
     }
 }

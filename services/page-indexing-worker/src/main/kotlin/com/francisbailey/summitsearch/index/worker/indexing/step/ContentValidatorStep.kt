@@ -12,6 +12,6 @@ import org.springframework.stereotype.Component
 @Component
 class ContentValidatorStep: Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        return entity
+        return entity.apply { continueProcessing = true }
     }
 }

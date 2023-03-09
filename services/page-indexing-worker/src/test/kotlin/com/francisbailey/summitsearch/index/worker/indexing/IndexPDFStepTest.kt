@@ -69,7 +69,7 @@ class IndexPDFStepTest: StepTest() {
         })
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
     }
 
     @Test
@@ -105,7 +105,7 @@ class IndexPDFStepTest: StepTest() {
         }
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
     }
 
     @Test
@@ -141,7 +141,7 @@ class IndexPDFStepTest: StepTest() {
         }
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
     }
 
     @Test
@@ -160,6 +160,6 @@ class IndexPDFStepTest: StepTest() {
         verify(summitSearchIndexService, times(3)).indexPartitionedContent(any())
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.canRetry)
+        assertFalse(result.shouldRetry)
     }
 }

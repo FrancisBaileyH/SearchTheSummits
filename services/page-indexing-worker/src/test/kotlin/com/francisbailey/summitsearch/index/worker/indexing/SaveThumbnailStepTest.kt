@@ -12,7 +12,9 @@ import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.PngWriter
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -70,14 +72,14 @@ class SaveThumbnailStepTest: StepTest() {
         whenever(image.bytes(any())).thenReturn(imageData)
         whenever(imageStore.save(any<URL>(), any(), any())).thenReturn(referenceStoreUrl)
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
         verify(imageStore).save(imageSrc, imageData, ImageStoreType.THUMBNAIL)
         verify(index).putThumbnails(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.source)
             assertEquals(listOf(referenceStoreUrl.toString()), it.dataStoreReferences)
         })
-
+        assertTrue(result.continueProcessing)
     }
 
 }

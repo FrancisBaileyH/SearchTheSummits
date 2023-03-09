@@ -39,7 +39,7 @@ class IndexHtmlPageStepTest: StepTest() {
         val result = step.process(pipelineItem, monitor)
 
         Assertions.assertTrue(result.continueProcessing)
-        Assertions.assertFalse(result.canRetry)
+        Assertions.assertFalse(result.shouldRetry)
 
         verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
@@ -62,8 +62,8 @@ class IndexHtmlPageStepTest: StepTest() {
 
         val result = step.process(pipelineItem, monitor)
 
-        Assertions.assertTrue(result.continueProcessing)
-        Assertions.assertFalse(result.canRetry)
+        Assertions.assertFalse(result.continueProcessing)
+        Assertions.assertFalse(result.shouldRetry)
 
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
         verifyNoInteractions(indexService)

@@ -13,6 +13,7 @@ import com.sksamuel.scrimage.nio.PngWriter
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -71,7 +72,7 @@ class SaveImageStepTest: StepTest() {
         whenever(image.bytes(any())).thenReturn(imageData)
         whenever(imageStore.save(any<URL>(), any(), any())).thenReturn(referenceStoreUrl)
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
         verify(imageStore).save(imageSrc, imageData, ImageStoreType.STANDARD)
         verify(index).indexImage(org.mockito.kotlin.check {
@@ -84,6 +85,7 @@ class SaveImageStepTest: StepTest() {
             assertEquals(0, it.widthPx)  // for now just rely on the mocks default of 0...
         })
 
+        assertTrue(result.continueProcessing)
     }
 
     @Test
@@ -121,7 +123,7 @@ class SaveImageStepTest: StepTest() {
         whenever(image.bytes(any())).thenReturn(imageData)
         whenever(imageStore.save(any<URL>(), any(), any())).thenReturn(referenceStoreUrl)
 
-        step.process(item, monitor)
+        val result = step.process(item, monitor)
 
         verify(imageStore).save(URL("https://www.test.com/some/path/here/image.jpeg"), imageData, ImageStoreType.STANDARD)
         verify(index).indexImage(org.mockito.kotlin.check {
@@ -133,6 +135,7 @@ class SaveImageStepTest: StepTest() {
             assertEquals(URL("https://www.test.com/some/path/here/image.jpeg"), it.normalizedSource)
         })
 
+        assertTrue(result.continueProcessing)
     }
 
 }
