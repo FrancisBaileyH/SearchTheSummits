@@ -17,13 +17,21 @@ class PipelineTest: StepTest() {
     abstract class TestStep: Step<Unit>
     abstract class OverrideStep: Step<Unit>
 
-    private val step = mock<TestStep>()
+    private val step = mock<TestStep> {
+        on(mock.metricPrefix).thenReturn("Step")
+    }
 
-    private val nextStep = mock<Step<Unit>>()
+    private val nextStep = mock<Step<Unit>> {
+        on(mock.metricPrefix).thenReturn("NextStep")
+    }
 
-    private val overrideStep = mock<OverrideStep>()
+    private val overrideStep = mock<OverrideStep> {
+        on(mock.metricPrefix).thenReturn("OverrideStep")
+    }
 
-    private val finalStep =  mock<Step<Unit>>()
+    private val finalStep =  mock<Step<Unit>> {
+        on(mock.metricPrefix).thenReturn("FinalStep")
+    }
 
     private val pipeline = pipeline {
         route(IndexTaskType.PDF) {
@@ -139,22 +147,22 @@ class PipelineTest: StepTest() {
         val item = PipelineItem<Unit>(
             task = task,
             payload = null,
-            continueProcessing = true
+            continueProcessing = false
         )
 
-        whenever(overrideStep.process(any(), any())).thenReturn(item)
-        whenever(overrideStep.metricPrefix).thenReturn("test")
+        whenever(overrideStep.process(any(), any())).thenReturn(item.apply { continueProcessing = true })
+        whenever(nextStep.process(any(), any())).thenReturn(item.apply { continueProcessing = true })
 
         pipeline.process(task, monitor)
 
         verifyNoInteractions(step)
 
         verify(overrideStep).process(org.mockito.kotlin.check {
-            assertEquals(item, it)
+            assertEquals(item.apply { continueProcessing = false }, it)
         }, any())
 
         verify(nextStep).process(org.mockito.kotlin.check {
-            assertEquals(item, it)
+            assertEquals(item.apply { continueProcessing = false }, it)
         }, any())
     }
 
@@ -175,6 +183,7 @@ class PipelineTest: StepTest() {
         )
 
         whenever(step.process(any(), any())).thenReturn(item.apply { continueProcessing = false })
+        whenever(finalStep.process(any(), any())).thenReturn(item)
 
         pipeline.process(task, monitor)
 

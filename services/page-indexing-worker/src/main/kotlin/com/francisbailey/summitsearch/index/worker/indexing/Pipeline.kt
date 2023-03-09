@@ -6,6 +6,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KLogger
 import mu.KotlinLogging
+import software.amazon.awssdk.core.exception.NonRetryableException
 import kotlin.reflect.KClass
 
 
@@ -33,8 +34,8 @@ interface Step<T> {
 data class PipelineItem<T> (
     val task: IndexTask,
     var payload: T?,
-    var continueProcessing: Boolean = true,
-    var canRetry: Boolean = false
+    var continueProcessing: Boolean = false,
+    var canRetry: Boolean = true
 )
 
 data class PipelineMonitor(
@@ -75,9 +76,61 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
 
     private var finallyStep: Step<T>? = null
 
-    override fun firstRun(step: Step<T>): ChainedRoute<T> {
-        steps.add(step)
-        return this
+
+    /**
+     * For now, an exception does not stop continuation of the pipeline. Each step
+     * must explicitly call for process continuation to stop. This can be changed in
+     * the future, but for now we'll leave it as is.
+     */
+    fun execute(task: IndexTask, monitor: PipelineMonitor): PipelineItem<T> {
+        val meter = monitor.meter
+        var item: PipelineItem<T> = PipelineItem(task, null)
+
+        for (nextStep in steps) {
+            val step = getOverrideOrElse(nextStep, item)
+            println(step.metricPrefix)
+            val tags = arrayOf("step", step.metricPrefix, "queue", task.source)
+
+            item = executeStep(step, item, monitor, *tags)
+
+            if (!item.continueProcessing) {
+                meter.counter("pipeline.aborted", *tags).increment()
+                break
+            }
+        }
+
+        finallyStep?.let {
+            item = executeStep(it, item, monitor)
+        }
+
+        return item
+    }
+
+    private fun executeStep(step: Step<T>, item: PipelineItem<T>, monitor: PipelineMonitor, vararg tags: String): PipelineItem<T> {
+        val meter = monitor.meter
+        var processedItem = item
+
+        try {
+            meter.timer("pipeline.step.latency", *tags).recordCallable {
+                processedItem = step.process(item, monitor)
+                meter.counter("pipeline.step.success", *tags).increment()
+            }
+        } catch (e: Exception) {
+            if (e is NonRetryableException) {
+                meter.counter("pipeline.step.noretry", *tags).increment()
+                processedItem.canRetry = false
+            }
+
+            meter.counter("pipeline.step.failure", *tags, "exception", e::class.simpleName).increment()
+            processedItem.continueProcessing = false
+        }
+
+        return processedItem
+    }
+
+    private fun getOverrideOrElse(step: Step<T>, item: PipelineItem<T>): Step<T> {
+        val host = item.task.details.pageUrl.host
+        return hostOverrides[host]?.get(step::class) ?: step
     }
 
     override fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T> {
@@ -89,50 +142,9 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
         return this
     }
 
-    /**
-     * For now, an exception does not stop continuation of the pipeline. Each step
-     * must explicitly call for process continuation to stop. This can be changed in
-     * the future, but for now we'll leave it as is.
-     */
-    fun execute(task: IndexTask, monitor: PipelineMonitor): PipelineItem<T> {
-        var item: PipelineItem<T> = PipelineItem(task, null)
-
-        for (step in steps) {
-            item = runStep(step, item, monitor)
-
-            if (!item.continueProcessing) {
-                monitor.meter.counter("Pipeline.aborted", "host", task.details.pageUrl.host).increment()
-                monitor.meter.counter("${step.metricPrefix}.aborted", "host", task.details.pageUrl.host).increment()
-                break
-            }
-        }
-
-        finallyStep?.let {
-            item = runStep(it, item, monitor)
-        }
-
-        return item
-    }
-
-    private fun runStep(step: Step<T>, pipelineItem: PipelineItem<T>, monitor: PipelineMonitor): PipelineItem<T> {
-        val host = pipelineItem.task.details.pageUrl.host
-        val stepToRun = hostOverrides[host]?.get(step::class)?.also {
-            log.info { "Found override for: $host on ${it::class.simpleName}" }
-        } ?: step
-
-        return try {
-            monitor.meter.timer("${stepToRun.metricPrefix}.latency").recordCallable {
-                stepToRun.process(pipelineItem, monitor).also {
-                    monitor.meter.counter("${stepToRun.metricPrefix}.success").increment()
-                }
-            }!!
-        } catch (e: Exception) {
-            val qualifiers = arrayOf("type", e::class.simpleName, "queue", pipelineItem.task.source)
-            monitor.meter.counter("Pipeline.exception", *qualifiers)
-            monitor.meter.counter("${stepToRun.metricPrefix}.exception", *qualifiers).increment()
-            log.error(e) { "Failed to run step: ${stepToRun::class.simpleName}" }
-            pipelineItem
-        }
+    override fun firstRun(step: Step<T>): ChainedRoute<T> {
+        steps.add(step)
+        return this
     }
 
     override fun then(step: Step<T>): ChainedRoute<T> {
