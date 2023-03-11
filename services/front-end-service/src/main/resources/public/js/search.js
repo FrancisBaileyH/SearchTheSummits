@@ -277,7 +277,7 @@ function renderNoResultsMessage() {
 
     if (type == null || type != "fuzzy") {
         url.searchParams.set("type", "fuzzy");
-        noResultsMessage += "<li>Expand your search results with <a href=\"" + url + "\" >fuzzy match</a></li>"
+        noResultsMessage += "<li>Expand your search with <a href=\"" + url + "\" ><strong>fuzzy match</strong></a></li>"
     }
 
     noResultsMessage += "<li>Try fewer keywords. Especially for images. E.g. try: <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
