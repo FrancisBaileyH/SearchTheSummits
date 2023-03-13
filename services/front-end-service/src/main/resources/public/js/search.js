@@ -235,9 +235,11 @@ function renderSearchResults(responseData, resultsHtml) {
       var container = $('.search-results-container');
       var searchFormContainer = $('.search-form-container')
 
-      var searchDetails = "<div class=\"search-results-details\">";
-      searchDetails += "<p>About " + responseData.totalHits + " result(s) found in " + responseData.requestTime + "ms</p>";
-      searchDetails += "</div>";
+      if (responseData.totalHits > 0) {
+          var searchDetails = "<div class=\"search-results-details\">";
+          searchDetails += "<p>About " + responseData.totalHits + " result(s) found in " + responseData.requestTime + "ms</p>";
+          searchDetails += "</div>";
+      }
 
       container.html(searchDetails)
       searchFormContainer.addClass("has-query");
@@ -268,21 +270,24 @@ function renderErrorMessage() {
 }
 
 function renderNoResultsMessage() {
+
     var url = new URL(window.location.href);
     var query = url.searchParams.get("query");
     var type = url.searchParams.get("type");
 
-    var noResultsMessage = "<div class=\"search-results-message\"><p>Your search for - <strong>" + query + "</strong> did not match any documents</p>"
-    noResultsMessage += "<p>Suggestions:</p><ul>"
-
+    var noResultsMessage = "<div class=\"search-results-message\">"
     if (type == null || type != "fuzzy") {
         url.searchParams.set("type", "fuzzy");
-        noResultsMessage += "<li>Expand your search with <a href=\"" + url + "\" ><strong>fuzzy match</strong></a></li>"
+        noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents. Try a <a href=\"" + url + "\" ><strong style=\"text-decoration: underline;\">fuzzy match</strong></a> instead.</li>"
+    } else {
+        noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents.</p>"
     }
 
-    noResultsMessage += "<li>Try fewer keywords. Especially for images. E.g. try: <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
+    noResultsMessage += "<p>Suggestions:</p><ul>"
+    noResultsMessage += "<li>Try fewer keywords - <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
+    noResultsMessage += "<li>Try different keywords - <strong>\"Serac Peak\"</strong> instead of <strong>\"Serac Mountain\"</strong></li>"
     noResultsMessage += "<li>Make sure all words are spelled correctly.</li>"
-    noResultsMessage += "<li>Try different keywords.</li></ul></div>"
+    noResultsMessage += "</ul></div>"
 
     $(".search-results-container").append(noResultsMessage);
 }
