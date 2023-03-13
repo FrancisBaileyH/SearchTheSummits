@@ -178,7 +178,7 @@ class ImageIndexService(
                 match.operator(Operator.And)
                 match.minimumShouldMatch("100%")
                 match.fuzziness("AUTO")
-                match.maxExpansions(2)
+                match.maxExpansions(3)
             }
         }
 
