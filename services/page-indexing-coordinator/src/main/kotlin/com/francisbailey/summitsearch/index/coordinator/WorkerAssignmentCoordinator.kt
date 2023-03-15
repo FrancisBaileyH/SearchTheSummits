@@ -1,11 +1,12 @@
 package com.francisbailey.summitsearch.index.coordinator
 
 import com.francisbailey.summitsearch.index.worker.api.GetAssignmentsResponse
-import com.francisbailey.summitsearch.taskclient.IndexTask
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.taskclient.*
+import mu.KotlinLogging
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.net.URL
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -45,10 +46,6 @@ class WorkerAssignmentCoordinator(
 }
 
 
-/**
- * WebSourcesMonitor?
- */
-
 @Service
 class WebSourceRefreshMonitor(
     private val indexingTaskQueueClient: IndexingTaskQueueClient,
@@ -64,19 +61,18 @@ class WebSourceRefreshMonitor(
             val queueName = "IndexingQueue-${it.host.replace(".", "-")}"
 
             if (indexingTaskQueueClient.queueExists(queueName)) {
-                indexingTaskQueueClient.createQueue(queueName)
+                indexSourceRepository.save(it.apply {
+                    queueUrl = indexingTaskQueueClient.createQueue(queueName)
+                })
             }
 
             if (!taskMonitor.hasActiveTaskForSource(it)) {
-
-                IndexTask(
-                    source =
-                )
-
-                indexingTaskQueueClient.addTask(IndexT)
-
                 taskMonitor.enqueueTaskForSource(it)
             }
+
+            indexSourceRepository.save(it.apply {
+                lastUpdate = Instant.now().toEpochMilli()
+            })
         }
     }
 
@@ -101,13 +97,15 @@ class TaskMonitor(
     private val taskMonitorConfiguration: TaskMonitorConfiguration,
     private val indexingTaskQueueClient: IndexingTaskQueueClient
 ) {
+    private val log = KotlinLogging.logger { }
+
     private val activeTaskCache = mutableSetOf<Task>()
 
     fun getActiveTasks(): List<Task> = synchronized(this) {
         return activeTaskCache.toList()
     }
 
-    fun isTaskActive(task: Task): Boolean {
+    private fun isTaskActive(task: Task): Boolean {
         val currentTime = Instant.now()
 
         return task.monitorTimestamp?.let {
@@ -129,10 +127,43 @@ class TaskMonitor(
             host = source.host,
             queueUrl = source.queueUrl,
             status = TaskStatus.PENDING,
-            monitorTimestamp = null
+            monitorTimestamp = null,
+            seeds = source.seeds,
+            refreshInterval = source.refreshInterval
         )
 
         taskStore.save(task)
+    }
+
+    private fun taskHasQueueItems(task: Task): Boolean {
+        val taskCount = indexingTaskQueueClient.getTaskCount(task.queueUrl)
+        return taskCount > 0
+    }
+
+    private fun seedTaskQueue(task: Task) {
+        val taskRunId = UUID.randomUUID().toString()
+
+        log.info { "Generating seed tasks for: ${task.host} with: ${task.seeds}" }
+        log.info { "Task run id: $taskRunId" }
+
+        val seedTasks = task.seeds.map {
+            IndexTask(
+                source = task.queueUrl,
+                details = IndexTaskDetails(
+                    pageUrl = URL(it),
+                    refreshIntervalSeconds = task.refreshInterval,
+                    taskType = IndexTaskType.HTML,
+                    submitTime = Instant.now().toEpochMilli(),
+                    taskRunId = taskRunId,
+                    id = UUID.randomUUID().toString()
+                )
+            )
+        }
+
+        seedTasks.chunked(IndexingTaskQueueClient.MAX_MESSAGE_BATCH_SIZE).forEach {
+            log.info { "Sending batch index tasks of size ${it.size}" }
+            indexingTaskQueueClient.addTasks(it)
+        }
     }
 
     @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
@@ -142,25 +173,26 @@ class TaskMonitor(
         activeTasks.forEach {
             when(it.status) {
                 TaskStatus.PENDING -> {
-                    indexingTaskQueueClient.addTask(Ind)
-
-                    // plant seed/add task here
+                    seedTaskQueue(it)
                     taskStore.save(it.apply {
                         status = TaskStatus.RUNNING
                     })
                 }
                 TaskStatus.RUNNING -> {
-                    // if (queueIsEmpty()) {
-                    //   monitorTimestamp = Instant.now().toEpochMillis()
-                    // else
-                    //  monitorTimestamp = null
+                    if (taskHasQueueItems(it)) {
+                        it.monitorTimestamp = null
+                    } else {
+                        it.monitorTimestamp = it.monitorTimestamp ?: Instant.now().toEpochMilli()
+                    }
+
                     if (!isTaskActive(it)) {
                         it.status = TaskStatus.COMPLETED
                     }
 
                     taskStore.save(it)
                 }
-                else -> {
+                TaskStatus.COMPLETED -> {
+                    // need to save last update time as well?
                     taskStore.delete(it)
                 }
             }
@@ -174,12 +206,12 @@ class TaskMonitor(
 
 
 data class IndexSource(
-    val host: String,
-    val seeds: Set<String>,
-    val lastUpdate: Long?,
-    val refreshInterval: Long,
-    val documentTtl: Long,
-    val queueUrl: String,
+    var host: String,
+    var seeds: Set<String>,
+    var lastUpdate: Long?,
+    var refreshInterval: Long,
+    var documentTtl: Long,
+    var queueUrl: String,
 )
 
 @Service
@@ -187,6 +219,10 @@ class IndexSourceRepository {
 
     fun getRefreshableSources(): List<IndexSource> {
         return emptyList()
+    }
+
+    fun save(source: IndexSource) {
+
     }
 }
 
@@ -244,10 +280,6 @@ class TaskStore {
     fun save(task: Task) {
 
     }
-
-    fun createTask(source: IndexSource): Task {
-        return Task("", "", TaskStatus.PENDING,  "", null)
-    }
 }
 
 data class WorkerEndpoint(
@@ -265,6 +297,8 @@ data class Task(
     val host: String,
     var status: TaskStatus,
     var queueUrl: String,
-    var monitorTimestamp: Long?
+    var monitorTimestamp: Long?,
+    var seeds: Set<String>,
+    var refreshInterval: Long
 )
 

@@ -25,7 +25,7 @@ interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
     fun listTaskQueues(): Set<String>
     fun getTaskCount(queueName: String): Long
     fun queueExists(queueName: String): Boolean
-    fun createQueue(queueName: String)
+    fun createQueue(queueName: String): String
 
     companion object {
         const val MAX_MESSAGE_BATCH_SIZE = 10
@@ -130,7 +130,7 @@ class SQSIndexingTaskQueueClient(
         }
     }
 
-    override fun createQueue(queueName: String) {
+    override fun createQueue(queueName: String): String {
         val queueUrl = sqsClient.createQueue(CreateQueueRequest.builder()
             .queueName(queueName)
             .build()
@@ -144,6 +144,8 @@ class SQSIndexingTaskQueueClient(
             ))
             .build()
         )
+
+        return queueUrl
     }
 
     companion object {

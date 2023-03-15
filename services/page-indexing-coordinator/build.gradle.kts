@@ -34,6 +34,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-encoding:$ktorVersion")
 
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.8.0")
     testImplementation("org.mockito:mockito-core:4.8.0")
