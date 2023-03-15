@@ -23,12 +23,15 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:indexing-queue-client"))
 
     implementation(platform("software.amazon.awssdk:bom:2.18.19"))
     implementation("software.amazon.awssdk:sqs")
+    implementation("software.amazon.awssdk:dynamodb")
+    implementation("software.amazon.awssdk:dynamodb-enhanced")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
