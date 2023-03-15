@@ -601,20 +601,26 @@ footer #footer-image {
     color: #576574;
 }
 
-@media(min-width: 500px) {
-    .modal {
-        width: auto;
-    }
+.blocker {
+    padding: 0;
+}
+
+.modal a.close-modal {
+    right: 2px;
+    height: 20px;
+    width: 20px;
+    top: 2px;
 }
 
 .modal {
-    max-width: 1000px;
+    width: 100%;
     max-height: 100%;
+    padding: 24px 0 15px 0;
 }
 
 .modal p {
     margin: 0;
-    padding: 0 4px;
+    padding: 0 16px;
     overflow-wrap: anywhere;
 }
 
@@ -623,6 +629,13 @@ footer #footer-image {
     max-width: 100%;
     max-height: calc(100vh - 225px);
     text-align: center;
+}
+
+@media(min-width: 500px) {
+    .modal {
+        width: auto;
+        max-width: 1000px;
+    }
 }
 
 .centered {
