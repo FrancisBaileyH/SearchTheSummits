@@ -28,6 +28,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://altusmountainguides.com"), AltusMountainGuidesFilter)
             addFilterChain(URL("https://accvi.ca"), ACCVIFilter)
             addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseFilter)
+            addFilterChain(URL("https://coastmountainguides.com"), CoastMountainGuidesFilter)
         }
     }
 
