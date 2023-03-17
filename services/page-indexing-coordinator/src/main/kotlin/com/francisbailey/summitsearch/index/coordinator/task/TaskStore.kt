@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.coordinator.task
 
+import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient
@@ -12,11 +13,17 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 
 @Repository
 class TaskStore(
+    regionConfig: RegionConfig,
     client: DynamoDbEnhancedAsyncClient,
     private val meter: MeterRegistry
 ) {
+    private val tableName = when {
+        regionConfig.isProd -> "sts-task-store"
+        else -> "sts-task-store-test"
+    }
+
     private val table = client.table(
-        TABLE_NAME,
+        tableName,
         TableSchema.fromBean(Task::class.java)
     )
 
@@ -45,7 +52,6 @@ class TaskStore(
 
     companion object {
         const val service = "task-store"
-        const val TABLE_NAME = "sts-task-store"
         const val MAX_TABLE_SCAN = 100
     }
 }

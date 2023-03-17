@@ -24,3 +24,8 @@ data class DeleteAssignmentsResponse(
 data class GetAssignmentsResponse(
     val assignments: Set<String>,
 )
+
+@Serializable
+data class GetHeartBeatResponse(
+    val status: String
+)

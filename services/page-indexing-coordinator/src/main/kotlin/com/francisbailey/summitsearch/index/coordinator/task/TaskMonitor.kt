@@ -1,6 +1,6 @@
 package com.francisbailey.summitsearch.index.coordinator.task
 
-import com.francisbailey.summitsearch.index.coordinator.*
+import com.francisbailey.summitsearch.index.coordinator.sources.IndexSource
 import com.francisbailey.summitsearch.taskclient.IndexTask
 import com.francisbailey.summitsearch.taskclient.IndexTaskDetails
 import com.francisbailey.summitsearch.taskclient.IndexTaskType
@@ -10,6 +10,7 @@ import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit
 @Service
 class TaskMonitor(
     private val taskStore: TaskStore,
-    private val taskMonitorConfiguration: TaskMonitorConfiguration,
+    private val emptyQueueMonitorDuration: Duration,
     private val indexingTaskQueueClient: IndexingTaskQueueClient,
     private val meter: MeterRegistry
 ) {
@@ -35,7 +36,7 @@ class TaskMonitor(
             return true
         }
 
-        return taskStore.getTask(source.host) != null
+        return taskStore.getTask(source.host!!) != null
     }
 
     fun enqueueTaskForSource(source: IndexSource) {
@@ -46,13 +47,21 @@ class TaskMonitor(
             status = TaskStatus.PENDING,
             monitorTimestamp = null,
             seeds = source.seeds,
-            refreshInterval = source.refreshInterval
+            refreshInterval = source.refreshIntervalSeconds
         )
 
         taskStore.save(task)
         meter.counter("$service.enqueued", "host", task.host).increment()
     }
 
+    /**
+     * Tasks start in the PENDING state and transition to RUNNING once all
+     * seed URLs have been added to the task queue
+     *
+     * The task will stay in the RUNNING state until the queue is empty at which point
+     * the queue will be monitored up to "emptyQueueMonitorDuration" before it is marked
+     * as COMPLETED.
+     */
     @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
     fun monitorTasks() {
         val activeTasks = taskStore.getTasks()
@@ -76,7 +85,7 @@ class TaskMonitor(
                         it.monitorTimestamp = it.monitorTimestamp ?: Instant.now().toEpochMilli()
                     }
 
-                    if (!isTaskComplete(it)) {
+                    if (isTaskComplete(it)) {
                         it.status = TaskStatus.COMPLETED
                     }
 
@@ -94,12 +103,20 @@ class TaskMonitor(
         }.toSet())
     }
 
+
     private fun isTaskComplete(task: Task): Boolean {
         val currentTime = Instant.now()
+        val monitorTimestamp = task.monitorTimestamp
 
-        return task.monitorTimestamp?.let {
-            Instant.ofEpochMilli(it).plus(taskMonitorConfiguration.emptyQueueMonitorDuration) < currentTime
-        }?: false
+        if (monitorTimestamp == null) {
+            return false
+        }
+
+        val emptyQueueMonitorThreshold = Instant
+            .ofEpochMilli(monitorTimestamp)
+            .plus(emptyQueueMonitorDuration)
+
+        return emptyQueueMonitorThreshold < currentTime
     }
 
     private fun hasIndexTasksInQueue(task: Task): Boolean {
