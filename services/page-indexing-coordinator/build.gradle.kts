@@ -25,6 +25,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
 
+    implementation(project(":lib:service-common"))
+
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:indexing-queue-client"))
 

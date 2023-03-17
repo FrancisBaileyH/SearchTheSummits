@@ -1,9 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.controller
 
-import com.francisbailey.summitsearch.index.worker.api.DeleteAssignmentsResponse
-import com.francisbailey.summitsearch.index.worker.api.GetAssignmentsResponse
-import com.francisbailey.summitsearch.index.worker.api.PutAssignmentRequest
-import com.francisbailey.summitsearch.index.worker.api.PutAssignmentResponse
+import com.francisbailey.summitsearch.index.worker.api.*
 import com.francisbailey.summitsearch.index.worker.store.QueueAssignmentStore
 import mu.KotlinLogging
 import org.springframework.web.bind.ServletRequestBindingException
@@ -49,6 +46,14 @@ class QueueAssignmentController(
     fun getAssignments(): GetAssignmentsResponse {
         return GetAssignmentsResponse(
             assignments = queueAssignmentStore.getAssignments()
+        )
+    }
+
+    @GetMapping("/api/heartbeat")
+    fun getHeartbeat(): GetHeartBeatResponse {
+        log.info { "Received heartbeat" }
+        return GetHeartBeatResponse(
+            status = STATUS.SUCCESS.name
         )
     }
 
