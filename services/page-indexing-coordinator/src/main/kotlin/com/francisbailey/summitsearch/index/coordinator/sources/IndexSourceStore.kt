@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.coordinator.sources
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Repository
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient
 import software.amazon.awssdk.enhanced.dynamodb.Expression
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema
@@ -14,21 +15,11 @@ import java.time.Instant
 
 @Repository
 class IndexSourceStore(
-    regionConfig: RegionConfig,
-    client: DynamoDbEnhancedAsyncClient,
+    private val table: DynamoDbAsyncTable<IndexSource>,
     private val meter: MeterRegistry
 ) {
-    private val tableName = when {
-        regionConfig.isProd -> "sts-index-source-store"
-        else -> "sts-index-source-store-test"
-    }
 
-    private val table = client.table(
-        tableName,
-        TableSchema.fromBean(IndexSource::class.java)
-    )
-
-    fun getRefreshableSources() = meter.timer("$serviceName.get-refreshable.latency").recordCallable {
+    fun getRefreshableSources(): List<IndexSource> = meter.timer("$serviceName.get-refreshable.latency").recordCallable {
         val items = mutableListOf<IndexSource>()
 
         table.scan(ScanEnhancedRequest.builder()
@@ -40,7 +31,7 @@ class IndexSourceStore(
             .build()
         ).items().subscribe {
             items.add(it)
-        }
+        }.get()
 
         items
     }!!

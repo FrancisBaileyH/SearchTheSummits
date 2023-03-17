@@ -24,14 +24,10 @@ open class ClientConfiguration {
     }
 
     @Bean
-    open fun dynamoDbEnhancedAsyncClient(): DynamoDbEnhancedAsyncClient {
-        return DynamoDbEnhancedAsyncClient.builder()
-            .dynamoDbClient(DynamoDbAsyncClient.builder()
-                .region(Region.US_WEST_2)
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .build()
-            )
+    open fun dynamoDbAsyncClient(): DynamoDbAsyncClient {
+        return DynamoDbAsyncClient.builder()
+            .region(Region.US_WEST_2)
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
             .build()
     }
-
 }

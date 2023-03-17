@@ -173,13 +173,13 @@ data class IndexTaskDetails(
     val id: String,
     val taskRunId: String,
     @Serializable(with = URLSerializer::class)
-    val pageUrl: URL,
+    val entityUrl: URL,
     val submitTime: Long,
     val taskType: IndexTaskType,
-    val refreshIntervalSeconds: Long, // 0 represents never refresh
+    val entityTtl: Long, // 0 represents never refresh
     val context: String? = null
 ) {
-    fun refreshDuration(): Duration = Duration.ofSeconds(refreshIntervalSeconds)
+    fun refreshDuration(): Duration = Duration.ofSeconds(entityTtl)
 
     inline fun <reified T> getContext(): T? {
         return context?.let {
