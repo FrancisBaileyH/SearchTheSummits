@@ -134,8 +134,8 @@ class TaskMonitor(
             IndexTask(
                 source = task.queueUrl!!,
                 details = IndexTaskDetails(
-                    pageUrl = URL(it),
-                    refreshIntervalSeconds = task.refreshInterval!!,
+                    entityUrl = URL(it),
+                    entityTtl = task.refreshInterval!!,
                     taskType = IndexTaskType.HTML,
                     submitTime = Instant.now().toEpochMilli(),
                     taskRunId = taskRunId,
