@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.net.URL
 import java.time.Clock
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -45,7 +44,7 @@ class IndexSourceRefreshMonitor(
                 })
             }
 
-            if (!taskMonitor.hasActiveTaskForSource(it)) {
+            if (!taskMonitor.hasTaskForSource(it)) {
                 log.info { "No active task found for source: $it. Enqueueing now." }
                 taskMonitor.enqueueTaskForSource(it)
             }

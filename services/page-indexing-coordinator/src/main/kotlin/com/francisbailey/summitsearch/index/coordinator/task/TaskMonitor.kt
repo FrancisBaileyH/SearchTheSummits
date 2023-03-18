@@ -10,6 +10,7 @@ import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -21,21 +22,18 @@ class TaskMonitor(
     private val taskStore: TaskStore,
     private val emptyQueueMonitorDuration: Duration,
     private val indexingTaskQueueClient: IndexingTaskQueueClient,
-    private val meter: MeterRegistry
+    private val meter: MeterRegistry,
+    private val clock: Clock
 ) {
     private val log = KotlinLogging.logger { }
 
-    private val activeTaskCache = mutableSetOf<Task>()
-
-    fun getActiveTasks(): List<Task> = synchronized(this) {
-        return activeTaskCache.toList()
+    fun getActiveTasks(): List<Task> {
+        return taskStore.getTasks().filter {
+            it.status == TaskStatus.RUNNING
+        }
     }
 
-    fun hasActiveTaskForSource(source: IndexSource): Boolean {
-        if (activeTaskCache.any { it.host == source.host }) {
-            return true
-        }
-
+    fun hasTaskForSource(source: IndexSource): Boolean {
         return taskStore.getTask(source.host) != null
     }
 
@@ -82,7 +80,7 @@ class TaskMonitor(
                     if (hasIndexTasksInQueue(it)) {
                         it.monitorTimestamp = null
                     } else {
-                        it.monitorTimestamp = it.monitorTimestamp ?: Instant.now().toEpochMilli()
+                        it.monitorTimestamp = it.monitorTimestamp ?: clock.instant().toEpochMilli()
                     }
 
                     if (isTaskComplete(it)) {
@@ -97,15 +95,11 @@ class TaskMonitor(
             }
             log.info { "Task: $it is now in state: ${it.status}" }
         }
-
-        activeTaskCache.retainAll(activeTasks.filter {
-            it.status == TaskStatus.RUNNING
-        }.toSet())
     }
 
 
     private fun isTaskComplete(task: Task): Boolean {
-        val currentTime = Instant.now()
+        val currentTime = clock.instant()
         val monitorTimestamp = task.monitorTimestamp
 
         if (monitorTimestamp == null) {
@@ -137,7 +131,7 @@ class TaskMonitor(
                     entityUrl = URL(it),
                     entityTtl = task.refreshInterval,
                     taskType = IndexTaskType.HTML,
-                    submitTime = Instant.now().toEpochMilli(),
+                    submitTime = clock.instant().toEpochMilli(),
                     taskRunId = taskRunId,
                     id = UUID.randomUUID().toString()
                 )
