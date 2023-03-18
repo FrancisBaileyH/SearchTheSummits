@@ -1,6 +1,5 @@
 package com.francisbailey.summitsearch.index.coordinator.worker
 
-import com.francisbailey.summitsearch.index.coordinator.configuration.WorkerConfiguration
 import com.francisbailey.summitsearch.index.coordinator.task.Task
 import com.francisbailey.summitsearch.index.coordinator.task.TaskMonitor
 import io.micrometer.core.instrument.MeterRegistry
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
 /**
- * @TODO - heart beat client for workers
  * @TODO - all unit tests
  * @TODO - heart beat time out on worker itself
  */
@@ -31,20 +29,30 @@ class WorkerAssignmentCoordinator(
 
         taskQueue.addAll(activeTasks)
 
-        // Easiest thing to do is just clear all assignments
-        workers.forEach {
-            // what if this step fails?d
-            workerClient.clearAssignments(it)
-        }
-
-        workers.forEach {
-            val assignments = (1.. it.availableSlots).mapNotNull {
-                taskQueue.removeFirstOrNull()
+        try {
+            workers.forEach {
+                workerClient.clearAssignments(it)
+                log.info { "Cleared assignment on: $it" }
             }
 
-            if (assignments.isNotEmpty()) {
-                workerClient.addAssignments(it, assignments)
+            workers.forEach {
+                val assignments = (1.. it.availableSlots).mapNotNull {
+                    taskQueue.removeFirstOrNull()
+                }
+
+                if (assignments.isNotEmpty()) {
+                    workerClient.addAssignments(it, assignments)
+                    log.info { "Successfully assigned: $assignments to $it" }
+                    meter.counter("$serviceName.assignment", "status", "success", "worker", it.endpoint)
+                }
             }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to coordinate with workers" }
+            meter.counter("$serviceName.assignment", "status", "failed")
         }
+    }
+
+    companion object {
+        const val serviceName = "worker-coordinator"
     }
 }

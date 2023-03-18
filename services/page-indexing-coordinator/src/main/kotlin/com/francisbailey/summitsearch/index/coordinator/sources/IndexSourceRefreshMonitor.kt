@@ -7,6 +7,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.net.URL
+import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
@@ -16,7 +18,8 @@ class IndexSourceRefreshMonitor(
     private val regionConfig: RegionConfig,
     private val indexingTaskQueueClient: IndexingTaskQueueClient,
     private val indexSourceRepository: IndexSourceStore,
-    private val taskMonitor: TaskMonitor
+    private val taskMonitor: TaskMonitor,
+    private val clock: Clock
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -33,7 +36,7 @@ class IndexSourceRefreshMonitor(
         meterRegistry.counter("index-source-refresh-monitor.source-count").increment()
 
         sources.forEach {
-            val queueName = generateQueueName(it.host)
+            val queueName = generateQueueName(URL(it.host))
 
             if (!indexingTaskQueueClient.queueExists(queueName)) {
                 log.info { "Queue: $queueName not found. Generating now." }
@@ -48,8 +51,8 @@ class IndexSourceRefreshMonitor(
             }
 
             indexSourceRepository.save(it.apply {
-                 nextUpdate = Instant
-                     .now()
+                 nextUpdate = clock
+                     .instant()
                      .plusSeconds(it.refreshIntervalSeconds)
                      .toEpochMilli()
             })
@@ -59,7 +62,7 @@ class IndexSourceRefreshMonitor(
         }
     }
 
-    private fun generateQueueName(host: String): String {
-        return "$queuePrefix${host.replace(".", "-")}"
+    private fun generateQueueName(url: URL): String {
+        return "$queuePrefix${url.host.replace(".", "-")}"
     }
 }

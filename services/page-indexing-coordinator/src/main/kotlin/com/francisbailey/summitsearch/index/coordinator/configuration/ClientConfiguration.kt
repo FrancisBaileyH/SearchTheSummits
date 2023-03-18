@@ -15,6 +15,7 @@ import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsPro
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.sqs.SqsClient
+import java.time.Clock
 import java.time.Duration
 
 @Configuration
@@ -69,4 +70,7 @@ open class ClientConfiguration {
             followRedirects = false
         }
     }
+
+    @Bean
+    open fun clock() = Clock.systemUTC()
 }
