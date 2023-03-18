@@ -86,7 +86,7 @@ class IndexSourceRefreshMonitorTest {
 
         whenever(indexingTaskQueueClient.queueExists(any())).thenReturn(true)
         whenever(indexSourceRepository.getRefreshableSources()).thenReturn(listOf(source))
-        whenever(taskMonitor.hasActiveTaskForSource(any())).thenReturn(false)
+        whenever(taskMonitor.hasTaskForSource(any())).thenReturn(false)
 
         refreshMonitor.checkSources()
 
