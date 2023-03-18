@@ -56,11 +56,11 @@ enum class TaskStatus {
 @DynamoDbBean
 data class Task(
     @get:DynamoDbPartitionKey
-    var host: String? = null,
-    var id: String? = null,
-    var status: TaskStatus? = null,
-    var queueUrl: String? = null,
+    var host: String = "",
+    var id: String = "",
+    var status: TaskStatus = TaskStatus.PENDING,
+    var queueUrl: String = "",
     var monitorTimestamp: Long? = null,
-    var seeds: Set<String>? = null,
-    var refreshInterval: Long? = null
+    var seeds: Set<String> = emptySet(),
+    var refreshInterval: Long = 0
 )

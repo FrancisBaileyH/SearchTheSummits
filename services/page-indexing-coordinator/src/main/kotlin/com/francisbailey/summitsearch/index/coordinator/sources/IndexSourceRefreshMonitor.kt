@@ -33,7 +33,7 @@ class IndexSourceRefreshMonitor(
         meterRegistry.counter("index-source-refresh-monitor.source-count").increment()
 
         sources.forEach {
-            val queueName = generateQueueName(it.host!!)
+            val queueName = generateQueueName(it.host)
 
             if (!indexingTaskQueueClient.queueExists(queueName)) {
                 log.info { "Queue: $queueName not found. Generating now." }
@@ -50,7 +50,7 @@ class IndexSourceRefreshMonitor(
             indexSourceRepository.save(it.apply {
                  nextUpdate = Instant
                      .now()
-                     .plusSeconds(it.refreshIntervalSeconds!!)
+                     .plusSeconds(it.refreshIntervalSeconds)
                      .toEpochMilli()
             })
 

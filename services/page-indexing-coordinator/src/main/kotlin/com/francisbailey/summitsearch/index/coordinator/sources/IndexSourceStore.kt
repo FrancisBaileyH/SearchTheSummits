@@ -49,10 +49,10 @@ class IndexSourceStore(
 @DynamoDbBean
 data class IndexSource(
     @get:DynamoDbPartitionKey
-    var host: String? = null,
-    var seeds: Set<String>? = null,
-    var nextUpdate: Long? = null,
-    var refreshIntervalSeconds: Long ?= null,
-    var documentTtl: Long? = null,
-    var queueUrl: String? = null
+    var host: String = "",
+    var seeds: Set<String> = emptySet(),
+    var nextUpdate: Long = 0,
+    var refreshIntervalSeconds: Long = 0,
+    var documentTtl: Long = 0,
+    var queueUrl: String = ""
 )

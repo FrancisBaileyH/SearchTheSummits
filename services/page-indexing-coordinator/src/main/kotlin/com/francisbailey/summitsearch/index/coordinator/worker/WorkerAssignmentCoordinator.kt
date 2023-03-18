@@ -13,15 +13,13 @@ import java.util.concurrent.TimeUnit
  * @TODO - heart beat client for workers
  * @TODO - all unit tests
  * @TODO - heart beat time out on worker itself
- * @TODO - create table if not exists logic
  */
 @Service
 class WorkerAssignmentCoordinator(
     private val taskMonitor: TaskMonitor,
     private val workerClient: WorkerClient,
     private val meter: MeterRegistry,
-    private val workerHealthTracker: WorkerHealthTracker,
-    private val workerConfiguration: WorkerConfiguration,
+    private val workerHealthTracker: WorkerHealthTracker
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -40,7 +38,7 @@ class WorkerAssignmentCoordinator(
         }
 
         workers.forEach {
-            val assignments = (1.. workerConfiguration.maxAssignmentsPerWorker).mapNotNull {
+            val assignments = (1.. it.availableSlots).mapNotNull {
                 taskQueue.removeFirstOrNull()
             }
 

@@ -22,7 +22,7 @@ class QueueAssignmentController(
             queueAssignmentStore.assign(assignmentRequest.assignments)
 
             return PutAssignmentResponse(
-                status = STATUS.SUCCESS.name,
+                status = STATUS.SUCCESS,
                 assignments = queueAssignmentStore.getAssignments()
             )
         } catch (e: MalformedURLException) {
@@ -37,7 +37,7 @@ class QueueAssignmentController(
         queueAssignmentStore.clearAssignments()
 
         return DeleteAssignmentsResponse(
-            status = STATUS.SUCCESS.name,
+            status = STATUS.SUCCESS,
             assignments = queueAssignmentStore.getAssignments()
         )
     }
@@ -45,20 +45,15 @@ class QueueAssignmentController(
     @GetMapping("/api/assignments")
     fun getAssignments(): GetAssignmentsResponse {
         return GetAssignmentsResponse(
-            assignments = queueAssignmentStore.getAssignments()
+            assignments = queueAssignmentStore.getAssignments(),
         )
     }
 
-    @GetMapping("/api/heartbeat")
+    @GetMapping("/api/assignments/heartbeat")
     fun getHeartbeat(): GetHeartBeatResponse {
         log.info { "Received heartbeat" }
         return GetHeartBeatResponse(
-            status = STATUS.SUCCESS.name
+            status = STATUS.SUCCESS
         )
-    }
-
-    enum class STATUS {
-        SUCCESS,
-        FAILURE
     }
 }

@@ -36,7 +36,7 @@ class TaskMonitor(
             return true
         }
 
-        return taskStore.getTask(source.host!!) != null
+        return taskStore.getTask(source.host) != null
     }
 
     fun enqueueTaskForSource(source: IndexSource) {
@@ -67,11 +67,11 @@ class TaskMonitor(
         val activeTasks = taskStore.getTasks()
 
         activeTasks.forEach {
-            val tags = arrayOf("status", it.status!!.name, "host", it.host)
+            val tags = arrayOf("status", it.status.name, "host", it.host)
             log.info { "Task: $it is in state: ${it.status}" }
             meter.counter("$service.task-count", *tags).increment()
 
-            when(it.status!!) {
+            when(it.status) {
                 TaskStatus.PENDING -> {
                     seedIndexTaskQueue(it)
                     taskStore.save(it.apply {
@@ -120,7 +120,7 @@ class TaskMonitor(
     }
 
     private fun hasIndexTasksInQueue(task: Task): Boolean {
-        val taskCount = indexingTaskQueueClient.getTaskCount(task.queueUrl!!)
+        val taskCount = indexingTaskQueueClient.getTaskCount(task.queueUrl)
         return taskCount > 0
     }
 
@@ -130,12 +130,12 @@ class TaskMonitor(
         log.info { "Generating seed tasks for: ${task.host} with: ${task.seeds}" }
         log.info { "Task run id: $taskRunId" }
 
-        val seedTasks = task.seeds!!.map {
+        val seedTasks = task.seeds.map {
             IndexTask(
-                source = task.queueUrl!!,
+                source = task.queueUrl,
                 details = IndexTaskDetails(
                     entityUrl = URL(it),
-                    entityTtl = task.refreshInterval!!,
+                    entityTtl = task.refreshInterval,
                     taskType = IndexTaskType.HTML,
                     submitTime = Instant.now().toEpochMilli(),
                     taskRunId = taskRunId,
