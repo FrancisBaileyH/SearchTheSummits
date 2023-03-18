@@ -1,28 +1,83 @@
 package com.francisbailey.summitsearch.index.coordinator.worker
 
+import mu.KotlinLogging
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.util.concurrent.TimeUnit
 
-/**
- * On start-up
- * - After 5 successful heart beats consider host active/healthy
- *
- * During normal operation
- * - After n seconds, consider host unhealthy and do not assign it
- * - After l seconds, consider assignments available for different worker
- *
- * Scenario 1:
- * - Coordinator dies
- * 1. T-0 Worker gets no heartbeats and prepares to give up assignment
- * 2. T-4 Coordinator comes back online
- * 3. T-5 Coordinator sends heart beat
- * 4. T-5 Worker gets heart beat and considers assignments active
- * 5. T-6 Coordinator deletes assignments (ok GOOD)
- * 6. T-7 Business as usual
- */
+
 @Service
-class WorkerHealthTracker {
+class WorkerHealthTracker(
+    private val workers: Set<Worker>,
+    private val workerClient: WorkerClient
+) {
+    private val log = KotlinLogging.logger { }
 
-    fun getHealthyWorkers(): List<Worker> {
-        return emptyList()
+    private val workerHealthMap = workers.associateWith {
+        HeartBeatTracker()
+    }.toMutableMap()
+
+    private val healthyWorkers = mutableSetOf<Worker>()
+
+    fun getHealthyWorkers(): Set<Worker> {
+        return healthyWorkers
     }
+
+    /**
+     * Simple heart beat mechanism where in we send a heart beat
+     * every second. If we see a failure, we begin to track the worker
+     * and after maxFailCount is exceeded, mark the host as unhealthy
+     *
+     * If there's an intermittent issue, the failures can continue to climb
+     * up until the host is considered failing. However, if there's a one off
+     * error, the tracker will monitor for recoveries. Should the host recover
+     * after recoveryThreshold, it will again be added to the healthy worker pool
+     *
+     * This is count based not time based, so we must carefully evalute changes to
+     * the scheduling of this function.
+     */
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
+    fun monitorWorkers() {
+        workers.forEach {
+            try {
+                workerClient.sendHeartBeat(it)
+                log.debug { "Received heartbeat from: $it" }
+
+                workerHealthMap[it]?.let { tracker ->
+                    tracker.recoveries += 1
+
+                    log.info { "Received recovery from $it. Recovery count: ${tracker.recoveries}" }
+
+                    if (tracker.recoveries > RECOVERY_THRESHOLD) {
+                        log.info { "Worker: $it, fully recovered. Re-adding to healthy worker pool" }
+                        workerHealthMap.remove(it)
+                        healthyWorkers.add(it)
+                    }
+                }
+            } catch (e: Exception) {
+                log.error(e) { "Heart beat to: $it failed" }
+                val tracker = workerHealthMap.getOrPut(it) { HeartBeatTracker() }
+
+                tracker.recoveries = 0
+                tracker.failures = MAX_TRACKING_FAILURES.coerceAtMost(tracker.failures + 1)
+
+                if (tracker.failures >= MAX_FAIL_COUNT) {
+                    log.info { "Max failure threshold of $MAX_FAIL_COUNT met. Removing: $it from the pool." }
+                    healthyWorkers.remove(it)
+                }
+            }
+        }
+    }
+
+    data class HeartBeatTracker(
+        var failures: Int = 0,
+        var recoveries: Int = 0
+    )
+
+    companion object {
+        const val MAX_FAIL_COUNT = 5
+        const val RECOVERY_THRESHOLD = 10
+        const val MAX_TRACKING_FAILURES = MAX_FAIL_COUNT + 100
+    }
+
 }

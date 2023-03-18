@@ -32,7 +32,7 @@ class TaskStoreTest {
             id = "abc123",
             host = host,
             status = TaskStatus.RUNNING,
-            queueUrl = null,
+            queueUrl = "",
             monitorTimestamp = null,
             seeds = setOf("example.com"),
             refreshInterval = 0
@@ -52,7 +52,7 @@ class TaskStoreTest {
                 id = "$it",
                 host = "http://example$it.com",
                 status = TaskStatus.RUNNING,
-                queueUrl = null,
+                queueUrl = "",
                 monitorTimestamp = null,
                 seeds = setOf("example.com"),
                 refreshInterval = 0
@@ -76,7 +76,7 @@ class TaskStoreTest {
             id = "abc1231",
             host = host,
             status = TaskStatus.RUNNING,
-            queueUrl = null,
+            queueUrl = "",
             monitorTimestamp = null,
             seeds = setOf("example.com"),
             refreshInterval = 0

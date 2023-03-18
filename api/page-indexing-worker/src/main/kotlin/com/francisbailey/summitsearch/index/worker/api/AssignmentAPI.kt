@@ -10,13 +10,13 @@ data class PutAssignmentRequest(
 
 @Serializable
 data class PutAssignmentResponse(
-    val status: String,
+    val status: STATUS,
     val assignments: Set<String>
 )
 
 @Serializable
 data class DeleteAssignmentsResponse(
-    val status: String,
+    val status: STATUS,
     val assignments: Set<String>
 )
 
@@ -27,5 +27,10 @@ data class GetAssignmentsResponse(
 
 @Serializable
 data class GetHeartBeatResponse(
-    val status: String
+    val status: STATUS
 )
+
+enum class STATUS {
+    SUCCESS,
+    FAILURE
+}

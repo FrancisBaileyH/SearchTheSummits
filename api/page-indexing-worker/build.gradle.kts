@@ -6,6 +6,7 @@ plugins {
 }
 
 group = "com.francisbailey.summitsearch"
+val ktorVersion = "2.2.2"
 
 
 repositories {
@@ -13,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 }
 
 
