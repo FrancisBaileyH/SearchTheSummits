@@ -77,7 +77,7 @@ class WorkerHealthTracker(
     companion object {
         const val MAX_FAIL_COUNT = 5
         const val RECOVERY_THRESHOLD = 10
-        const val MAX_TRACKING_FAILURES = MAX_FAIL_COUNT + 100
+        const val MAX_TRACKING_FAILURES = MAX_FAIL_COUNT + 100 // just to prevent integer overflow
     }
 
 }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
 /**
- * @TODO - all unit tests
  * @TODO - heart beat time out on worker itself
  */
 @Service

@@ -2,10 +2,6 @@ package com.francisbailey.summitsearch.index.coordinator.sources
 
 import com.francisbailey.summitsearch.index.coordinator.DynamoDBLocal
 import com.francisbailey.summitsearch.index.coordinator.configuration.IndexSourceStoreConfiguration
-import com.francisbailey.summitsearch.index.coordinator.configuration.TaskStoreConfiguration
-import com.francisbailey.summitsearch.index.coordinator.task.TaskStatus
-import com.francisbailey.summitsearch.index.coordinator.task.TaskStore
-import com.francisbailey.summitsearch.index.coordinator.task.TaskStoreTest
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals

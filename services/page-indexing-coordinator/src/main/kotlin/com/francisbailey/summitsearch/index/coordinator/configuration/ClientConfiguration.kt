@@ -11,7 +11,11 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
+import org.springframework.core.env.getRequiredProperty
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.sqs.SqsClient
@@ -30,14 +34,23 @@ open class HttpEngineConfiguration {
 }
 
 @Configuration
-open class ClientConfiguration {
+open class ClientConfiguration(
+    environment: Environment
+) {
+
+    private val credentialsProvider = StaticCredentialsProvider.create(
+        AwsBasicCredentials.create(
+            environment.getRequiredProperty("COORDINATOR_ACCESS_ID"),
+            environment.getRequiredProperty("COORDINATOR_ACCESS_KEY")
+        )
+    )
 
     @Bean
     open fun indexingTaskQueueClient(): IndexingTaskQueueClient {
         return SQSIndexingTaskQueueClient(
             SqsClient.builder()
                 .region(Region.US_WEST_2)
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .credentialsProvider(credentialsProvider)
                 .build()
         )
     }
@@ -46,7 +59,7 @@ open class ClientConfiguration {
     open fun dynamoDbAsyncClient(): DynamoDbAsyncClient {
         return DynamoDbAsyncClient.builder()
             .region(Region.US_WEST_2)
-            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+            .credentialsProvider(credentialsProvider)
             .build()
     }
 

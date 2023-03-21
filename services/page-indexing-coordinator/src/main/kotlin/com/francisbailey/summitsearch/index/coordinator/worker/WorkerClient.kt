@@ -44,7 +44,7 @@ class WorkerClient(
                     contentType(ContentType.Application.Json)
                     setBody(PutAssignmentRequest(
                         assignments = assignments.map {
-                            it.queueUrl!!
+                            it.queueUrl
                         }.toSet()
                     ))
                 }

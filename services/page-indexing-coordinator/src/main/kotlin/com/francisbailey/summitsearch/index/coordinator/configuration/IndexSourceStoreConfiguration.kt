@@ -2,7 +2,6 @@ package com.francisbailey.summitsearch.index.coordinator.configuration
 
 import com.francisbailey.summitsearch.index.coordinator.extension.exists
 import com.francisbailey.summitsearch.index.coordinator.sources.IndexSource
-import com.francisbailey.summitsearch.index.coordinator.task.Task
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
@@ -17,7 +16,7 @@ import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbAsyncWaiter
 
 @Configuration
 open class IndexSourceStoreConfiguration(
-    private val regionConfig: RegionConfig,
+    regionConfig: RegionConfig,
     private val dynamoDbAsyncWaiter: DynamoDbAsyncWaiter,
     private val dynamoDbEnhancedAsyncClient: DynamoDbEnhancedAsyncClient
 ) {
