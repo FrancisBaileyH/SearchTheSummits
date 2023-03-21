@@ -8,8 +8,10 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 
 
 @Component
@@ -43,6 +45,7 @@ class PageIndexingTaskCoordinator(
      *     execution until the circuit closes again. If any of the dependencies are failing all the tasks will fail,
      *     hence the forced closure.
      */
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
     fun coordinateTaskExecution() {
         log.info { "Running indexing tasks now" }
         val assignments = queueAssignmentStore.getAssignments()

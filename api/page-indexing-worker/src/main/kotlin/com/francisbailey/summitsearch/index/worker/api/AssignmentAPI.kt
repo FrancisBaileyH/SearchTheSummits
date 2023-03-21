@@ -22,6 +22,7 @@ data class DeleteAssignmentsResponse(
 
 @Serializable
 data class GetAssignmentsResponse(
+    val status: STATUS,
     val assignments: Set<String>,
 )
 

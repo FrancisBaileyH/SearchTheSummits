@@ -45,6 +45,7 @@ class QueueAssignmentController(
     @GetMapping("/api/assignments")
     fun getAssignments(): GetAssignmentsResponse {
         return GetAssignmentsResponse(
+            status = STATUS.SUCCESS,
             assignments = queueAssignmentStore.getAssignments(),
         )
     }
@@ -52,6 +53,8 @@ class QueueAssignmentController(
     @GetMapping("/api/assignments/heartbeat")
     fun getHeartbeat(): GetHeartBeatResponse {
         log.info { "Received heartbeat" }
+        queueAssignmentStore.updateAssignmentKeepAliveState()
+
         return GetHeartBeatResponse(
             status = STATUS.SUCCESS
         )
