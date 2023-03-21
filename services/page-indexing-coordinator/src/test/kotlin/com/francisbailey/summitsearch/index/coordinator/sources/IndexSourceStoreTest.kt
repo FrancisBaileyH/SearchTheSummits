@@ -35,9 +35,8 @@ class IndexSourceStoreTest {
                 host = "example$it.com",
                 queueUrl = "some-queue-url",
                 seeds = setOf("example.com"),
-                refreshIntervalSeconds = 0,
+                documentTtl = 0,
                 nextUpdate = Instant.now().minusSeconds(60).toEpochMilli(),
-                documentTtl = 0
             )
         }
 

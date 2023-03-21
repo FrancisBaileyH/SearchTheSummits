@@ -49,7 +49,6 @@ data class IndexSource(
     var host: String = "",
     var seeds: Set<String> = emptySet(),
     var nextUpdate: Long = 0,
-    var refreshIntervalSeconds: Long = 0,
     var documentTtl: Long = 0,
     var queueUrl: String = ""
 )

@@ -23,8 +23,8 @@ class IndexSourceRefreshMonitor(
     private val log = KotlinLogging.logger { }
 
     private val queuePrefix = when {
-        regionConfig.isProd -> "IndexingQueue-"
-        else -> "IndexingQueue-Test-"
+        regionConfig.isProd -> "sts-index-queue-"
+        else -> "sts-index-queue-test-"
     }
 
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
@@ -35,7 +35,7 @@ class IndexSourceRefreshMonitor(
         meterRegistry.counter("index-source-refresh-monitor.source-count").increment()
 
         sources.forEach {
-            val queueName = generateQueueName(URL(it.host))
+            val queueName = generateQueueName(it.host)
 
             if (!indexingTaskQueueClient.queueExists(queueName)) {
                 log.info { "Queue: $queueName not found. Generating now." }
@@ -52,7 +52,7 @@ class IndexSourceRefreshMonitor(
             indexSourceRepository.save(it.apply {
                  nextUpdate = clock
                      .instant()
-                     .plusSeconds(it.refreshIntervalSeconds)
+                     .plusSeconds(it.documentTtl)
                      .toEpochMilli()
             })
 
@@ -61,7 +61,7 @@ class IndexSourceRefreshMonitor(
         }
     }
 
-    private fun generateQueueName(url: URL): String {
-        return "$queuePrefix${url.host.replace(".", "-")}"
+    private fun generateQueueName(host: String): String {
+        return "$queuePrefix${host.replace(".", "-")}"
     }
 }

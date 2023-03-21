@@ -31,10 +31,9 @@ class IndexSourceRefreshMonitorTest {
     @Test
     fun `creates queue if it does not exist and saves it to store`() {
         val source = IndexSource(
-            host = "http://francisbaileyh.com",
+            host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            refreshIntervalSeconds = 36000,
             documentTtl = 36000,
             queueUrl = ""
         )
@@ -46,7 +45,7 @@ class IndexSourceRefreshMonitorTest {
 
         refreshMonitor.checkSources()
 
-        verify(indexingTaskQueueClient).createQueue("IndexingQueue-Test-francisbaileyh-com")
+        verify(indexingTaskQueueClient).createQueue("sts-index-queue-test-francisbaileyh-com")
         verify(indexSourceRepository, times(2)).save(check {
             assertEquals(queueUrl, it.queueUrl)
         })
@@ -55,10 +54,9 @@ class IndexSourceRefreshMonitorTest {
     @Test
     fun `skips queue creation if it exists`() {
         val source = IndexSource(
-            host = "http://francisbaileyh.com",
+            host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            refreshIntervalSeconds = 36000,
             documentTtl = 36000,
             queueUrl = ""
         )
@@ -76,10 +74,9 @@ class IndexSourceRefreshMonitorTest {
     fun `enqueues task if there isn't one present already and bumps nextUpdateTime`() {
         Instant.now()
         val source = IndexSource(
-            host = "http://francisbaileyh.com",
+            host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            refreshIntervalSeconds = 36000,
             documentTtl = 36000,
             queueUrl = ""
         )
@@ -93,7 +90,7 @@ class IndexSourceRefreshMonitorTest {
         verify(indexingTaskQueueClient, never()).createQueue(any())
         verify(taskMonitor).enqueueTaskForSource(source)
         verify(indexSourceRepository).save(check {
-            assertEquals(clock.instant().plusSeconds(source.refreshIntervalSeconds).toEpochMilli(), it.nextUpdate)
+            assertEquals(clock.instant().plusSeconds(source.documentTtl).toEpochMilli(), it.nextUpdate)
         })
     }
 }

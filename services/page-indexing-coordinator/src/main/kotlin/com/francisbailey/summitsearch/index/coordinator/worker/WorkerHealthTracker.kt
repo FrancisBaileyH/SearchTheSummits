@@ -55,13 +55,14 @@ class WorkerHealthTracker(
                     }
                 }
             } catch (e: Exception) {
-                log.error(e) { "Heart beat to: $it failed" }
+                log.debug(e) { "Heart beat failed because: "}
+                log.info { "Heart beat to: $it failed" }
                 val tracker = workerHealthMap.getOrPut(it) { HeartBeatTracker() }
 
                 tracker.recoveries = 0
                 tracker.failures = MAX_TRACKING_FAILURES.coerceAtMost(tracker.failures + 1)
 
-                if (tracker.failures >= MAX_FAIL_COUNT && !healthyWorkers.contains(it)) {
+                if (tracker.failures >= MAX_FAIL_COUNT && healthyWorkers.contains(it)) {
                     log.info { "Max failure threshold of $MAX_FAIL_COUNT met. Removing: $it from the pool." }
                     healthyWorkers.remove(it)
                 }

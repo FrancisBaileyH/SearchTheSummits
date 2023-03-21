@@ -45,7 +45,7 @@ class TaskMonitor(
             status = TaskStatus.PENDING,
             monitorTimestamp = null,
             seeds = source.seeds,
-            refreshInterval = source.refreshIntervalSeconds
+            refreshInterval = source.documentTtl
         )
 
         taskStore.save(task)
