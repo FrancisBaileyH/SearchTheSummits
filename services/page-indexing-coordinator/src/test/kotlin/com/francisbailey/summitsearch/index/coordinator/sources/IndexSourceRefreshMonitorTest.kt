@@ -34,7 +34,8 @@ class IndexSourceRefreshMonitorTest {
             host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            documentTtl = 36000,
+            documentTtl = 3600,
+            refreshIntervalSeconds = 36000,
             queueUrl = ""
         )
         val queueUrl = "some-queue-url"
@@ -57,7 +58,8 @@ class IndexSourceRefreshMonitorTest {
             host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            documentTtl = 36000,
+            documentTtl = 3600,
+            refreshIntervalSeconds = 36000,
             queueUrl = ""
         )
 
@@ -77,7 +79,8 @@ class IndexSourceRefreshMonitorTest {
             host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
             nextUpdate = 0,
-            documentTtl = 36000,
+            documentTtl = 3600,
+            refreshIntervalSeconds = 36000,
             queueUrl = ""
         )
 
@@ -90,7 +93,7 @@ class IndexSourceRefreshMonitorTest {
         verify(indexingTaskQueueClient, never()).createQueue(any())
         verify(taskMonitor).enqueueTaskForSource(source)
         verify(indexSourceRepository).save(check {
-            assertEquals(clock.instant().plusSeconds(source.documentTtl).toEpochMilli(), it.nextUpdate)
+            assertEquals(clock.instant().plusSeconds(source.refreshIntervalSeconds).toEpochMilli(), it.nextUpdate)
         })
     }
 }

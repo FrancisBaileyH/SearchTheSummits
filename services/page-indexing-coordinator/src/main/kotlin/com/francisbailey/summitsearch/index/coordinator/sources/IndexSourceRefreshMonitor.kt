@@ -52,7 +52,7 @@ class IndexSourceRefreshMonitor(
             indexSourceRepository.save(it.apply {
                  nextUpdate = clock
                      .instant()
-                     .plusSeconds(it.documentTtl)
+                     .plusSeconds(it.refreshIntervalSeconds)
                      .toEpochMilli()
             })
 

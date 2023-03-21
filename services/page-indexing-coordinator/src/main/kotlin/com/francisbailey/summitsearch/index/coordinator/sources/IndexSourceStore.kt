@@ -49,6 +49,7 @@ data class IndexSource(
     var host: String = "",
     var seeds: Set<String> = emptySet(),
     var nextUpdate: Long = 0,
-    var documentTtl: Long = 0,
+    var documentTtl: Long = 0, // how long the document should stay stale for
+    var refreshIntervalSeconds: Long = 0, // how often the index source should be scanned
     var queueUrl: String = ""
 )
