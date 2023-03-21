@@ -35,7 +35,7 @@ class CheckImageExistsStepTest: StepTest() {
         whenever(imageWriterStore.exists(any(), any())).thenReturn(false)
         assertTrue(step.process(item, monitor).continueProcessing)
 
-        verify(imageWriterStore).exists(defaultIndexTask.details.pageUrl.stripQueryAndFragment(), ImageStoreType.STANDARD)
+        verify(imageWriterStore).exists(defaultIndexTask.details.entityUrl.stripQueryAndFragment(), ImageStoreType.STANDARD)
     }
 
 }

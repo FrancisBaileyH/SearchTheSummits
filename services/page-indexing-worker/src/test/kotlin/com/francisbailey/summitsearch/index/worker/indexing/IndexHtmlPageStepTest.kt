@@ -42,8 +42,8 @@ class IndexHtmlPageStepTest: StepTest() {
         Assertions.assertFalse(result.shouldRetry)
 
         verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
-        verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
-        verify(indexService).indexContent(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.pageUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
+        verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.entityUrl)
+        verify(indexService).indexContent(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.entityUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
     }
 
     @Test
@@ -65,7 +65,7 @@ class IndexHtmlPageStepTest: StepTest() {
         Assertions.assertFalse(result.continueProcessing)
         Assertions.assertFalse(result.shouldRetry)
 
-        verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.pageUrl)
+        verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.entityUrl)
         verifyNoInteractions(indexService)
     }
 }

@@ -44,7 +44,7 @@ class FetchHtmlPageStepTest: StepTest() {
     fun `crawl pages and returns contents`() {
         val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
 
-        whenever(pageCrawlerService.get(defaultIndexTask.details.pageUrl)).thenReturn(htmlContent)
+        whenever(pageCrawlerService.get(defaultIndexTask.details.entityUrl)).thenReturn(htmlContent)
 
         val result = step.process(pipelineItem, monitor)
 
@@ -63,7 +63,7 @@ class FetchHtmlPageStepTest: StepTest() {
         assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
         verify(indexService, never()).indexContent(any<SummitSearchPutHtmlPageRequest>())
-        verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.pageUrl)))
+        verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.entityUrl)))
     }
 
     @Test
@@ -94,7 +94,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
         val htmlContent = Jsoup.parse("<html>Some Web Page</html>")
 
-        whenever(pageCrawlerService.get(defaultIndexTask.details.pageUrl)).thenReturn(htmlContent)
+        whenever(pageCrawlerService.get(defaultIndexTask.details.entityUrl)).thenReturn(htmlContent)
 
         val result = step.process(pipelineItem, monitor)
 

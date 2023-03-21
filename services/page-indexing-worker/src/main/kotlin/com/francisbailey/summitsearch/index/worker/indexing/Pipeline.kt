@@ -7,7 +7,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KLogger
 import mu.KotlinLogging
-import software.amazon.awssdk.core.exception.NonRetryableException
 import kotlin.reflect.KClass
 
 
@@ -141,7 +140,7 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
     }
 
     private fun getOverrideOrElse(step: Step<T>, item: PipelineItem<T>): Step<T> {
-        val host = item.task.details.pageUrl.host
+        val host = item.task.details.entityUrl.host
         return hostOverrides[host]?.get(step::class) ?: step
     }
 

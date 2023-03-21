@@ -91,7 +91,7 @@ class IndexPDFStepTest: StepTest() {
                 title = "test value (pages 1-3)",
                 seoDescription = "",
                 paragraphContent = "",
-                source = URL("${task.details.pageUrl}#page=1"),
+                source = URL("${task.details.entityUrl}#page=1"),
                 rawTextContent = content
             ))
 
@@ -99,7 +99,7 @@ class IndexPDFStepTest: StepTest() {
                 title = "test value (page 4)",
                 seoDescription = "",
                 paragraphContent = "",
-                source = URL("${task.details.pageUrl}#page=4"),
+                source = URL("${task.details.entityUrl}#page=4"),
                 rawTextContent = content2
             ))
         }
@@ -127,7 +127,7 @@ class IndexPDFStepTest: StepTest() {
                 title = "test value (pages 1-3)",
                 seoDescription = "",
                 paragraphContent = "",
-                source = URL("${task.details.pageUrl}#page=1"),
+                source = URL("${task.details.entityUrl}#page=1"),
                 rawTextContent = content
             ))
 
@@ -135,7 +135,7 @@ class IndexPDFStepTest: StepTest() {
                 title = "test value (pages 4,5)",
                 seoDescription = "",
                 paragraphContent = "",
-                source = URL("${task.details.pageUrl}#page=4"),
+                source = URL("${task.details.entityUrl}#page=4"),
                 rawTextContent = content2
             ))
         }

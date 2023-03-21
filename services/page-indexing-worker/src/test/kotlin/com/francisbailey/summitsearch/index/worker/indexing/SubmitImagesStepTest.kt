@@ -42,13 +42,13 @@ class SubmitImagesStepTest: StepTest() {
         val expectedDiscoveries = setOf(
             ImageDiscovery(
                 source = "a-good-source.png",
-                referencingURL = defaultIndexTask.details.pageUrl,
+                referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world",
                 pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli()
             ),
             ImageDiscovery(
                 source = "another-good-source.png",
-                referencingURL = defaultIndexTask.details.pageUrl,
+                referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world 2",
                 pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli()
             )

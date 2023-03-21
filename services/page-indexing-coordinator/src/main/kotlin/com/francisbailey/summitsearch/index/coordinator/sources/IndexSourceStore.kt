@@ -1,12 +1,9 @@
 package com.francisbailey.summitsearch.index.coordinator.sources
 
-import com.francisbailey.summitsearch.services.common.RegionConfig
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient
 import software.amazon.awssdk.enhanced.dynamodb.Expression
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest

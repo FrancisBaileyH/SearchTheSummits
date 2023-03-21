@@ -28,7 +28,7 @@ open class IndexSourceStoreConfiguration(
         }
 
         @Bean
-        open fun indexSourceStore(): DynamoDbAsyncTable<IndexSource> {
+        open fun indexSourceStoreTable(): DynamoDbAsyncTable<IndexSource> {
             val table = dynamoDbEnhancedAsyncClient.table(tableName, TableSchema.fromBean(IndexSource::class.java))
 
             if (!table.exists()) {

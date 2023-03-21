@@ -62,6 +62,15 @@ services:
     volumes:
       - page-indexing-volume:/service/var/logs
 
+  page-indexing-coordinator:
+    platform: linux/amd64
+    profiles: ["backend"]
+    image: search-the-summits/page-indexing-coordinator
+    env_file: variables.env
+    build:
+      context: ./services/page-indexing-coordinator
+      dockerfile: Dockerfile
+
   prometheus:
     profiles: ["monitoring"]
     image: prom/prometheus

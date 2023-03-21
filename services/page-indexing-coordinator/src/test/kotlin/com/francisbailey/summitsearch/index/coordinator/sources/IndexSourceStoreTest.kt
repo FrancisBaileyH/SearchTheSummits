@@ -24,7 +24,7 @@ class IndexSourceStoreTest {
     )
 
     private val indexSourceStore = IndexSourceStore(
-        configuration.indexSourceStore(),
+        configuration.indexSourceStoreTable(),
         SimpleMeterRegistry()
     )
 
