@@ -23,7 +23,7 @@ class SaveThumbnailStep(
 
         monitor.dependencyCircuitBreaker.executeCallable {
             val reference = monitor.meter.timer("imagestore.latency").recordCallable {
-                imageWriterStore.save(entity.task.details.pageUrl, entity.payload!!.bytes(imageWriter), ImageStoreType.THUMBNAIL)
+                imageWriterStore.save(entity.task.details.entityUrl, entity.payload!!.bytes(imageWriter), ImageStoreType.THUMBNAIL)
             }!!
 
             monitor.meter.timer("indexservice.latency").recordCallable {
@@ -35,7 +35,7 @@ class SaveThumbnailStep(
                 )
             }!!
         }
-        monitor.meter.counter("indexservice.add.success", "host", entity.task.details.pageUrl.host)
+        monitor.meter.counter("indexservice.add.success", "host", entity.task.details.entityUrl.host)
 
         return entity.apply { continueProcessing = true }
     }

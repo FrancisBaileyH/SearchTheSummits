@@ -28,9 +28,9 @@ class FetchPDFStepTest: StepTest() {
         details = IndexTaskDetails(
             id = "123",
             taskRunId = "1234",
-            pageUrl = URL("https://francisbaileyh.com/test.pdf"),
+            entityUrl =  URL("https://francisbaileyh.com/test.pdf"),
             taskType = IndexTaskType.PDF,
-            refreshIntervalSeconds = 123L,
+            entityTtl = 123L,
             submitTime = 1234L
         )
     )

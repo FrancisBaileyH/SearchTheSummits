@@ -32,10 +32,10 @@ class ImageDiscoveryTask(
                     details = IndexTaskDetails(
                         id = UUID.randomUUID().toString(),
                         taskRunId = associatedTask.details.taskRunId,
-                        pageUrl = URL(discovery.source),
+                        entityUrl =  URL(discovery.source),
                         submitTime = Instant.now().toEpochMilli(),
                         taskType = IndexTaskType.IMAGE,
-                        refreshIntervalSeconds = associatedTask.details.refreshIntervalSeconds,
+                        entityTtl = associatedTask.details.entityTtl,
                         context = Json.encodeToString(
                             ImageTaskContext(
                                 referencingURL = discovery.referencingURL,
@@ -52,7 +52,7 @@ class ImageDiscoveryTask(
         }
 
         tasks.chunked(IndexingTaskQueueClient.MAX_MESSAGE_BATCH_SIZE).forEach {
-            log.info { "Submitting images to queue for: ${associatedTask.details.pageUrl}" }
+            log.info { "Submitting images to queue for: ${associatedTask.details.entityUrl}" }
             taskQueueClient.addTasks(it)
         }
     }

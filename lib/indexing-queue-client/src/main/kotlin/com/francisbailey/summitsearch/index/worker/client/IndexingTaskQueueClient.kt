@@ -1,6 +1,6 @@
-package com.francisbailey.summitsearch.taskclient
+package com.francisbailey.summitsearch.index.worker.client
 
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient.Companion.MAX_MESSAGE_BATCH_SIZE
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient.Companion.MAX_MESSAGE_BATCH_SIZE
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

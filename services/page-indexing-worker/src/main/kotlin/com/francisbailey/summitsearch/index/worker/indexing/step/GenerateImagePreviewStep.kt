@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class GenerateImagePreviewStep: Step<ImmutableImage> {
 
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        log.info { "Attempting to scale: ${entity.task.details.pageUrl}" }
+        log.info { "Attempting to scale: ${entity.task.details.entityUrl}" }
         return entity.apply {
             payload = payload?.scaleToHeight(DEFAULT_HEIGHT)
             continueProcessing = true

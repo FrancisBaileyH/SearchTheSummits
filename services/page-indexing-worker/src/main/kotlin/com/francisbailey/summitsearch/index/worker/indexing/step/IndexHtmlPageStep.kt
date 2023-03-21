@@ -15,8 +15,8 @@ class IndexHtmlPageStep(
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        if (documentIndexingFilterService.shouldFilter(entity.task.details.pageUrl)) {
-            log.warn { "Skipping indexing on: ${entity.task.details.pageUrl} as it matches filter" }
+        if (documentIndexingFilterService.shouldFilter(entity.task.details.entityUrl)) {
+            log.warn { "Skipping indexing on: ${entity.task.details.entityUrl} as it matches filter" }
             return entity
         }
 
@@ -24,7 +24,7 @@ class IndexHtmlPageStep(
             monitor.dependencyCircuitBreaker.executeCallable {
                 summitSearchIndexService.indexContent(
                     SummitSearchPutHtmlPageRequest(
-                        source = entity.task.details.pageUrl,
+                        source = entity.task.details.entityUrl,
                         htmlDocument = entity.payload!!.document,
                         pageCreationDate = entity.payload!!.pageCreationDate
                     )
@@ -32,8 +32,8 @@ class IndexHtmlPageStep(
             }
         }
 
-        log.info { "Successfully completed indexing task for: ${entity.task.source} with ${entity.task.details.pageUrl}" }
-        monitor.meter.counter("indexservice.add.success", "host" , entity.task.details.pageUrl.host).increment()
+        log.info { "Successfully completed indexing task for: ${entity.task.source} with ${entity.task.details.entityUrl}" }
+        monitor.meter.counter("indexservice.add.success", "host" , entity.task.details.entityUrl.host).increment()
 
         return entity.apply { continueProcessing = true }
     }

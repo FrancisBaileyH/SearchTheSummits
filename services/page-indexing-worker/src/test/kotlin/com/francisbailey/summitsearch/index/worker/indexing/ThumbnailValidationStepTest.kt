@@ -31,11 +31,11 @@ class ThumbnailValidationStepTest: StepTest() {
         source = "some-queue-name",
         details = IndexTaskDetails(
             id = "123456",
-            pageUrl = URL("https://www.francisbaileyh.com"),
+            entityUrl =  URL("https://www.francisbaileyh.com"),
             submitTime = Date().time,
             taskRunId = "test123",
             taskType = IndexTaskType.THUMBNAIL,
-            refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+            entityTtl = Duration.ofMinutes(60).seconds,
             context = Json.encodeToString(ImageTaskContext(
                 referencingURL = URL("https://francisbaileyh.com/test"),
                 description = ""

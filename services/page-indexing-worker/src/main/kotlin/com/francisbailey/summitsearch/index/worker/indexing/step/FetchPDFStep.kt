@@ -12,9 +12,9 @@ class FetchPDFStep(
     private val pdfCrawlerService: PDFCrawlerService
 ): Step<PDDocument> {
     override fun process(entity: PipelineItem<PDDocument>, monitor: PipelineMonitor): PipelineItem<PDDocument> {
-        return monitor.meter.timer("pdf.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+        return monitor.meter.timer("pdf.latency", "host", entity.task.details.entityUrl.host).recordCallable {
             monitor.sourceCircuitBreaker.executeCallable {
-                val document = pdfCrawlerService.get(entity.task.details.pageUrl)
+                val document = pdfCrawlerService.get(entity.task.details.entityUrl)
                 entity.apply {
                     payload = document
                     continueProcessing = true

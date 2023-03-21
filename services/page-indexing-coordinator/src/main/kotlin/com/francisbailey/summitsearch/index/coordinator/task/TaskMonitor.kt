@@ -1,10 +1,10 @@
 package com.francisbailey.summitsearch.index.coordinator.task
 
 import com.francisbailey.summitsearch.index.coordinator.sources.IndexSource
-import com.francisbailey.summitsearch.taskclient.IndexTask
-import com.francisbailey.summitsearch.taskclient.IndexTaskDetails
-import com.francisbailey.summitsearch.taskclient.IndexTaskType
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexTask
+import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
+import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled

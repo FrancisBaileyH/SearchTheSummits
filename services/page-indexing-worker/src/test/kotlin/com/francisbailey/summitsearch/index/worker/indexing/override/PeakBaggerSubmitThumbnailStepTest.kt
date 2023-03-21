@@ -25,11 +25,11 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
         val task = IndexTask(
             source = "some-queue",
             details = IndexTaskDetails(
-                pageUrl = URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
+                entityUrl =  URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 id = "1234656"
             )
         )
@@ -46,10 +46,10 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
 
         verify(indexingTaskQueueClient).addTask(org.mockito.kotlin.check {
             assertEquals(task.source, it.source)
-            assertEquals(URL(expectedImageSrc), it.details.pageUrl)
+            assertEquals(URL(expectedImageSrc), it.details.entityUrl)
             assertEquals(IndexTaskType.THUMBNAIL, it.details.taskType)
             assertEquals(task.details.taskRunId, it.details.taskRunId)
-            assertEquals(task.details.pageUrl, it.details.getContext<ImageTaskContext>()?.referencingURL)
+            assertEquals(task.details.entityUrl, it.details.getContext<ImageTaskContext>()?.referencingURL)
         })
 
         assertTrue(result.continueProcessing)

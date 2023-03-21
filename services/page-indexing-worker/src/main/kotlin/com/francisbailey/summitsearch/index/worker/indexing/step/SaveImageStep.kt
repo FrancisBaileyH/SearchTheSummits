@@ -23,7 +23,7 @@ class SaveImageStep(
 
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         val context = entity.task.details.getContext<ImageTaskContext>()!!
-        val normalizedUrl = entity.task.details.pageUrl.stripQueryAndFragment()
+        val normalizedUrl = entity.task.details.entityUrl.stripQueryAndFragment()
 
         monitor.dependencyCircuitBreaker.executeCallable {
             val reference = monitor.meter.timer("imagestore.latency").recordCallable {
@@ -32,8 +32,8 @@ class SaveImageStep(
 
             monitor.meter.timer("imageindexservice.latency").recordCallable {
                 imageIndexService.indexImage(SummitSearchImagePutRequest(
-                    source = entity.task.details.pageUrl,
-                    normalizedSource = entity.task.details.pageUrl.stripQueryAndFragment(),
+                    source = entity.task.details.entityUrl,
+                    normalizedSource = entity.task.details.entityUrl.stripQueryAndFragment(),
                     dataStoreReference = reference.toString(),
                     description = context.description,
                     referencingDocument = context.referencingURL,
@@ -43,7 +43,7 @@ class SaveImageStep(
                 ))
             }!!
         }
-        monitor.meter.counter("imageindexservice.add.success", "host", entity.task.details.pageUrl.host)
+        monitor.meter.counter("imageindexservice.add.success", "host", entity.task.details.entityUrl.host)
 
         return entity.apply { continueProcessing = true }
     }

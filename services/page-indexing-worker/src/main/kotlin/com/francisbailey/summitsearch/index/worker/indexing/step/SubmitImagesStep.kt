@@ -25,11 +25,11 @@ class SubmitImagesStep(
                 ImageDiscovery(
                     description = image.caption,
                     source = image.imageSrc,
-                    referencingURL = entity.task.details.pageUrl,
+                    referencingURL = entity.task.details.entityUrl,
                     pageCreationDate = entity.payload?.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
                 )
             }.toSet()
-            log.info { "Found: ${imageDiscoveries.size} candidate images from: ${entity.task.details.pageUrl}" }
+            log.info { "Found: ${imageDiscoveries.size} candidate images from: ${entity.task.details.entityUrl}" }
             linkDiscoveryService.submitImages(entity.task, imageDiscoveries)
         }
 

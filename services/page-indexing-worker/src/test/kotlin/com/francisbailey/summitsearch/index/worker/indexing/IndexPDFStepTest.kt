@@ -41,9 +41,9 @@ class IndexPDFStepTest: StepTest() {
         details = IndexTaskDetails(
             id = "123",
             taskRunId = "1234",
-            pageUrl = URL("https://francisbaileyh.com/test%20value.pdf"),
+            entityUrl =  URL("https://francisbaileyh.com/test%20value.pdf"),
             taskType = IndexTaskType.PDF,
-            refreshIntervalSeconds = 123L,
+            entityTtl = 123L,
             submitTime = 1234L
         )
     )
@@ -65,7 +65,7 @@ class IndexPDFStepTest: StepTest() {
             assertEquals("", it.seoDescription)
             assertEquals("", it.paragraphContent)
             assertEquals(content, it.rawTextContent)
-            assertEquals(task.details.pageUrl, it.source)
+            assertEquals(task.details.entityUrl, it.source)
         })
 
         assertTrue(result.continueProcessing)

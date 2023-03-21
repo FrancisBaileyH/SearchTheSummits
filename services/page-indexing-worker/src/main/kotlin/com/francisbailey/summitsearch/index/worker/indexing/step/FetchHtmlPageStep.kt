@@ -31,7 +31,7 @@ class FetchHtmlPageStep(
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        return monitor.meter.timer("page.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+        return monitor.meter.timer("page.latency", "host", entity.task.details.entityUrl.host).recordCallable {
             monitor.sourceCircuitBreaker.executeCallable {
                 getDocument(entity, monitor)
             }
@@ -39,12 +39,12 @@ class FetchHtmlPageStep(
     }
 
     private fun getDocument(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        val host = entity.task.details.pageUrl.host
+        val host = entity.task.details.entityUrl.host
 
         return try {
-            val document = pageCrawlerService.get(entity.task.details.pageUrl)
+            val document = pageCrawlerService.get(entity.task.details.entityUrl)
             val date = monitor.meter.timer("dateguess.latency", "host", host).recordCallable {
-                htmlDateGuesser.findDate(entity.task.details.pageUrl, document)
+                htmlDateGuesser.findDate(entity.task.details.entityUrl, document)
             }
 
             if (date == null) {
@@ -68,9 +68,9 @@ class FetchHtmlPageStep(
                 }
                 is NonRetryableEntityException -> {
                     monitor.dependencyCircuitBreaker.executeCallable {
-                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.pageUrl))
+                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.entityUrl))
                         monitor.meter.counter("indexservice.delete").increment()
-                        log.error(e) { "Unable to index page: ${entity.task.details.pageUrl}" }
+                        log.error(e) { "Unable to index page: ${entity.task.details.entityUrl}" }
                     }
                 }
             }

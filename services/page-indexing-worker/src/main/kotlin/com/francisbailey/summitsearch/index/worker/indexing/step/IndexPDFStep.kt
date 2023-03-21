@@ -36,19 +36,19 @@ class IndexPDFStep(
             val textStripper = textStripper()
             val pageRange = (1..it.numberOfPages)
 
-            log.info { "Indexing ${entity.task.details.pageUrl}" }
+            log.info { "Indexing ${entity.task.details.entityUrl}" }
 
             if (it.numberOfPages <= pdfPagePartitionThreshold) {
-                monitor.meter.timer("indexservice.add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+                monitor.meter.timer("indexservice.add.latency", "host", entity.task.details.entityUrl.host).recordCallable {
                     monitor.dependencyCircuitBreaker.executeCallable {
                         summitSearchIndexService.indexContent(buildRequest(
                             textStripper.getText(it),
-                            entity.task.details.pageUrl
+                            entity.task.details.entityUrl
                         ))
                     }
                 }
             } else {
-                log.info { "Partition threshold reached. Partitioning PDF document: ${entity.task.details.pageUrl}" }
+                log.info { "Partition threshold reached. Partitioning PDF document: ${entity.task.details.entityUrl}" }
                 val requests = pageRange.chunked(pdfPagePartitionThreshold).map { pagePartition ->
                     textStripper.apply {
                         startPage = pagePartition.first()
@@ -63,13 +63,13 @@ class IndexPDFStep(
 
                     }
 
-                    val anchoredPdf = URL("${entity.task.details.pageUrl}#page=${pagePartition.first()}")
+                    val anchoredPdf = URL("${entity.task.details.entityUrl}#page=${pagePartition.first()}")
 
                     buildRequest(textContent, anchoredPdf, suffix)
                 }
 
                 requests.chunked(summitSearchIndexService.maxBulkIndexRequests).forEach {
-                    monitor.meter.timer("indexservice.bulk-add.latency", "host", entity.task.details.pageUrl.host).recordCallable {
+                    monitor.meter.timer("indexservice.bulk-add.latency", "host", entity.task.details.entityUrl.host).recordCallable {
                         monitor.dependencyCircuitBreaker.executeCallable {
                             summitSearchIndexService.indexPartitionedContent(it)
                         }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class PeakBaggerContentValidatorStep: Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        val page = entity.task.details.pageUrl
+        val page = entity.task.details.entityUrl
         entity.continueProcessing = true
 
         if (page.path.startsWith("/climber/ascent.aspx")) {

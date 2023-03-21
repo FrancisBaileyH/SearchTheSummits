@@ -55,11 +55,11 @@ class SaveThumbnailStepTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = imageSrc,
+                entityUrl =  imageSrc,
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 context = Json.encodeToString(context)
             )
         )

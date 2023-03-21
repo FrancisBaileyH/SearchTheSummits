@@ -23,11 +23,11 @@ class ImageDiscoveryTaskTest {
         source = "some-queue-name",
         details = IndexTaskDetails(
             id = "123456",
-            pageUrl = URL("https://www.francisbaileyh.com"),
+            entityUrl =  URL("https://www.francisbaileyh.com"),
             submitTime = Date().time,
             taskRunId = "test123",
             taskType = IndexTaskType.HTML,
-            refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            entityTtl = Duration.ofMinutes(60).seconds
         )
     )
 
@@ -50,7 +50,7 @@ class ImageDiscoveryTaskTest {
         verify(indexingTaskQueueClient).addTasks(org.mockito.kotlin.check {
             it.forEachIndexed { index, task ->
                 assertEquals(task.source, associatedTask.source)
-                assertEquals(task.details.pageUrl.toString(), discoveries[index].source)
+                assertEquals(task.details.entityUrl.toString(), discoveries[index].source)
                 assertEquals(task.details.taskType, IndexTaskType.IMAGE)
                 assertEquals(
                     task.details.context, Json.encodeToString(
@@ -93,7 +93,7 @@ class ImageDiscoveryTaskTest {
             val capturedTask = it.first()
             assertEquals(1, it.size)
             assertEquals(capturedTask.source, associatedTask.source)
-            assertEquals(capturedTask.details.pageUrl.toString(), expectedDiscovery.source)
+            assertEquals(capturedTask.details.entityUrl.toString(), expectedDiscovery.source)
             assertEquals(capturedTask.details.taskType, IndexTaskType.IMAGE)
             assertEquals(capturedTask.details.context, Json.encodeToString(ImageTaskContext(
                 referencingURL = expectedDiscovery.referencingURL,

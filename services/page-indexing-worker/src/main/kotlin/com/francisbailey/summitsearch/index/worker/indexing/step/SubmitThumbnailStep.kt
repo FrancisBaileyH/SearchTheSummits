@@ -23,7 +23,7 @@ class SubmitThumbnailStep(
         thumbnailCandidate?.let {
             monitor.dependencyCircuitBreaker.executeCallable {
                 val details = entity.task.details
-                log.info { "Found thumbnail: ${thumbnailCandidate.imageSrc} on ${details.pageUrl}" }
+                log.info { "Found thumbnail: ${thumbnailCandidate.imageSrc} on ${details.entityUrl}" }
 
                 indexingTaskQueueClient.addTask(
                     IndexTask(
@@ -31,12 +31,12 @@ class SubmitThumbnailStep(
                         details = IndexTaskDetails(
                             id = details.id,
                             taskRunId = details.taskRunId,
-                            pageUrl = URL(thumbnailCandidate.imageSrc),
+                            entityUrl = URL(thumbnailCandidate.imageSrc),
                             submitTime = Instant.now().toEpochMilli(),
                             taskType = IndexTaskType.THUMBNAIL,
-                            refreshIntervalSeconds = details.refreshIntervalSeconds,
+                            entityTtl = details.entityTtl,
                             context = Json.encodeToString(ImageTaskContext(
-                                referencingURL = details.pageUrl,
+                                referencingURL = details.entityUrl,
                                 description = thumbnailCandidate.caption
                             )
                         )

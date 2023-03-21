@@ -7,8 +7,8 @@ import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfigurati
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import com.francisbailey.summitsearch.services.common.RegionConfig
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.taskclient.SQSIndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.SQSIndexingTaskQueueClient
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*

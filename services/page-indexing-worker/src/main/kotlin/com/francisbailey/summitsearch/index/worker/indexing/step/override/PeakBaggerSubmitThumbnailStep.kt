@@ -38,13 +38,13 @@ class PeakBaggerSubmitThumbnailStep(
                         details = IndexTaskDetails(
                             id = details.id,
                             taskRunId = details.taskRunId,
-                            pageUrl = URL(imageSrc),
+                            entityUrl =  URL(imageSrc),
                             submitTime = Instant.now().toEpochMilli(),
                             taskType = IndexTaskType.THUMBNAIL,
-                            refreshIntervalSeconds = details.refreshIntervalSeconds,
+                            entityTtl = details.entityTtl,
                             context = Json.encodeToString(
                                 ImageTaskContext(
-                                    referencingURL = details.pageUrl,
+                                    referencingURL = details.entityUrl,
                                     description = ""
                                 )
                             )

@@ -20,7 +20,7 @@ class CheckImageExistsStep(
     private val imageWriterStore: ImageWriterStore
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
-        val normalizedUrl = entity.task.details.pageUrl.stripQueryAndFragment()
+        val normalizedUrl = entity.task.details.entityUrl.stripQueryAndFragment()
 
         val exists = monitor.dependencyCircuitBreaker.executeCallable {
             log.info { "Checking if $normalizedUrl exists in image store" }

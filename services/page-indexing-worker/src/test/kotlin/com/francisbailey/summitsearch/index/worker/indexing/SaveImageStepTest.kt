@@ -55,11 +55,11 @@ class SaveImageStepTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = imageSrc,
+                entityUrl =  imageSrc,
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.IMAGE,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 context = Json.encodeToString(context)
             )
         )
@@ -78,7 +78,7 @@ class SaveImageStepTest: StepTest() {
         verify(index).indexImage(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.referencingDocument)
             assertEquals(context.description, it.description)
-            assertEquals(task.details.pageUrl, it.source)
+            assertEquals(task.details.entityUrl, it.source)
             assertEquals(context.pageCreationDate, it.referencingDocumentDate)
             assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
             assertEquals(0, it.heightPx) // this is not super ideal, but can't mock final properties
@@ -106,11 +106,11 @@ class SaveImageStepTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = imageSrc,
+                entityUrl =  imageSrc,
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.IMAGE,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 context = Json.encodeToString(context)
             )
         )
@@ -129,7 +129,7 @@ class SaveImageStepTest: StepTest() {
         verify(index).indexImage(org.mockito.kotlin.check {
             assertEquals(context.referencingURL, it.referencingDocument)
             assertEquals(context.description, it.description)
-            assertEquals(task.details.pageUrl, it.source)
+            assertEquals(task.details.entityUrl, it.source)
             assertEquals(context.pageCreationDate, it.referencingDocumentDate)
             assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
             assertEquals(URL("https://www.test.com/some/path/here/image.jpeg"), it.normalizedSource)

@@ -2,7 +2,7 @@ package com.francisbailey.summitsearch.index.coordinator.sources
 
 import com.francisbailey.summitsearch.index.coordinator.task.TaskMonitor
 import com.francisbailey.summitsearch.services.common.RegionConfig
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled

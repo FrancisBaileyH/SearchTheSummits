@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.index.coordinator.task
 
-import com.francisbailey.summitsearch.taskclient.IndexTaskType
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

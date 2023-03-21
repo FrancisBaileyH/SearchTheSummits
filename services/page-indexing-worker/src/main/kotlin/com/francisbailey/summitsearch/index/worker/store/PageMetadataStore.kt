@@ -38,7 +38,7 @@ class PageMetadataStore(
         redisClient.set(key, Json.encodeToString(
             PageMetadataStoreItem(
             lastVisitTime = Instant.now().toEpochMilli(),
-            pageUrl = pageUrl.toString().lowercase(),
+            pageUrl =  pageUrl.toString().lowercase(),
             taskId = taskRunId
         )
         ))

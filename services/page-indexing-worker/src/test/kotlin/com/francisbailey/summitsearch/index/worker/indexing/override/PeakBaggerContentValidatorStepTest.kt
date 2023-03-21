@@ -26,11 +26,11 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
         val task = IndexTask(
             source = "some-queue",
             details = IndexTaskDetails(
-                pageUrl = URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
+                entityUrl =  URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 id = "1234656"
             )
         )
@@ -54,11 +54,11 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
         val task = IndexTask(
             source = "some-queue",
             details = IndexTaskDetails(
-                pageUrl = URL("https://peakbagger.com/some/otherpage.aspx"),
+                entityUrl =  URL("https://peakbagger.com/some/otherpage.aspx"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 id = "1234656"
             )
         )
@@ -82,11 +82,11 @@ class PeakBaggerContentValidatorStepTest: StepTest() {
         val task = IndexTask(
             source = "some-queue",
             details = IndexTaskDetails(
-                pageUrl = URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
+                entityUrl =  URL("https://peakbagger.com/climber/ascent.aspx?aid=1761962"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds,
+                entityTtl = Duration.ofMinutes(60).seconds,
                 id = "1234656"
             )
         )

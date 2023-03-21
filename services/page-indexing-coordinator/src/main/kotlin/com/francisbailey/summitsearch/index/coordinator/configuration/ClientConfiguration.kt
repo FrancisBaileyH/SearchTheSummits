@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.index.coordinator.configuration
 
-import com.francisbailey.summitsearch.taskclient.IndexingTaskQueueClient
-import com.francisbailey.summitsearch.taskclient.SQSIndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.client.SQSIndexingTaskQueueClient
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
@@ -12,9 +12,7 @@ import io.ktor.serialization.kotlinx.json.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
-import org.springframework.core.env.getRequiredProperty
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient

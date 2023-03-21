@@ -67,11 +67,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://www.francisbaileyh.com"),
+                entityUrl =  URL("https://www.francisbaileyh.com"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 
@@ -108,11 +108,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://www.francisbaileyh.com"),
+                entityUrl =  URL("https://www.francisbaileyh.com"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.THUMBNAIL,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 
@@ -146,11 +146,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://www.francisbaileyh.com"),
+                entityUrl =  URL("https://www.francisbaileyh.com"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.IMAGE,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 
@@ -183,11 +183,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://www.francisbaileyh.com"),
+                entityUrl =  URL("https://www.francisbaileyh.com"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.PDF,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 
@@ -220,11 +220,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://peakbagger.com/climbers/ascent.aspx?aid=12"),
+                entityUrl =  URL("https://peakbagger.com/climbers/ascent.aspx?aid=12"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 
@@ -263,11 +263,11 @@ class PipelineConfigurationTest: StepTest() {
             source = "some-queue-name",
             details = IndexTaskDetails(
                 id = "123456",
-                pageUrl = URL("https://cascadeclimbers.com/forum/topic/100857-tr-mt-deception-amp-others-scrambles-7232017/"),
+                entityUrl =  URL("https://cascadeclimbers.com/forum/topic/100857-tr-mt-deception-amp-others-scrambles-7232017/"),
                 submitTime = Date().time,
                 taskRunId = "test123",
                 taskType = IndexTaskType.HTML,
-                refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+                entityTtl = Duration.ofMinutes(60).seconds
             )
         )
 

@@ -48,11 +48,11 @@ open class StepTest {
         source = "some-queue-name",
         details = IndexTaskDetails(
             id = "123456",
-            pageUrl = URL("https://www.francisbaileyh.com"),
+            entityUrl =  URL("https://www.francisbaileyh.com"),
             submitTime = Date().time,
             taskRunId = "test123",
             taskType = IndexTaskType.HTML,
-            refreshIntervalSeconds = Duration.ofMinutes(60).seconds
+            entityTtl = Duration.ofMinutes(60).seconds
         )
     )
 

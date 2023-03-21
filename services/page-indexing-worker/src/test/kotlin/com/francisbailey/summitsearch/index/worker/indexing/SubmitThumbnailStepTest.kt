@@ -70,10 +70,10 @@ class SubmitThumbnailStepTest: StepTest() {
         val result = step.process(item, monitor)
 
         verify(indexingTaskQueueClient).addTask(org.mockito.kotlin.check {
-            assertEquals(image.imageSrc, it.details.pageUrl.toString())
+            assertEquals(image.imageSrc, it.details.entityUrl.toString())
             val context = it.details.getContext<ImageTaskContext>()
 
-            assertEquals(defaultIndexTask.details.pageUrl, context!!.referencingURL)
+            assertEquals(defaultIndexTask.details.entityUrl, context!!.referencingURL)
             assertEquals(image.caption, context.description)
         })
         assertTrue(result.continueProcessing)
