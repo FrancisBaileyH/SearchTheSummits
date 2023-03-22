@@ -68,6 +68,8 @@ services:
     profiles: ["backend"]
     image: search-the-summits/page-indexing-coordinator
     env_file: variables.env
+    ports:
+      - "9092:9090"
     build:
       context: ./services/page-indexing-coordinator
       dockerfile: Dockerfile
