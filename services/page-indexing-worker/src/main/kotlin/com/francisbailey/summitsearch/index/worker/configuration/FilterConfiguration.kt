@@ -29,6 +29,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://accvi.ca"), ACCVIFilter)
             addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseFilter)
             addFilterChain(URL("https://coastmountainguides.com"), CoastMountainGuidesFilter)
+            addFilterChain(URL("http://www.supertopo.com"), SuperTopoFilter)
         }
     }
 
@@ -46,6 +47,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
             addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
             addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseIndexFilter)
+            addFilterChain(URL("http://www.supertopo.com"), SuperTopoIndexFilter)
         }
     }
 }
