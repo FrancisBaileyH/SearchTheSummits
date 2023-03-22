@@ -7,6 +7,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.*
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -30,7 +31,8 @@ open class PipelineConfiguration(
     private val saveImageStep: SaveImageStep,
     private val submitImagesStep: SubmitImagesStep,
     private val checkImageExistsStep: CheckImageExistsStep,
-    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep
+    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep,
+    private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep
 ) {
 
     @Bean
@@ -39,6 +41,7 @@ open class PipelineConfiguration(
             route(IndexTaskType.HTML) {
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
+                        .withHostOverride("skisickness.com", SubmitLinksStep::class, skiSicknessSubmitLinksStep)
                     .then(contentValidatorStep)
                         .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
                     .then(submitImagesStep)

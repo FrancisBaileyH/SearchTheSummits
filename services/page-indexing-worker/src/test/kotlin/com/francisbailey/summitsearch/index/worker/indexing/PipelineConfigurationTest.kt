@@ -8,6 +8,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.*
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import com.sksamuel.scrimage.ImmutableImage
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.junit.jupiter.api.Test
@@ -37,6 +38,7 @@ class PipelineConfigurationTest: StepTest() {
     private val generateImagePreviewStep = mock<GenerateImagePreviewStep>()
     private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
     private val checkImageExistsStep = mock<CheckImageExistsStep>()
+    private val skiSicknessSubmitLinksStep = mock<SkiSicknessSubmitLinksStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -57,7 +59,8 @@ class PipelineConfigurationTest: StepTest() {
         submitImagesStep = submitImagesStep,
         saveImageStep = saveImageStep,
         checkImageExistsStep = checkImageExistsStep,
-        cascadeClimbersSubmitThumbnailStep = cascadeClimbersSubmitThumbnailStep
+        cascadeClimbersSubmitThumbnailStep = cascadeClimbersSubmitThumbnailStep,
+        skiSicknessSubmitLinksStep = skiSicknessSubmitLinksStep
     )
 
     @Test
