@@ -8,9 +8,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
-/**
- * @TODO - heart beat time out on worker itself
- */
 @Service
 class WorkerAssignmentCoordinator(
     private val taskMonitor: TaskMonitor,
@@ -27,6 +24,8 @@ class WorkerAssignmentCoordinator(
         val workers = workerHealthTracker.getHealthyWorkers()
 
         taskQueue.addAll(activeTasks)
+
+        log.info { "Attempting to assign: ${activeTasks.size} tasks against: ${workers.size} workers" }
 
         try {
             workers.forEach {

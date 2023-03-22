@@ -61,7 +61,7 @@ class TaskMonitor(
      * as COMPLETED.
      */
     @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
-    fun monitorTasks() {
+    fun monitorTasks() = try {
         val activeTasks = taskStore.getTasks()
 
         activeTasks.forEach {
@@ -80,6 +80,7 @@ class TaskMonitor(
                     if (hasIndexTasksInQueue(it)) {
                         it.monitorTimestamp = null
                     } else {
+                        log.info { "Task: $it has no items in queue. Beginning to monitor for completion" }
                         it.monitorTimestamp = it.monitorTimestamp ?: clock.instant().toEpochMilli()
                     }
 
@@ -90,11 +91,14 @@ class TaskMonitor(
                     taskStore.save(it)
                 }
                 TaskStatus.COMPLETED -> {
+                    log.info { "Deleting task: $it" }
                     taskStore.delete(it)
                 }
             }
             log.info { "Task: $it is now in state: ${it.status}" }
         }
+    } catch (e: Exception) {
+        log.error(e) { "Failed to process task" }
     }
 
 

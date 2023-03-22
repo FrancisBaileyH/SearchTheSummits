@@ -14,7 +14,6 @@ class TaskStore(
     private val table: DynamoDbAsyncTable<Task>,
     private val meter: MeterRegistry
 ) {
-    private val log = KotlinLogging.logger { }
 
     fun getTask(host: String): Task? = meter.timer("$service.get.latency").recordCallable {
         table.getItem(Key.builder()

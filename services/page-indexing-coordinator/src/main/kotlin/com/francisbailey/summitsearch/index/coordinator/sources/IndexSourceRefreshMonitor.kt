@@ -7,14 +7,13 @@ import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.net.URL
 import java.time.Clock
 import java.util.concurrent.TimeUnit
 
 @Service
 class IndexSourceRefreshMonitor(
     private val meterRegistry: MeterRegistry,
-    private val regionConfig: RegionConfig,
+    regionConfig: RegionConfig,
     private val indexingTaskQueueClient: IndexingTaskQueueClient,
     private val indexSourceRepository: IndexSourceStore,
     private val taskMonitor: TaskMonitor,
@@ -28,7 +27,7 @@ class IndexSourceRefreshMonitor(
     }
 
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
-    fun checkSources() {
+    fun checkSources() = try {
         val sources = indexSourceRepository.getRefreshableSources()
 
         log.info { "Found ${sources.size} refreshable sources" }
@@ -59,7 +58,9 @@ class IndexSourceRefreshMonitor(
             log.info { "Successfully processed: $it" }
             meterRegistry.counter("index-source-refresh-monitor.enqueued").increment()
         }
-    }
+    } catch (e: Exception) {
+        log.error(e) { "Failed to check sources" }
+     }
 
     private fun generateQueueName(host: String): String {
         return "$queuePrefix${host.replace(".", "-")}"
