@@ -8,6 +8,17 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
+/**
+ * This service has a long ways to go before it's ready for a real prod scenario, but
+ * it's reached a point where it's good enough to iterate on and get the ball rolling.
+ *
+ * To reach the level I'd like it to, I'd want the following in place:
+ * 1. Service discovery for workers (instead of a hard-coded env list)
+ * 2. Distributed locking competition between two or more coordinators (not necessary for now, nor affordable)
+ * 3. Asynchronous workload distribution and monitoring. These are all synchronous calls right now, but it's good enough
+ * 4. Assignment reconciliation. Rather than refresh all tasks, keep track of current assignments and schedule accordingly
+ * 5. More metrics around task management
+ */
 @Service
 class WorkerAssignmentCoordinator(
     private val taskMonitor: TaskMonitor,

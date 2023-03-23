@@ -8,5 +8,5 @@ import java.time.Duration
 open class TaskMonitorConfiguration {
 
     @Bean
-    open fun emptyQueueMonitorDuration(): Duration = Duration.ofMinutes(30)
+    open fun emptyQueueMonitorDuration(): Duration = Duration.ofMinutes(10)
 }
