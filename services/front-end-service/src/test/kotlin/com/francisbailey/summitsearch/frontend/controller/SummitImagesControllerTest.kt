@@ -29,7 +29,8 @@ class SummitImagesControllerTest {
         digitalOceanCdnShim = digitalOceanCdnShim,
         meterRegistry = meterRegistry,
         imageIndexService = imageIndexService,
-        imageResultsPerPage = 20
+        imageResultsPerPage = 20,
+        previewImageResultsPerRequest = 6
     )
 
     @Test
@@ -120,6 +121,7 @@ class SummitImagesControllerTest {
             assertEquals(SummitSearchQueryType.STRICT, it.queryType)
         })
     }
+
     @Test
     fun `images api uses fuzzy match when fuzzy parameter is set`() {
         val result = SummitSearchPaginatedResult(
@@ -135,6 +137,63 @@ class SummitImagesControllerTest {
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
             assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
+            assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
+        })
+    }
+
+    @Test
+    fun `images preview api returns expected response with shimmed thumbnail url`() {
+        val shimmedThumbnailUrl = URL("http://shimmed.com")
+        val result = SummitSearchPaginatedResult(
+            hits = listOf(
+                SummitSearchImage(
+                    description = "test",
+                    referencingDocument = "test",
+                    source = "https://somewhere.com",
+                    dataStoreReference = "https://123.com",
+                    heightPx = 120,
+                    widthPx = 200
+                )
+            ),
+            totalHits = 1,
+            sanitizedQuery = "some test"
+        )
+
+        whenever(imageIndexService.query(any())).thenReturn(result)
+        whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
+
+        val response = controller.searchPreview("some test", null)
+
+        val expectedResponse = SummitSearchResponse(
+            hits = listOf(
+                SummitSearchImagePreviewHitResponse(
+                    thumbnail = shimmedThumbnailUrl.toString(),
+                    imageHeight = result.hits.first().heightPx,
+                    imageWidth = result.hits.first().widthPx
+                )
+            ),
+            totalHits = result.totalHits,
+            next = 0,
+            resultsPerPage = 6
+        )
+
+        assertEquals(Json.encodeToString(expectedResponse), response.body)
+    }
+
+    @Test
+    fun `images preview api uses fuzzy match when fuzzy parameter is set`() {
+        val result = SummitSearchPaginatedResult(
+            hits = emptyList<SummitSearchImage>(),
+            totalHits = 0,
+            sanitizedQuery = "some test"
+        )
+
+        whenever(imageIndexService.query(any())).thenReturn(result)
+
+        controller.searchPreview("some test", "fuzzy")
+
+        verify(imageIndexService).query(org.mockito.kotlin.check {
+            assertEquals("some test", it.term)
             assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
         })
     }

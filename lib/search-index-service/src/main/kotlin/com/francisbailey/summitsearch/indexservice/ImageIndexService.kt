@@ -68,7 +68,7 @@ class ImageIndexService(
             it.source { sourceConfig ->
                 sourceConfig.fetch(true)
             }
-            it.size(paginationResultSize)
+            it.size(queryRequest.paginationResultSize ?: paginationResultSize)
             it.from(queryRequest.from)
         }, ImageMapping::class.java)
 
@@ -241,12 +241,15 @@ data class SummitSearchImagePutRequest(
     val heightPx: Int,
     val widthPx: Int
 )
+
 data class SummitSearchImagesQueryRequest(
     val term: String,
     val from: Int = 0,
     val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE,
-    val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT
+    val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT,
+    val paginationResultSize: Int? = null
 )
+
 data class SummitSearchImage(
     val dataStoreReference: String,
     val description: String,

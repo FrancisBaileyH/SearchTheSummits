@@ -245,6 +245,27 @@ class ImageIndexServiceTest {
         }, any<Class<ImageMapping>>())
     }
 
+    @Test
+    fun `uses pagination value in request if one is present`() {
+        val index = "image-fuzzy-match-test"
+        val phraseFieldTerm = "this is a query"
+        val paginationCount = 6
+        val testIndexService = ImageIndexService(mockClient, 20, index)
+
+        val response = mock<SearchResponse<ImageMapping>>()
+        val hitsMetadata = mock<HitsMetadata<ImageMapping>>()
+
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<ImageMapping>>())).thenReturn(response)
+        whenever(response.hits()).thenReturn(hitsMetadata)
+        whenever(hitsMetadata.hits()).thenReturn(emptyList())
+
+        testIndexService.query(SummitSearchImagesQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.FUZZY, paginationResultSize = 6))
+
+        verify(mockClient).search(org.mockito.kotlin.check<SearchRequest> {
+            assertEquals(paginationCount, it.size())
+        }, any<Class<ImageMapping>>())
+    }
+
     companion object {
         private val testServer = ElasticSearchTestServer.global()
 

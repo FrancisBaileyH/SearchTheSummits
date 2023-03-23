@@ -11,4 +11,7 @@ open class PaginationConfiguration {
 
     @Bean
     open fun imageResultsPerPage(): Int = 30
+
+    @Bean
+    open fun previewImageResultsPerRequest(): Int = 6
 }

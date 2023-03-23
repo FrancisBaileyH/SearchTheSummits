@@ -15,7 +15,8 @@ open class ThrottlingConfiguration {
 
     val apiRequestPerSecondMap = hashMapOf(
         ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitsController.SEARCH_API_PATH) to 3,
-        ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_API_PATH) to 3
+        ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_API_PATH) to 3,
+        ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_PREVIEW_API_PATH) to 3
     )
 }
 

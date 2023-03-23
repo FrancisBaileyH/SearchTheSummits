@@ -23,7 +23,8 @@ class SummitImagesController(
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry,
-    private val imageResultsPerPage: Int
+    private val imageResultsPerPage: Int,
+    private val previewImageResultsPerRequest: Int
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -90,8 +91,51 @@ class SummitImagesController(
         }
     }
 
+    @GetMapping(path = [SEARCH_PREVIEW_API_PATH], produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun searchPreview(
+        @RequestParam(name = "query") requestQuery: String,
+        @RequestParam(name = "type", required = false) type: String? = null
+    ): ResponseEntity<String> {
+
+        val queryType = when(type?.lowercase()) {
+            "fuzzy" -> SummitSearchQueryType.FUZZY
+            else -> SummitSearchQueryType.STRICT
+        }
+
+        return try {
+            val response = meterRegistry.timer("api.imageindex.query.latency").recordCallable {
+                imageIndexService.query(SummitSearchImagesQueryRequest(
+                    queryType = queryType,
+                    sortType = SummitSearchSortType.BY_RELEVANCE,
+                    term = requestQuery,
+                    from = 0,
+                    paginationResultSize = previewImageResultsPerRequest
+                ))
+            }!!
+
+            ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
+                hits = response.hits.map {
+                    SummitSearchImagePreviewHitResponse(
+                        thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
+                        imageHeight = it.heightPx,
+                        imageWidth = it.widthPx
+                    )
+                },
+                totalHits = response.totalHits,
+                next = 0,
+                resultsPerPage = previewImageResultsPerRequest
+            )))
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
+                message = "Invalid argument: ${e.message}"
+            )))
+        }
+    }
+
+
     companion object {
         const val SEARCH_API_PATH = "/api/images"
+        const val SEARCH_PREVIEW_API_PATH = "/api/images/preview"
     }
 }
 
@@ -103,4 +147,11 @@ data class SummitSearchImageHitResponse(
     val referencingDocument: String,
     val imageHeight: Int,
     val imageWidth: Int
+)
+
+@Serializable
+data class SummitSearchImagePreviewHitResponse(
+    val thumbnail: String,
+    val imageWidth: Int,
+    val imageHeight: Int
 )
