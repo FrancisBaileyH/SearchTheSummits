@@ -46,7 +46,7 @@ class LinkDiscoveryTask(
                 return
             }
 
-            if (discoveryUrl == associatedTaskUrl) {
+            if (discoveryUrl == associatedTaskUrl && discovery.type == associatedTask.details.taskType) {
                 log.warn { "Discovered URL is the same as task URL. Skipping" }
                 return
             }

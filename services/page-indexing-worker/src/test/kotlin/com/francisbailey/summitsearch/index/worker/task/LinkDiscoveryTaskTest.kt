@@ -18,6 +18,7 @@ class LinkDiscoveryTaskTest {
     private val indexTaskDetails = mock<IndexTaskDetails> {
         on(mock.id).thenReturn("test123")
         on(mock.taskRunId).thenReturn("taskRunId123")
+        on(mock.taskType).thenReturn(IndexTaskType.HTML)
     }
     private val associatedTask = mock<IndexTask> {
         on(mock.details).thenReturn(indexTaskDetails)
@@ -64,7 +65,7 @@ class LinkDiscoveryTaskTest {
     }
 
     @Test
-    fun `ignores link if it is the same as the associated task`() {
+    fun `ignores link if it is the same as the associated task and same task type`() {
         whenever(indexTaskDetails.entityUrl).thenReturn(defaultURL)
 
         buildTask("https://francisbailey.com").run()

@@ -60,7 +60,7 @@ class TaskMonitor(
      * the queue will be monitored up to "emptyQueueMonitorDuration" before it is marked
      * as COMPLETED.
      */
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     fun monitorTasks() = try {
         val activeTasks = taskStore.getTasks()
 
@@ -80,7 +80,7 @@ class TaskMonitor(
                     if (hasIndexTasksInQueue(it)) {
                         it.monitorTimestamp = null
                     } else {
-                        log.info { "Task: $it has no items in queue. Beginning to monitor for completion" }
+                        log.info { "Task: $it has no items in queue. Monitoring for completion" }
                         it.monitorTimestamp = it.monitorTimestamp ?: clock.instant().toEpochMilli()
                     }
 
