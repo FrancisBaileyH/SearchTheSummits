@@ -37,6 +37,7 @@ class IndexSourceStoreTest {
                 seeds = setOf("example.com"),
                 documentTtl = 0,
                 nextUpdate = Instant.now().minusSeconds(60).toEpochMilli(),
+                refreshIntervalSeconds = 2000
             )
         }
 
@@ -47,7 +48,7 @@ class IndexSourceStoreTest {
         val result = indexSourceStore.getRefreshableSources().toSet()
 
         assertEquals(items.size, result.size)
-        assertTrue(result.containsAll(result))
+        assertTrue(result.containsAll(items))
 
         items.forEach {
             indexSourceStore.save(it.apply {
@@ -56,6 +57,33 @@ class IndexSourceStoreTest {
         }
 
         assertTrue(indexSourceStore.getRefreshableSources().isEmpty())
+    }
+
+    @Test
+    fun `items with refreshInterval time of 0 are skipped`() {
+        val items = (0..3).map {
+            IndexSource(
+                host = "example$it.com",
+                queueUrl = "some-queue-url",
+                seeds = setOf("example.com"),
+                documentTtl = 0,
+                nextUpdate = Instant.now().minusSeconds(60).toEpochMilli(),
+                refreshIntervalSeconds = 2000
+            )
+        }
+
+        items.forEach {
+            indexSourceStore.save(it)
+        }
+
+        indexSourceStore.save(items.first().apply {
+            refreshIntervalSeconds = 0
+        })
+
+        val result = indexSourceStore.getRefreshableSources().toSet()
+
+        assertEquals(items.size - 1, result.size)
+        assertTrue(result.containsAll(items.drop(3)))
     }
 
 

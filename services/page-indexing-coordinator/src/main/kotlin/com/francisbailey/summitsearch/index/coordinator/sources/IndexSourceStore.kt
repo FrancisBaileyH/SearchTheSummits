@@ -30,7 +30,9 @@ class IndexSourceStore(
             items.add(it)
         }.get()
 
-        items
+        items.filterNot {
+            it.refreshIntervalSeconds == 0L
+        }
     }!!
 
     fun save(source: IndexSource) = meter.timer("$serviceName.put.latency").recordCallable {
