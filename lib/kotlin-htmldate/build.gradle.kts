@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("org.owasp.dependencycheck") version "8.2.1"
     kotlin("jvm") version "1.7.21"
     application
 }

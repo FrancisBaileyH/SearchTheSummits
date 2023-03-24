@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.21"
+    id("org.owasp.dependencycheck") version "8.2.1"
     kotlin("plugin.serialization") version "1.7.21"
     application
 }
@@ -17,7 +18,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
 
-    implementation(platform("software.amazon.awssdk:bom:2.18.19"))
+    implementation(platform("software.amazon.awssdk:bom:2.20.31"))
     implementation("software.amazon.awssdk:sqs")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 

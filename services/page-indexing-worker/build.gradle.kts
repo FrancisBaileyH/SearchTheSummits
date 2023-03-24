@@ -7,7 +7,8 @@ plugins {
     kotlin("jvm") version "1.7.21"
     kotlin("plugin.serialization") version "1.7.21"
     id("io.spring.dependency-management") version "1.1.0"
-    id("org.springframework.boot") version "2.7.5"
+    id("org.springframework.boot") version "2.7.10"
+    id("org.owasp.dependencycheck") version "8.2.1"
     application
 }
 
@@ -27,7 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
 
-    implementation(platform("software.amazon.awssdk:bom:2.18.19"))
+    implementation(platform("software.amazon.awssdk:bom:2.20.31"))
     implementation("software.amazon.awssdk:sqs")
     implementation("software.amazon.awssdk:s3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")

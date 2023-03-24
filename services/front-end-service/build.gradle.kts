@@ -4,7 +4,8 @@ plugins {
     kotlin("jvm") version "1.7.21"
     kotlin("plugin.serialization") version "1.7.21"
     id("io.spring.dependency-management") version "1.1.0"
-    id("org.springframework.boot") version "2.7.5"
+    id("org.springframework.boot") version "2.7.10"
+    id("org.owasp.dependencycheck") version "8.2.1"
     application
 }
 

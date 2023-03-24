@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("org.owasp.dependencycheck") version "8.2.1"
     kotlin("jvm") version "1.7.21"
     application
 }
@@ -13,10 +14,10 @@ repositories {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("co.elastic.clients:elasticsearch-java:8.5.1")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("org.jsoup:jsoup:1.15.3")
 
