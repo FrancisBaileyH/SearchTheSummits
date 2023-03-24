@@ -2,10 +2,7 @@ package com.francisbailey.summitsearch.index.worker.indexing
 
 import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
-import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
-import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.RedirectedEntityException
-import com.francisbailey.summitsearch.index.worker.crawler.RetryableEntityException
+import com.francisbailey.summitsearch.index.worker.crawler.*
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageStep
 import com.francisbailey.summitsearch.index.worker.task.Discovery
@@ -13,6 +10,7 @@ import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import io.ktor.http.*
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -84,6 +82,17 @@ class FetchHtmlPageStepTest: StepTest() {
         assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
         verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.HTML, location)))
+        verifyNoInteractions(indexService)
+    }
+
+
+    @Test
+    fun `submits discovery on pdf content discovery`() {
+        whenever(pageCrawlerService.get(any())).thenThrow(UnsupportedEntityException(ContentType.Application.Pdf, "TEST"))
+
+        assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
+
+        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.PDF, pipelineItem.task.details.entityUrl.toString())))
         verifyNoInteractions(indexService)
     }
 

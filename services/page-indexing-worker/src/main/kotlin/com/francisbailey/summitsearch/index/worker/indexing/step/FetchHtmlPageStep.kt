@@ -2,9 +2,7 @@ package com.francisbailey.summitsearch.index.worker.indexing.step
 
 import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
-import com.francisbailey.summitsearch.index.worker.crawler.NonRetryableEntityException
-import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
-import com.francisbailey.summitsearch.index.worker.crawler.RedirectedEntityException
+import com.francisbailey.summitsearch.index.worker.crawler.*
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
@@ -12,6 +10,7 @@ import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
 import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import io.ktor.http.*
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
 import java.lang.Exception
@@ -64,6 +63,14 @@ class FetchHtmlPageStep(
                     e.location?.run {
                         monitor.meter.counter("page.redirects").increment()
                         linkDiscoveryService.submitDiscoveries(entity.task, listOf(Discovery(IndexTaskType.HTML, this)))
+                    }
+                }
+                is UnsupportedEntityException -> {
+                    e.contentType?.run {
+                        if (this.match(ContentType.Application.Pdf)) {
+                            log.info { "Found PDF on HTML route. Re-routing." }
+                            linkDiscoveryService.submitDiscoveries(entity.task, listOf(Discovery(IndexTaskType.PDF, entity.task.details.entityUrl.toString())))
+                        }
                     }
                 }
                 is NonRetryableEntityException -> {

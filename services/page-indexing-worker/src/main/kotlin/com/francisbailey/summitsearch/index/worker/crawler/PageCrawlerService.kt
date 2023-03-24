@@ -29,7 +29,7 @@ class PageCrawlerService(
     private val validator: (HttpResponse) -> Unit = {
         val isHtml = it.contentType()?.match(ContentType.Text.Html) ?: false
         if (!isHtml) {
-            throw UnparsableEntityException("Can't process non HTML page from: ${it.request.url}")
+            throw UnsupportedEntityException(it.contentType(), "Can't process non HTML page from: ${it.request.url}")
         }
     }
 

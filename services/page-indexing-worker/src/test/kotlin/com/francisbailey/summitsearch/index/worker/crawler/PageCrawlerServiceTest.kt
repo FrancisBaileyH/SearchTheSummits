@@ -65,7 +65,7 @@ class PageCrawlerServiceTest {
     }
 
     @Test
-    fun `throws UnparsableEntityException when content validation fails`() {
+    fun `throws UnsupportedEntityException when content validation fails`() {
         val content = "<html>Test</html>"
         val response = getResponse(url, content, ContentType.Image.PNG)
 
@@ -74,7 +74,7 @@ class PageCrawlerServiceTest {
             it.getArgument<(HttpResponse) -> Document>(2).invoke(response)
         }
 
-        assertThrows<UnparsableEntityException> { pageCrawler.get(url) }
+        assertThrows<UnsupportedEntityException> { pageCrawler.get(url) }
     }
 
 }

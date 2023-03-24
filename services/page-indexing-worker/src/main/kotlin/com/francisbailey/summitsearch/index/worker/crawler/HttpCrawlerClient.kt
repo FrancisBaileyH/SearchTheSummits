@@ -84,3 +84,4 @@ open class NonRetryableEntityException(message: String): RuntimeException(messag
 open class RetryableEntityException(message: String): RuntimeException(message)
 open class UnparsableEntityException(message: String): NonRetryableEntityException(message)
 open class RedirectedEntityException(val location: String?, message: String): NonRetryableEntityException(message)
+open class UnsupportedEntityException(val contentType: ContentType?, message: String): NonRetryableEntityException(message)
