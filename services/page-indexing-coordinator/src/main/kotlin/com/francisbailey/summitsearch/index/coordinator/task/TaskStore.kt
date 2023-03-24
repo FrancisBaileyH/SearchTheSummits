@@ -1,7 +1,6 @@
 package com.francisbailey.summitsearch.index.coordinator.task
 
 import io.micrometer.core.instrument.MeterRegistry
-import mu.KotlinLogging
 import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable
 import software.amazon.awssdk.enhanced.dynamodb.Key

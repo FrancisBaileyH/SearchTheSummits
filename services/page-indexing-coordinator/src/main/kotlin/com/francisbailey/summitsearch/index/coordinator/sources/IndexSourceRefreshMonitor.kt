@@ -26,7 +26,7 @@ class IndexSourceRefreshMonitor(
         else -> "sts-index-queue-test-"
     }
 
-    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     fun checkSources() = try {
         val sources = indexSourceRepository.getRefreshableSources()
 

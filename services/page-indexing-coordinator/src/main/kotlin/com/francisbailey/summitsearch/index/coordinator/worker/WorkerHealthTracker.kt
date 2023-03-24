@@ -33,7 +33,7 @@ class WorkerHealthTracker(
      * error, the tracker will monitor for recoveries. Should the host recover
      * after recoveryThreshold, it will again be added to the healthy worker pool
      *
-     * This is count based not time based, so we must carefully evalute changes to
+     * This is count based not time based, so we must carefully evaluate changes to
      * the scheduling of this function.
      */
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
@@ -41,7 +41,7 @@ class WorkerHealthTracker(
         workers.forEach {
             try {
                 workerClient.sendHeartBeat(it)
-                log.debug { "Received heartbeat from: $it" }
+                log.debug { "Received heartbeat reply from: $it" }
 
                 workerHealthMap[it]?.let { tracker ->
                     tracker.recoveries += 1
