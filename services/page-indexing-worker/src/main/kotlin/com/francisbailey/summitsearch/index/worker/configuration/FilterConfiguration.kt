@@ -31,6 +31,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://coastmountainguides.com"), CoastMountainGuidesFilter)
             addFilterChain(URL("http://www.supertopo.com"), SuperTopoFilter)
             addFilterChain(URL("https://skisickness.com"), SkiSicknessFilter)
+            addFilterChain(URL("https://www.mountaineers.org"), MountaineersOrgFilter)
         }
     }
 
@@ -50,6 +51,7 @@ open class FilterConfiguration {
             addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseIndexFilter)
             addFilterChain(URL("http://www.supertopo.com"), SuperTopoIndexFilter)
             addFilterChain(URL("https://skisickness.com"), SkiSicknessIndexFilter)
+            addFilterChain(URL("https://www.mountaineers.org"), MountaineersOrgIndexFilter)
         }
     }
 }
