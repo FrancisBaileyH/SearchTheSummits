@@ -145,6 +145,21 @@ class LinkDiscoveryTaskTest {
     }
 
     @Test
+    fun `skips cache if skipCache true in discovery`() {
+        val discovery = URL("https://francisbailey.com/test")
+        whenever(indexTaskDetails.entityUrl).thenReturn(defaultURL)
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
+
+        buildTask(discovery.toString(), skipCache = true).run()
+
+        verify(taskQueueClient).addTask(any())
+        verify(pageMetadataStore).getMetadata(discovery)
+        verify(pageMetadataStore).saveMetadata(indexTaskDetails.taskRunId, discovery)
+    }
+
+    @Test
     fun `if all conditions met then link is added to task queue and saved to task store`() {
         val discovery = URL("https://francisbailey.com/test")
         whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
@@ -167,12 +182,12 @@ class LinkDiscoveryTaskTest {
     }
 
 
-    private fun buildTask(discovery: String, type: IndexTaskType = IndexTaskType.HTML) = LinkDiscoveryTask(
+    private fun buildTask(discovery: String, type: IndexTaskType = IndexTaskType.HTML, skipCache: Boolean = false) = LinkDiscoveryTask(
         taskQueueClient,
         pageMetadataStore,
         associatedTask,
         documentFilterService,
         meterRegistry,
-        Discovery(type, discovery)
+        Discovery(type, discovery, skipCache)
     )
 }

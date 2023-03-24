@@ -92,7 +92,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
         assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
-        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.PDF, pipelineItem.task.details.entityUrl.toString())))
+        verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.PDF, pipelineItem.task.details.entityUrl.toString(), skipCacheCheck = true)))
         verifyNoInteractions(indexService)
     }
 

@@ -60,7 +60,7 @@ class LinkDiscoveryTask(
                 pageMetadataStore.getMetadata(discoveryUrl)
             }
 
-            if (metadata == null || metadata.canRefresh(associatedTask.details.refreshDuration())) {
+            if (discovery.skipCacheCheck || metadata == null || metadata.canRefresh(associatedTask.details.refreshDuration())) {
                 log.info { "New link discovery: $discoveryUrl as part of: ${associatedTask.details.id}" }
                 taskQueueClient.addTask(
                     IndexTask(
@@ -104,5 +104,10 @@ class LinkDiscoveryTask(
 
 data class Discovery(
     val type: IndexTaskType,
-    val source: String
+    val source: String,
+    // A bit of a hack to enable cases where
+    // the fetch a page and the task type is wrong
+    // but the link is already in the cache
+    // will be fixed with content type routing
+    val skipCacheCheck: Boolean = false
 )

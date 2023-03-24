@@ -69,7 +69,14 @@ class FetchHtmlPageStep(
                     e.contentType?.run {
                         if (this.match(ContentType.Application.Pdf)) {
                             log.info { "Found PDF on HTML route. Re-routing." }
-                            linkDiscoveryService.submitDiscoveries(entity.task, listOf(Discovery(IndexTaskType.PDF, entity.task.details.entityUrl.toString())))
+                            linkDiscoveryService.submitDiscoveries(
+                                entity.task,
+                                listOf(Discovery(
+                                    type = IndexTaskType.PDF,
+                                    source = entity.task.details.entityUrl.toString(),
+                                    skipCacheCheck = true
+                                )),
+                            )
                         }
                     }
                 }
