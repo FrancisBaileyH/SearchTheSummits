@@ -21,6 +21,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("co.elastic.clients:elasticsearch-java:8.5.1")
 
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:1.7.0")
     implementation("io.github.resilience4j:resilience4j-ratelimiter:1.7.0")

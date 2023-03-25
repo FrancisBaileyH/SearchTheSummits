@@ -47,7 +47,7 @@ class ElasticSearchTestServer {
             .build()
 
         val transport = RestClientTransport(restClient, JacksonJsonpMapper().apply {
-            this.objectMapper().registerModule(KotlinModule())
+            this.objectMapper().registerModule(KotlinModule.Builder().build())
         })
 
         client = ElasticsearchClient(transport)

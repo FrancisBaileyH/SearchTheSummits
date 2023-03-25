@@ -2,13 +2,10 @@ package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.htmldate.GoodEnoughHtmlDateGuesser
 import com.francisbailey.htmldate.HtmlDateSearchConfiguration
-import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SearchIndexServiceConfiguration
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexServiceFactory
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.client.SQSIndexingTaskQueueClient
+import com.francisbailey.summitsearch.indexservice.*
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
@@ -80,55 +77,25 @@ open class ClientConfiguration(
         }
     }
 
-    @Bean
-    open fun summitSearchIndexService(): SummitSearchIndexService {
-        return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.build(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
-                )
-            )
-            else -> SummitSearchIndexServiceFactory.build(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http"
-                )
-            )
-        }.also {
-            it.createIfNotExists()
+    open fun elasticSearchClientConfiguration(): ElasticSearchClientFactory.Configuration {
+        val scheme = when {
+            regionConfig.isProd -> "https"
+            else -> "http"
         }
+
+        return ElasticSearchClientFactory.Configuration(
+            fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+            username = environment.getRequiredProperty("ES_USERNAME"),
+            password = environment.getRequiredProperty("ES_PASSWORD"),
+            endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+            scheme = scheme
+        )
     }
 
     @Bean
-    open fun imageIndexService(): ImageIndexService {
-        return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildImageIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
-                )
-            )
-            else -> SummitSearchIndexServiceFactory.buildImageIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http"
-                )
-            )
-        }.also {
-            it.createIfNotExists()
-        }
-    }
+    open fun elasticSearchClient() = ElasticSearchClientFactory.build(
+        elasticSearchClientConfiguration()
+    )
 
     @Bean
     open fun redisClient(): UnifiedJedis {

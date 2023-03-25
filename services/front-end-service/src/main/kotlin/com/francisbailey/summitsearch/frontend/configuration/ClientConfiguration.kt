@@ -2,7 +2,6 @@ package com.francisbailey.summitsearch.frontend.configuration
 
 import com.francisbailey.summitsearch.indexservice.*
 import com.francisbailey.summitsearch.services.common.RegionConfig
-import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -10,82 +9,24 @@ import org.springframework.core.env.Environment
 @Configuration
 open class ClientConfiguration(
     private val environment: Environment,
-    private val regionConfig: RegionConfig,
-    private val documentResultsPerPage: Int,
-    private val imageResultsPerPage: Int
+    private val regionConfig: RegionConfig
 ) {
 
-    private val log = KotlinLogging.logger {}
-
-    @Bean
-    open fun summitSearchIndexService(): SummitSearchIndexService {
-        return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.build(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    paginationResultSize = documentResultsPerPage
-                ))
-            else -> SummitSearchIndexServiceFactory.build(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http",
-                    paginationResultSize = documentResultsPerPage
-                ))
+    open fun elasticSearchClientConfiguration(): ElasticSearchClientFactory.Configuration {
+        val scheme = when {
+            regionConfig.isProd -> "https"
+            else -> "http"
         }
 
+        return ElasticSearchClientFactory.Configuration(
+            fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
+            username = environment.getRequiredProperty("ES_USERNAME"),
+            password = environment.getRequiredProperty("ES_PASSWORD"),
+            endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
+            scheme = scheme
+        )
     }
 
     @Bean
-    open fun queryStatsService(): QueryStatsIndex {
-        return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildQueryStatsIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT")
-                ))
-            else -> SummitSearchIndexServiceFactory.buildQueryStatsIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http"
-                ))
-        }.also {
-            it.createIfNotExists()
-        }
-    }
-
-    @Bean
-    open fun imageIndexService(): ImageIndexService {
-        return when {
-            regionConfig.isProd -> SummitSearchIndexServiceFactory.buildImageIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    paginationResultSize = imageResultsPerPage
-                ))
-            else -> SummitSearchIndexServiceFactory.buildImageIndex(
-                SearchIndexServiceConfiguration(
-                    fingerprint = environment.getRequiredProperty("ES_FINGERPRINT"),
-                    username = environment.getRequiredProperty("ES_USERNAME"),
-                    password = environment.getRequiredProperty("ES_PASSWORD"),
-                    endpoint =  environment.getRequiredProperty("ES_ENDPOINT"),
-                    scheme = "http",
-                    paginationResultSize = imageResultsPerPage
-                ))
-        }.also {
-            it.createIfNotExists()
-        }
-    }
+    open fun elasticSearchClient() = ElasticSearchClientFactory.build(elasticSearchClientConfiguration())
 }

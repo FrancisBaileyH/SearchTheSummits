@@ -45,6 +45,8 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:$resilience4JVersion")
     implementation("io.github.resilience4j:resilience4j-ratelimiter:$resilience4JVersion")
 
+    implementation("co.elastic.clients:elasticsearch-java:8.5.1")
+
     implementation(project(":api:page-indexing-worker"))
     implementation(project(":lib:search-index-service"))
     implementation(project(":lib:service-common"))
