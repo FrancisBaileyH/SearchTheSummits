@@ -97,8 +97,8 @@ nav.resource-menu ul > li {
     padding-bottom: 0.5em;
     display: inline-flex;
     align-items: center;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
 }
 
 nav.resource-menu .icon {
@@ -335,6 +335,23 @@ hr.sub-menu-divider {
 .search-result-image-preview-button {
     padding-top: 5px;
     font-size: 1.6rem;
+    position: relative;
+    text-align: center;
+    margin-bottom: 1.5em;
+    margin-top: 0.5em;
+}
+
+.search-result-image-preview-button hr {
+    position: absolute;
+    width: 100%;
+    top: -11px;
+    z-index: -1;
+}
+
+.search-result-image-preview-button span {
+    background: white;
+    padding-left: 0.6em;
+    padding-right: 0.6em;
 }
 
 .search-result-image-preview-thumbnail:last-child img {
@@ -429,14 +446,19 @@ hr.sub-menu-divider {
 }
 
 .search-results-tools {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.75em;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .search-results-tools .tool-menu,
 .search-results-tools .search-tool-icon {
     display: inline-flex;
+}
+
+.search-results-tools .tool-menu {
+    flex-wrap: nowrap;
 }
 
 .search-results-tools .tool-menu button {
@@ -446,10 +468,11 @@ hr.sub-menu-divider {
 
 .search-results-tools .js-Dropdown {
     width: auto;
+    padding-right: 1em;
 }
 
 .search-results-tools .search-tool-icon {
-    padding-right: 0.6em;
+    padding-right: 2em;
     color: #576574;
 }
 
@@ -584,6 +607,10 @@ footer #footer-image {
 
     .search-result-highlight {
         display: flex;
+    }
+
+    .search-results-tools .search-tool-icon {
+        display: none;
     }
 }
 
