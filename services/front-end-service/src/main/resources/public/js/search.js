@@ -164,18 +164,44 @@ function renderImageModal(imageTarget) {
 function updateDocumentResults(searchParams) {
     var startTime = new Date().getTime();
     var endpoint = new URL(window.location.origin + "/api/summits");
+    var previewEndpoint = new URL(window.location.origin + "/api/images/preview")
 
     endpoint.search = "?" + searchParams.toString();
+    previewEndpoint.search = "?" + searchParams.toString();
 
-    $.getJSON(endpoint)
-    .fail(function(xhr, status, errorThrown) {
-        renderErrorMessage();
-     })
-    .done(function(json) {
+    var deferredSearch = $.getJSON(endpoint)
+    var deferredPreviewSearch = $.Deferred().resolve(null);
+
+    if (searchParams.get("page") == 1 || searchParams.get("page") == null) {
+        deferredPreviewSearch = $.getJSON(previewEndpoint)
+    }
+
+    $.when(deferredSearch, deferredPreviewSearch).done(function(searchResponse, previewResponse) {
         var totalTime = new Date().getTime() - startTime;
         var searchResults = "";
 
-        json.hits.forEach(function(hit) {
+        if (previewResponse != null && previewResponse[0].hits.length >= 3) {
+            var count = 0;
+            var url = new URL(window.location.href);
+
+            url.searchParams.set("resource", "images")
+
+            searchResults += "<div class=\"search-result-image-preview\">"
+            previewResponse[0].hits.forEach(function(hit) {
+                if (count < 3 || $(window).width() > 700) {
+                    searchResults += "<div class=\"search-result-image-preview-thumbnail\">"
+                    searchResults += "<a href=\"" + url + "\"><img src=\"" + hit.thumbnail + "\" /></a>"
+                    searchResults += "</div>"
+                }
+
+                count += 1;
+            })
+            searchResults += "</div>"
+            searchResults += "<div><p class=\"search-result-image-preview-button\"><a href=\"" + url + "\">View Images</a></p>"
+            searchResults += "<hr class=\"search-result-image-preview-divider\" /></div>"
+        }
+
+        searchResponse[0].hits.forEach(function(hit) {
             var thumbnailHtml = ""
             var mobileThumbnailHtml = ""
             var linkHtml = ""
@@ -222,12 +248,15 @@ function updateDocumentResults(searchParams) {
         });
 
         renderSearchResults({
-            totalHits: json.totalHits,
+            totalHits: searchResponse[0].totalHits,
             requestTime: totalTime,
-            currentHits: json.hits.size,
+            currentHits: searchResponse[0].hits.size,
             postRenderCallback: null,
-            resultsPerPage: json.resultsPerPage
+            resultsPerPage: searchResponse[0].resultsPerPage
         }, searchResults)
+
+    }).fail(function() {
+        renderErrorMessage();
     });
 }
 
@@ -414,7 +443,10 @@ function runSearchAnimations() {
         "Harvey North Ramp",
         "Parkhurst Peak Couloir",
         "Judge Howay",
-        "Mazama Dome"
+        "Mazama Dome",
+        "Serra V",
+        "Mount Asperity",
+        "Bellicose Peak"
     ]);
 
     var animatedPhrases = [firstPhrase]
