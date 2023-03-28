@@ -327,7 +327,7 @@ hr.sub-menu-divider {
 
 .search-result-image-preview-thumbnail img {
     width: 100%;
-    object-fit: fill;
+    object-fit: cover;
     height: 100%;
     max-height: 150px;
     max-width: 400px;
