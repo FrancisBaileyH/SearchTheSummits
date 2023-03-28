@@ -330,6 +330,7 @@ hr.sub-menu-divider {
     object-fit: fill;
     height: 100%;
     max-height: 150px;
+    max-width: 400px;
 }
 
 .search-result-image-preview-button {
