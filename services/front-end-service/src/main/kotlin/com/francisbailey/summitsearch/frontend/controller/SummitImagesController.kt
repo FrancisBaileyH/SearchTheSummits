@@ -22,9 +22,7 @@ class SummitImagesController(
     private val imageIndexService: ImageIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
-    private val meterRegistry: MeterRegistry,
-    private val imageResultsPerPage: Int,
-    private val previewImageResultsPerRequest: Int
+    private val meterRegistry: MeterRegistry
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -55,7 +53,7 @@ class SummitImagesController(
                     queryType = queryType,
                     sortType = sortType,
                     term = requestQuery,
-                    from = page?.absoluteValue?.dec()?.times(imageResultsPerPage) ?: 0,
+                    from = page?.absoluteValue?.dec()?.times(IMAGE_RESULT_SIZE) ?: 0,
                 ))
             }!!
 
@@ -82,7 +80,7 @@ class SummitImagesController(
                 },
                 totalHits = response.totalHits,
                 next = response.next,
-                resultsPerPage = imageResultsPerPage
+                resultsPerPage = IMAGE_RESULT_SIZE
             )))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
@@ -109,7 +107,7 @@ class SummitImagesController(
                     sortType = SummitSearchSortType.BY_RELEVANCE,
                     term = requestQuery,
                     from = 0,
-                    paginationResultSize = previewImageResultsPerRequest
+                    paginationResultSize = PREVIEW_IMAGE_RESULT_SIZE
                 ))
             }!!
 
@@ -123,7 +121,7 @@ class SummitImagesController(
                 },
                 totalHits = response.totalHits,
                 next = 0,
-                resultsPerPage = previewImageResultsPerRequest
+                resultsPerPage = PREVIEW_IMAGE_RESULT_SIZE
             )))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
@@ -136,6 +134,8 @@ class SummitImagesController(
     companion object {
         const val SEARCH_API_PATH = "/api/images"
         const val SEARCH_PREVIEW_API_PATH = "/api/images/preview"
+        const val IMAGE_RESULT_SIZE = 30
+        const val PREVIEW_IMAGE_RESULT_SIZE = 6
     }
 }
 

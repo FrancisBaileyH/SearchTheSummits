@@ -28,8 +28,7 @@ class SummitsControllerTest {
         summitSearchIndexService = summitSearchIndexService,
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
-        meterRegistry = meterRegistry,
-        documentResultsPerPage = 10
+        meterRegistry = meterRegistry
     )
 
 

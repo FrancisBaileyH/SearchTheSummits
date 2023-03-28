@@ -22,8 +22,7 @@ class SummitsController(
     private val summitSearchIndexService: SummitSearchIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
-    private val meterRegistry: MeterRegistry,
-    private val documentResultsPerPage: Int,
+    private val meterRegistry: MeterRegistry
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -51,7 +50,7 @@ class SummitsController(
                 summitSearchIndexService.query(
                     SummitSearchQueryRequest(
                         term = requestQuery,
-                        from = page?.absoluteValue?.dec()?.times(documentResultsPerPage) ?: 0,
+                        from = page?.absoluteValue?.dec()?.times(DOCUMENT_RESULTS_SIZE) ?: 0,
                         sortType = sortType,
                         queryType = queryType
                     )
@@ -79,7 +78,7 @@ class SummitsController(
                 },
                 totalHits = response.totalHits,
                 next = response.next,
-                resultsPerPage = documentResultsPerPage
+                resultsPerPage = DOCUMENT_RESULTS_SIZE
             )))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(Json.encodeToString(SummitSearchErrorResponse(
@@ -90,6 +89,7 @@ class SummitsController(
 
     companion object {
         const val SEARCH_API_PATH = "/api/summits"
+        const val DOCUMENT_RESULTS_SIZE = 10
     }
 
 }

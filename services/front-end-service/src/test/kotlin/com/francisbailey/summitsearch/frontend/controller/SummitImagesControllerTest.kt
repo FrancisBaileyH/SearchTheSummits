@@ -28,9 +28,7 @@ class SummitImagesControllerTest {
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
         meterRegistry = meterRegistry,
-        imageIndexService = imageIndexService,
-        imageResultsPerPage = 20,
-        previewImageResultsPerRequest = 6
+        imageIndexService = imageIndexService
     )
 
     @Test
@@ -78,7 +76,7 @@ class SummitImagesControllerTest {
             ),
             totalHits = result.totalHits,
             next = 0,
-            resultsPerPage = 20
+            resultsPerPage = 30
         )
 
         assertEquals(Json.encodeToString(expectedResponse), response.body)
