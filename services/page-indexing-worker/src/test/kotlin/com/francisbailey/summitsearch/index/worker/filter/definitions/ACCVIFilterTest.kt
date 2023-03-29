@@ -16,7 +16,8 @@ class ACCVIFilterTest: FilterTest() {
             "https://discourse.accvi.ca/c/trip-report/5",
             "https://discourse.accvi.ca/t/mount-allan-brooks-snowshoe/622",
             "https://discourse.accvi.ca/c/trip-report/5?page=2",
-            "https://accvi.ca/wp-content/bushwhacker/accvi_iba_1992.pdf"
+            "https://accvi.ca/wp-content/bushwhacker/accvi_iba_1992.pdf",
+            "https://accvi.ca/wp-content/uploads/ACCVI-IBA-2021a.pdf"
         )
 
         verifyFilter(linkDiscoveryFilterService, expectedToSkip, expectedNotToSkip)

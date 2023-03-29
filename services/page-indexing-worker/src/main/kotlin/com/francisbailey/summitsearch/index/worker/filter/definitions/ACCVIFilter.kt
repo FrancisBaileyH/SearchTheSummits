@@ -8,7 +8,7 @@ import java.util.regex.Pattern
 object ACCVIFilter: DocumentFilterChain(exclusive = false) {
 
     init {
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/bushwhacker/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/wp-content/.*/.*pdf")))
     }
 }
 
