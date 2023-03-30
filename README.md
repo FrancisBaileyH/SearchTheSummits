@@ -46,7 +46,7 @@ COORDINATOR_ACCESS_ID=<Coordinator User Name>
 COORDINATOR_ACCESS_KEY=<Coordinator Access Key>
 WORKER_ENDPOINTS=http://page-indexing-worker:8080
 ```
-Right now, the IAM users are created manually, but this could be improved with some infrastructure as code in the future. The environment variables are explained as follows:
+Right now, the IAM users are created manually, but this could be improved with some infrastructure as code in the future. All other resources are created programatically so it's only the IAM users we're concerned with for now. The environment variables are explained as follows:
 
 ### AWS_ACCESS_KEY + AWS_ACCESS_SECRET
 The IAM user that the PageIndexingWorker will use. It needs the following permission:
@@ -164,7 +164,7 @@ docker-compose --profile backend up -d
 
 *Occasionally the page-indexing-worker starts before the ElasticSearch cluster is up and running. Simply restart the indexing-worker container once ES is online.*
 
-At start up there will be no content, but you can access the frontend at `localhost:8080`. To index content so that there's something to search, you'll need to navigate to the `sts-index-source-store` dynamodb table in AWS. Add an entry like so:
+At start up there will be no content, but you can access the frontend at `localhost:8080`. To index content so that there's something to search, you'll need to navigate to the `sts-index-source-store-test` dynamodb table in AWS. Add an entry like so:
 ```
 {
   "host": {
@@ -191,3 +191,5 @@ At start up there will be no content, but you can access the frontend at `localh
 ```
 
 Wait a few minutes for the coordinator to assign the task to the worker and you should see the index start to get populated.
+
+*Resources such as DynamoDB tables, Queues, Buckets, ES Indexes, etc are programmatically created by whichever service needs to perform mutating operations on them. No need to create them manually*

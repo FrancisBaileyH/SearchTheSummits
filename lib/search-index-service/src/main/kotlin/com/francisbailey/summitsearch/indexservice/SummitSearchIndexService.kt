@@ -192,6 +192,7 @@ class SummitSearchIndexService(
 
         log.info { "Bulk index result had error: ${result.errors()}" }
     }
+
     fun indexContent(request: SummitSearchPutRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
