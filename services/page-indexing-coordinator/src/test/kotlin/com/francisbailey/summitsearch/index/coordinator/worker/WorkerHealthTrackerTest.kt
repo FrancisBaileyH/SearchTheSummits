@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.coordinator.worker
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,7 +27,8 @@ class WorkerHealthTrackerTest {
     fun `hosts are marked as healthy when recovery threshold is reached`() {
         val tracker = WorkerHealthTracker(
             workerClient = workerClient,
-            workers = workers
+            workers = workers,
+            meter = SimpleMeterRegistry()
         )
 
         assertTrue(tracker.getHealthyWorkers().isEmpty())
@@ -48,7 +50,8 @@ class WorkerHealthTrackerTest {
     fun `host is marked as unhealthy after MAX_FAIL_COUNT is reached`() {
         val tracker = WorkerHealthTracker(
             workerClient = workerClient,
-            workers = workers
+            workers = workers,
+            meter = SimpleMeterRegistry()
         )
 
         repeat(WorkerHealthTracker.RECOVERY_THRESHOLD + 1) {
@@ -73,7 +76,8 @@ class WorkerHealthTrackerTest {
     fun `host recovers after being removed from pool`() {
         val tracker = WorkerHealthTracker(
             workerClient = workerClient,
-            workers = workers
+            workers = workers,
+            meter = SimpleMeterRegistry()
         )
         // whenever doesn't like overriding void method calls
         var returnFailure = false

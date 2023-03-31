@@ -1,5 +1,7 @@
 package com.francisbailey.summitsearch.index.coordinator.worker
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tags
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -9,7 +11,8 @@ import java.util.concurrent.TimeUnit
 @Service
 class WorkerHealthTracker(
     private val workers: Set<Worker>,
-    private val workerClient: WorkerClient
+    private val workerClient: WorkerClient,
+    private val meter: MeterRegistry
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -17,7 +20,11 @@ class WorkerHealthTracker(
         HeartBeatTracker()
     }.toMutableMap()
 
-    private val healthyWorkers = mutableSetOf<Worker>()
+    private val healthyWorkers = meter.gaugeCollectionSize(
+        "$service.healthy-workers",
+        Tags.empty(),
+        mutableSetOf<Worker>()
+    )
 
     fun getHealthyWorkers(): Set<Worker> {
         return healthyWorkers
@@ -76,6 +83,7 @@ class WorkerHealthTracker(
     )
 
     companion object {
+        const val service = "worker-health-tracker"
         const val MAX_FAIL_COUNT = 5
         const val RECOVERY_THRESHOLD = 10
         const val MAX_TRACKING_FAILURES = MAX_FAIL_COUNT + 100 // just to prevent integer overflow

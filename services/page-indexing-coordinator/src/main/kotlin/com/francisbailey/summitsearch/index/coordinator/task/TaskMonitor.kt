@@ -15,6 +15,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 
 @Service
@@ -26,6 +27,8 @@ class TaskMonitor(
     private val clock: Clock
 ) {
     private val log = KotlinLogging.logger { }
+
+    private val taskCount = meter.gauge("${service}.taskCount", AtomicInteger())
 
     fun getActiveTasks(): List<Task> {
         return taskStore.getTasks().filter {
@@ -63,6 +66,8 @@ class TaskMonitor(
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     fun monitorTasks() = try {
         val activeTasks = taskStore.getTasks()
+
+        taskCount.set(activeTasks.size)
 
         activeTasks.forEach {
             val tags = arrayOf("status", it.status.name, "host", it.host)
