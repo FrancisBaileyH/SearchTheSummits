@@ -39,6 +39,7 @@ class PipelineConfigurationTest: StepTest() {
     private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
     private val checkImageExistsStep = mock<CheckImageExistsStep>()
     private val skiSicknessSubmitLinksStep = mock<SkiSicknessSubmitLinksStep>()
+    private val indexFacebookPostStepTest = mock<IndexFacebookPostStep>()
 
     private val pipelineConfiguration = PipelineConfiguration(
         fetchHtmlPageStep = fetchHtmlPageStep,
@@ -60,7 +61,8 @@ class PipelineConfigurationTest: StepTest() {
         saveImageStep = saveImageStep,
         checkImageExistsStep = checkImageExistsStep,
         cascadeClimbersSubmitThumbnailStep = cascadeClimbersSubmitThumbnailStep,
-        skiSicknessSubmitLinksStep = skiSicknessSubmitLinksStep
+        skiSicknessSubmitLinksStep = skiSicknessSubmitLinksStep,
+        indexFacebookPostStep = indexFacebookPostStepTest
     )
 
     @Test
