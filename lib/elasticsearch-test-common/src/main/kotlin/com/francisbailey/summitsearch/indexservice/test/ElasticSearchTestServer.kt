@@ -1,4 +1,4 @@
-package com.francisbailey.summitsearch.indexservice
+package com.francisbailey.summitsearch.indexservice.test
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.json.jackson.JacksonJsonpMapper

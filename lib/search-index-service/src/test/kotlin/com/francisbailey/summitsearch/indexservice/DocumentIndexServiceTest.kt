@@ -15,6 +15,7 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
+import com.francisbailey.summitsearch.indexservice.test.ElasticSearchTestServer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions.*

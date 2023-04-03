@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
+import com.francisbailey.summitsearch.indexservice.test.ElasticSearchTestServer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
