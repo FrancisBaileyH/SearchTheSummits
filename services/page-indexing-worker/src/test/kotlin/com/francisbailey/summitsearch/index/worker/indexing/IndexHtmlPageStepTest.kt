@@ -3,8 +3,8 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageStep
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.HtmlDocumentPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -13,14 +13,14 @@ import java.time.LocalDateTime
 
 class IndexHtmlPageStepTest: StepTest() {
 
-    private val indexService = mock<SummitSearchIndexService>()
+    private val indexService = mock<DocumentIndexService>()
 
     private val documentIndexFilterService = mock<DocumentFilterService> {
         on(mock.shouldFilter(any())).thenReturn(false)
     }
 
     private val step = IndexHtmlPageStep(
-        summitSearchIndexService = indexService,
+        documentIndexService = indexService,
         documentIndexingFilterService = documentIndexFilterService
     )
 
@@ -43,7 +43,7 @@ class IndexHtmlPageStepTest: StepTest() {
 
         verify(depencencyCircuitBreaker).executeCallable<Unit>(any())
         verify(documentIndexFilterService).shouldFilter(defaultIndexTask.details.entityUrl)
-        verify(indexService).indexContent(SummitSearchPutHtmlPageRequest(defaultIndexTask.details.entityUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
+        verify(indexService).indexContent(HtmlDocumentPutRequest(defaultIndexTask.details.entityUrl, htmlContent, pipelineItem.payload!!.pageCreationDate))
     }
 
     @Test

@@ -16,7 +16,7 @@ class QueryStatsIndex(
 
     private val log = KotlinLogging.logger { }
 
-    fun pushStats(request: SummitSearchQueryStatsPutRequest) {
+    fun pushStats(request: QueryStatsPutRequest) {
         require(request.stats.size <= MAX_STATS_PER_UPDATE) {
             "Exceeded number of stats to push on bulk. Value: ${request.stats.size}. Max: $MAX_STATS_PER_UPDATE"
         }
@@ -24,7 +24,7 @@ class QueryStatsIndex(
         val indexOperations = request.stats.map {
             BulkOperation.of { operation ->
                 operation.index { indexOp ->
-                    indexOp.document(QueryStat(
+                    indexOp.document(QueryStatMapping(
                         timestamp = it.timestamp,
                         query = it.query,
                         totalHits = it.totalHits,
@@ -57,7 +57,7 @@ class QueryStatsIndex(
                 it.index(indexName)
                 it.mappings { mapping ->
                     mapping.properties(mapOf(
-                        QueryStat::timestamp.name to Property.of { property ->
+                        QueryStatMapping::timestamp.name to Property.of { property ->
                             property.date(DateProperty.Builder().build())
                         }
                     ))
@@ -73,7 +73,7 @@ class QueryStatsIndex(
 }
 
 
-internal data class QueryStat(
+internal data class QueryStatMapping(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,
@@ -83,11 +83,11 @@ internal data class QueryStat(
     val index: String?
 )
 
-data class SummitSearchQueryStatsPutRequest(
-    val stats: List<SummitSearchQueryStat>
+data class QueryStatsPutRequest(
+    val stats: List<QueryStat>
 )
 
-data class SummitSearchQueryStat(
+data class QueryStat(
     val timestamp: Long,
     val query: String,
     val totalHits: Long,

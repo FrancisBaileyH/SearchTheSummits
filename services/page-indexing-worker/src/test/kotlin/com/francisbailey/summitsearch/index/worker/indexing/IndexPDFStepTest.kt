@@ -4,8 +4,8 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexPDFStep
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentIndexRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import org.junit.jupiter.api.Assertions.*
@@ -16,7 +16,7 @@ import java.net.URL
 
 class IndexPDFStepTest: StepTest() {
 
-    private val summitSearchIndexService = mock<SummitSearchIndexService> {
+    private val documentIndexService = mock<DocumentIndexService> {
         on(mock.maxBulkIndexRequests).thenReturn(100)
     }
 
@@ -29,7 +29,7 @@ class IndexPDFStepTest: StepTest() {
     private val pdfPartitionThreshold = 3
 
     private val step = IndexPDFStep(
-        summitSearchIndexService = summitSearchIndexService,
+        documentIndexService = documentIndexService,
         textStripper = textStripperGenerator,
         pdfPagePartitionThreshold = pdfPartitionThreshold
     )
@@ -60,7 +60,7 @@ class IndexPDFStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        verify(summitSearchIndexService).indexContent(check<SummitSearchIndexRequest> {
+        verify(documentIndexService).indexContent(check<DocumentIndexRequest> {
             assertEquals("test value", it.title)
             assertEquals("", it.seoDescription)
             assertEquals("", it.paragraphContent)
@@ -84,10 +84,10 @@ class IndexPDFStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        argumentCaptor<List<SummitSearchIndexRequest>> {
-            verify(summitSearchIndexService).indexPartitionedContent(capture())
+        argumentCaptor<List<DocumentIndexRequest>> {
+            verify(documentIndexService).indexPartitionedContent(capture())
 
-            assertEquals(firstValue.first(), SummitSearchIndexRequest(
+            assertEquals(firstValue.first(), DocumentIndexRequest(
                 title = "test value (pages 1-3)",
                 seoDescription = "",
                 paragraphContent = "",
@@ -95,7 +95,7 @@ class IndexPDFStepTest: StepTest() {
                 rawTextContent = content
             ))
 
-            assertEquals(firstValue[1], SummitSearchIndexRequest(
+            assertEquals(firstValue[1], DocumentIndexRequest(
                 title = "test value (page 4)",
                 seoDescription = "",
                 paragraphContent = "",
@@ -120,10 +120,10 @@ class IndexPDFStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        argumentCaptor<List<SummitSearchIndexRequest>> {
-            verify(summitSearchIndexService).indexPartitionedContent(capture())
+        argumentCaptor<List<DocumentIndexRequest>> {
+            verify(documentIndexService).indexPartitionedContent(capture())
 
-            assertEquals(firstValue.first(), SummitSearchIndexRequest(
+            assertEquals(firstValue.first(), DocumentIndexRequest(
                 title = "test value (pages 1-3)",
                 seoDescription = "",
                 paragraphContent = "",
@@ -131,7 +131,7 @@ class IndexPDFStepTest: StepTest() {
                 rawTextContent = content
             ))
 
-            assertEquals(firstValue[1], SummitSearchIndexRequest(
+            assertEquals(firstValue[1], DocumentIndexRequest(
                 title = "test value (pages 4,5)",
                 seoDescription = "",
                 paragraphContent = "",
@@ -149,7 +149,7 @@ class IndexPDFStepTest: StepTest() {
         val content = "Some Test Content Here"
         val content2 = "Some other content"
 
-        whenever(summitSearchIndexService.maxBulkIndexRequests).thenReturn(2)
+        whenever(documentIndexService.maxBulkIndexRequests).thenReturn(2)
         whenever(document.numberOfPages).thenReturn(6 * pdfPartitionThreshold)
         whenever(textStripper.getText(any()))
             .thenReturn(content)
@@ -157,7 +157,7 @@ class IndexPDFStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        verify(summitSearchIndexService, times(3)).indexPartitionedContent(any())
+        verify(documentIndexService, times(3)).indexPartitionedContent(any())
 
         assertTrue(result.continueProcessing)
         assertFalse(result.shouldRetry)

@@ -8,8 +8,8 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
-import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentDeleteRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import io.ktor.http.*
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Component
@@ -25,7 +25,7 @@ data class DatedDocument(
 class FetchHtmlPageStep(
     private val pageCrawlerService: PageCrawlerService,
     private val linkDiscoveryService: LinkDiscoveryService,
-    private val indexService: SummitSearchIndexService,
+    private val indexService: DocumentIndexService,
     private val htmlDateGuesser: GoodEnoughHtmlDateGuesser
 ): Step<DatedDocument> {
 
@@ -82,7 +82,7 @@ class FetchHtmlPageStep(
                 }
                 is NonRetryableEntityException -> {
                     monitor.dependencyCircuitBreaker.executeCallable {
-                        indexService.deletePageContents(SummitSearchDeleteIndexRequest(entity.task.details.entityUrl))
+                        indexService.deletePageContents(DocumentDeleteRequest(entity.task.details.entityUrl))
                         monitor.meter.counter("indexservice.delete").increment()
                         log.error(e) { "Unable to index page: ${entity.task.details.entityUrl}" }
                     }

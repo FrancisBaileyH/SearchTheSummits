@@ -31,7 +31,7 @@ import java.net.URL
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class SummitSearchIndexServiceTest {
+class DocumentIndexServiceTest {
 
     private val resources = File("src/test/resources")
 
@@ -58,7 +58,7 @@ class SummitSearchIndexServiceTest {
     @Test
     fun `creates index with html analyzer if index does not exist yet`() {
         val index = "create-index-not-exist"
-        val testIndexService = SummitSearchIndexService(client, 10, index)
+        val testIndexService = DocumentIndexService(client, 10, index)
         assertFalse(client.indexExists(index))
 
         testIndexService.createIfNotExists()
@@ -71,7 +71,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex("test")
 
         assertThrows<IllegalArgumentException> {
-            testIndexService.query(SummitSearchQueryRequest(term = "test", from = SummitSearchIndexService.MAX_FROM_VALUE + 1))
+            testIndexService.query(DocumentQueryRequest(term = "test", from = DocumentIndexService.MAX_FROM_VALUE + 1))
         }
     }
 
@@ -80,13 +80,13 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex("test")
 
         val term = StringBuffer().apply {
-            repeat(SummitSearchIndexService.MAX_QUERY_TERM_SIZE + 1) {
+            repeat(DocumentIndexService.MAX_QUERY_TERM_SIZE + 1) {
                 this.append("a")
             }
         }.toString()
 
         assertThrows<IllegalArgumentException> {
-            testIndexService.query(SummitSearchQueryRequest(term = term, from = 1))
+            testIndexService.query(DocumentQueryRequest(term = term, from = 1))
         }
     }
 
@@ -96,7 +96,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
         indexHtmlContent(testIndexService)
 
-        val results = testIndexService.query(SummitSearchQueryRequest(term = "Lily"))
+        val results = testIndexService.query(DocumentQueryRequest(term = "Lily"))
 
         assertEquals(1, results.hits.size)
 
@@ -113,7 +113,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
         indexHtmlContent(testIndexService)
 
-        val results = testIndexService.query(SummitSearchQueryRequest(term = "Texas Peak"))
+        val results = testIndexService.query(DocumentQueryRequest(term = "Texas Peak"))
 
         assertEquals(1, results.hits.size)
 
@@ -130,7 +130,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
         indexHtmlContent(testIndexService)
 
-        val results = testIndexService.query(SummitSearchQueryRequest(term = "Connaught"))
+        val results = testIndexService.query(DocumentQueryRequest(term = "Connaught"))
 
         assertEquals(1, results.hits.size)
 
@@ -147,9 +147,9 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index, pagination = 1)
         indexHtmlContent(testIndexService)
 
-        val paginatedResults = generateSequence(testIndexService.query(SummitSearchQueryRequest(term = "Peak"))) {
+        val paginatedResults = generateSequence(testIndexService.query(DocumentQueryRequest(term = "Peak"))) {
             if (it.hits.isNotEmpty()) {
-                testIndexService.query(SummitSearchQueryRequest(term = "Peak", from = it.next))
+                testIndexService.query(DocumentQueryRequest(term = "Peak", from = it.next))
             } else {
                 null
             }
@@ -174,11 +174,11 @@ class SummitSearchIndexServiceTest {
 
         val page = loadHtml("LibertyBell")
 
-        assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/LibertyBell"), htmlDocument = page))
+        assertTrue(testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.isEmpty())
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = URL("$sourceUrlString/LibertyBell"), htmlDocument = page))
         refreshIndex(index)
 
-        val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+        val result = testIndexService.query(DocumentQueryRequest(term = "Liberty"))
 
         assertFalse(result.hits.isEmpty())
 
@@ -187,7 +187,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id("$source/LibertyBell")
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
         assertTrue(document.found())
         assertEquals(URL(sourceUrlString).host, document.source()?.host)
@@ -201,7 +201,7 @@ class SummitSearchIndexServiceTest {
         val url = URL("https://francisbaileyh.com/some-page")
 
         testIndexService.indexPartitionedContent(listOf(
-            SummitSearchPutRequest(
+            DocumentPutRequest(
                 source = url,
                 rawTextContent = "Test",
                 paragraphContent = "",
@@ -227,15 +227,15 @@ class SummitSearchIndexServiceTest {
         val date = LocalDateTime.now()
         val page = loadHtml("LibertyBell")
 
-        assertTrue(testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.isEmpty())
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(
+        assertTrue(testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.isEmpty())
+        testIndexService.indexContent(HtmlDocumentPutRequest(
             source = URL("$sourceUrlString/LibertyBell"),
             htmlDocument = page,
             pageCreationDate = date
         ))
         refreshIndex(index)
 
-        val result = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+        val result = testIndexService.query(DocumentQueryRequest(term = "Liberty"))
 
         assertFalse(result.hits.isEmpty())
 
@@ -244,7 +244,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id("$source/LibertyBell")
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
         assertTrue(document.found())
         assertEquals(URL(sourceUrlString).host, document.source()?.host)
@@ -266,7 +266,7 @@ class SummitSearchIndexServiceTest {
         """
 
         testIndexService.indexContent(
-            SummitSearchPutHtmlPageRequest(
+            HtmlDocumentPutRequest(
             source = sourceURL,
             htmlDocument = Jsoup.parse(html)
         ))
@@ -278,7 +278,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(generateIdFromUrl(sourceURL))
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertEquals(sourceURL.host, document.source()?.title)
@@ -305,7 +305,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         testIndexService.indexContent(
-            SummitSearchPutHtmlPageRequest(
+            HtmlDocumentPutRequest(
             sourceUrl,
             Jsoup.parse(maliciousHtml)
         ))
@@ -315,7 +315,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(source)
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertEquals("Hello World!", document?.source()?.seoDescription)
@@ -331,7 +331,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         testIndexService.indexContent(
-            SummitSearchIndexRequest(
+            DocumentIndexRequest(
                 source = sourceUrl,
                 rawTextContent = "<p>There is some content here.</p> <p>Here <script>alert('test');</script>too.</p>",
                 seoDescription = "<script>alert('test')/</script>Hello <center>World!</center>",
@@ -344,7 +344,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(source)
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertEquals("Hello World!", document?.source()?.seoDescription)
@@ -374,7 +374,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         testIndexService.indexContent(
-            SummitSearchPutHtmlPageRequest(
+            HtmlDocumentPutRequest(
                 sourceUrl,
                 Jsoup.parse(htmlWithExcludedTags)
             ))
@@ -384,7 +384,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(source)
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertEquals("Test content.", document?.source()?.paragraphContent)
@@ -399,12 +399,12 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.indexContent(HtmlDocumentPutRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
 
-        val result = testIndexService.query(SummitSearchQueryRequest(
+        val result = testIndexService.query(DocumentQueryRequest(
             term = "Twins Tower"
         ))
 
@@ -422,12 +422,12 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         pages.forEach {
-            testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
+            testIndexService.indexContent(HtmlDocumentPutRequest(source = URL("$sourceUrlString/$it"), htmlDocument = loadHtml(it)))
         }
 
         refreshIndex(index)
 
-        val result = testIndexService.query(SummitSearchQueryRequest(
+        val result = testIndexService.query(DocumentQueryRequest(
             term = "Share this post"
         ))
 
@@ -442,18 +442,18 @@ class SummitSearchIndexServiceTest {
         val page = loadHtml("LibertyBell")
         val url = URL("$sourceUrlString/LibertyBell")
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
-        assertEquals(url.toString(), testIndexService.query(SummitSearchQueryRequest(term = "Liberty")).hits.first().source)
+        assertEquals(url.toString(), testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.first().source)
 
-        testIndexService.deletePageContents(SummitSearchDeleteIndexRequest(url))
+        testIndexService.deletePageContents(DocumentDeleteRequest(url))
         refreshIndex(index)
 
         val result = client.get(GetRequest.of {
             it.index(index)
             it.id(generateIdFromUrl(url))
-        }, HtmlMapping::class.java)
+        }, DocumentMapping::class.java)
 
         assertFalse(result.found())
     }
@@ -462,59 +462,59 @@ class SummitSearchIndexServiceTest {
     fun `query uses phrase + term when term count is greater than 2`() {
         val index = "phrase_term_test"
         val bestFieldTerm = "three terms here"
-        val response = mock<SearchResponse<HtmlMapping>>()
-        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
-        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+        val response = mock<SearchResponse<DocumentMapping>>()
+        val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
+        val testIndexService = DocumentIndexService(mockClient, 20, index)
 
-        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<DocumentMapping>>())).thenReturn(response)
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchQueryRequest(bestFieldTerm))
+        testIndexService.query(DocumentQueryRequest(bestFieldTerm))
 
         val expectedQuery = buildExpectedSearchQuery("\"three terms\" \"here\"", index)
 
-       verify(mockClient).search(check<SearchRequest> { assertEquals(expectedQuery.toString(), it.toString()) }, any<Class<HtmlMapping>>())
+       verify(mockClient).search(check<SearchRequest> { assertEquals(expectedQuery.toString(), it.toString()) }, any<Class<DocumentMapping>>())
     }
 
     @Test
     fun `query switches to phrase when term count is equal to or less than 2`() {
         val index = "phrase-match-test"
         val phraseFieldTerm = "two terms"
-        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(mockClient, 20, index)
 
-        val response = mock<SearchResponse<HtmlMapping>>()
-        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+        val response = mock<SearchResponse<DocumentMapping>>()
+        val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
 
-        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<DocumentMapping>>())).thenReturn(response)
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
+        testIndexService.query(DocumentQueryRequest(phraseFieldTerm))
 
         val expectedQuery = buildExpectedSearchQuery("\"two terms\"", index)
 
-        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<DocumentMapping>>())
     }
 
     @Test
     fun `escapes non-alphanumeric characters from query`() {
         val index = "phrase-sanitization-test"
         val phraseFieldTerm = "Term-with-hyphen *produces| this (query) ~here and tom's 0123456789’!"
-        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(mockClient, 20, index)
 
-        val response = mock<SearchResponse<HtmlMapping>>()
-        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+        val response = mock<SearchResponse<DocumentMapping>>()
+        val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
 
-        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<DocumentMapping>>())).thenReturn(response)
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm))
+        testIndexService.query(DocumentQueryRequest(phraseFieldTerm))
 
         val expectedQuery = buildExpectedSearchQuery(""""Term\-with\-hyphen produces" "this" "query" "here" "and" "tom's" "0123456789’"""", index)
 
-        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<DocumentMapping>>())
     }
 
     @Test
@@ -523,7 +523,7 @@ class SummitSearchIndexServiceTest {
         val testIndexService = createIndex(index)
 
         val data = (0..4).map {
-            SummitSearchIndexRequest(
+            DocumentIndexRequest(
                 source = URL("https://abc.com"),
                 rawTextContent = "TEST$it",
                 title = "Some title$it",
@@ -541,7 +541,7 @@ class SummitSearchIndexServiceTest {
             it.query { query ->
                 query.matchAll(MatchAllQuery.Builder().build())
             }
-        }, HtmlMapping::class.java)
+        }, DocumentMapping::class.java)
 
         val sources = result.hits().hits().map { it.source()!!.source }.toSet()
         assertEquals(data.map { it.source}.toSet(), sources)
@@ -549,10 +549,10 @@ class SummitSearchIndexServiceTest {
 
     @Test
     fun `throws exception if bulk index size is greater than max`() {
-        val service = SummitSearchIndexService(mockClient, 10)
+        val service = DocumentIndexService(mockClient, 10, "test")
 
         val requests = (0..service.maxBulkIndexRequests).map {
-            mock<SummitSearchIndexRequest> {
+            mock<DocumentIndexRequest> {
                 on(mock.source).thenReturn(URL("https://www.example.com"))
             }
         }
@@ -562,10 +562,10 @@ class SummitSearchIndexServiceTest {
 
     @Test
     fun `throws exception if document source differs on any bulk request`() {
-        val service = SummitSearchIndexService(mockClient, 10)
+        val service = DocumentIndexService(mockClient, 10, "test")
 
-        val request1 = mock<SummitSearchIndexRequest>()
-        val request2 = mock<SummitSearchIndexRequest>()
+        val request1 = mock<DocumentIndexRequest>()
+        val request2 = mock<DocumentIndexRequest>()
 
         whenever(request1.source).thenReturn(URL("https://example.com"))
         whenever(request2.source).thenReturn(URL("https://some-other-site.com"))
@@ -588,7 +588,7 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         val document = client.get(
@@ -596,14 +596,14 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(generateIdFromUrl(url))
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertNotNull(document)
         assertNull(document?.source()?.thumbnails)
 
         testIndexService.putThumbnails(
-            SummitSearchPutThumbnailRequest(
+            DocumentThumbnailPutRequest(
             source = url,
             dataStoreReferences = thumnbails
         )
@@ -615,7 +615,7 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(generateIdFromUrl(url))
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
         assertEquals(thumnbails, documentWithThumbnails?.source()?.thumbnails)
     }
@@ -630,7 +630,7 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         val document = client.get(
@@ -638,21 +638,21 @@ class SummitSearchIndexServiceTest {
                 it.index(index)
                 it.id(generateIdFromUrl(url))
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         assertNotNull(document)
         assertNull(document?.source()?.thumbnails)
 
         testIndexService.putThumbnails(
-            SummitSearchPutThumbnailRequest(
+            DocumentThumbnailPutRequest(
                 source = url,
                 dataStoreReferences = thumnbails
             )
         )
         refreshIndex(index)
 
-        val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+        val results = testIndexService.query(DocumentQueryRequest(term = "Liberty"))
 
         assertEquals(thumnbails, results.hits.first().thumbnails)
     }
@@ -667,21 +667,21 @@ class SummitSearchIndexServiceTest {
 
         val thumnbails = listOf("data-reference-1", "data-reference-2")
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
         testIndexService.putThumbnails(
-            SummitSearchPutThumbnailRequest(
+            DocumentThumbnailPutRequest(
                 source = url,
                 dataStoreReferences = thumnbails
             )
         )
         refreshIndex(index)
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
-        val results = testIndexService.query(SummitSearchQueryRequest(term = "Liberty"))
+        val results = testIndexService.query(DocumentQueryRequest(term = "Liberty"))
         assertEquals(thumnbails, results.hits.first().thumbnails)
     }
 
@@ -694,12 +694,12 @@ class SummitSearchIndexServiceTest {
         val url = URL("$sourceUrlString/LibertyBell")
 
 
-        assertFalse(testIndexService.pageExists(SummitSearchExistsRequest(url)))
+        assertFalse(testIndexService.pageExists(DocumentExistsRequest(url)))
 
-        testIndexService.indexContent(SummitSearchPutHtmlPageRequest(source = url, htmlDocument = page))
+        testIndexService.indexContent(HtmlDocumentPutRequest(source = url, htmlDocument = page))
         refreshIndex(index)
 
-        assertTrue(testIndexService.pageExists(SummitSearchExistsRequest(url)))
+        assertTrue(testIndexService.pageExists(DocumentExistsRequest(url)))
     }
 
     @Test
@@ -709,7 +709,7 @@ class SummitSearchIndexServiceTest {
         val dateTime = LocalDateTime.now()
         val searchTerm = "Mount Last"
 
-        val highScoreRequest = SummitSearchIndexRequest(
+        val highScoreRequest = DocumentIndexRequest(
             source = URL("https://www.francisbaileyh.com/high-score"),
             title = searchTerm,
             rawTextContent = "This mountain is called: $searchTerm",
@@ -719,7 +719,7 @@ class SummitSearchIndexServiceTest {
         )
 
         val normalScoreRequests = (0..2).map {
-            SummitSearchIndexRequest(
+            DocumentIndexRequest(
                 source = URL("https://www.francisbaileyh.com/$it"),
                 title = "A standard title $it",
                 rawTextContent = "This mountain is called: $searchTerm",
@@ -735,13 +735,13 @@ class SummitSearchIndexServiceTest {
 
         refreshIndex(index)
 
-        val standardQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm))
+        val standardQueryResult = testIndexService.query(DocumentQueryRequest(term = searchTerm))
 
         assertEquals("https://www.francisbaileyh.com/high-score", standardQueryResult.hits.first().source)
         assertEquals(4, standardQueryResult.hits.size)
 
 
-        val sortByDateQueryResult = testIndexService.query(SummitSearchQueryRequest(term = searchTerm, sortType = SummitSearchSortType.BY_DATE))
+        val sortByDateQueryResult = testIndexService.query(DocumentQueryRequest(term = searchTerm, sortType = DocumentSortType.BY_DATE))
 
         normalScoreRequests.reversed().forEachIndexed { requestIndex, it ->
             assertEquals(it.source.toString(), sortByDateQueryResult.hits[requestIndex].source)
@@ -754,20 +754,20 @@ class SummitSearchIndexServiceTest {
     fun `performs fuzzy query when specified in request`() {
         val index = "fuzzy-match-test"
         val phraseFieldTerm = "this is a query"
-        val testIndexService = SummitSearchIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(mockClient, 20, index)
 
-        val response = mock<SearchResponse<HtmlMapping>>()
-        val hitsMetadata = mock<HitsMetadata<HtmlMapping>>()
+        val response = mock<SearchResponse<DocumentMapping>>()
+        val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
 
-        whenever(mockClient.search(any<SearchRequest>(), any<Class<HtmlMapping>>())).thenReturn(response)
+        whenever(mockClient.search(any<SearchRequest>(), any<Class<DocumentMapping>>())).thenReturn(response)
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.FUZZY))
+        testIndexService.query(DocumentQueryRequest(phraseFieldTerm, queryType = DocumentQueryType.FUZZY))
 
         val expectedQuery = buildExpectedFuzzyQuery("this is a query", index)
 
-        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<HtmlMapping>>())
+        verify(mockClient).search(check<SearchRequest> { assertEquals(it.toString(), expectedQuery.toString()) }, any<Class<DocumentMapping>>())
     }
 
     private fun buildExpectedFuzzyQuery(term: String, index: String): SearchRequest {
@@ -780,12 +780,12 @@ class SummitSearchIndexServiceTest {
                 query.multiMatch { match ->
                     match.query(term)
                     match.fields(
-                        HtmlMapping::title.name.plus("^10"), // boost title the highest
-                        HtmlMapping::rawTextContent.name,
-                        HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
-                        HtmlMapping::paragraphContent.name
+                        DocumentMapping::title.name.plus("^10"), // boost title the highest
+                        DocumentMapping::rawTextContent.name,
+                        DocumentMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                        DocumentMapping::paragraphContent.name
                     )
-                    match.analyzer(SummitSearchIndexService.ANALYZER_NAME)
+                    match.analyzer(DocumentIndexService.ANALYZER_NAME)
                     match.operator(Operator.And)
                     match.minimumShouldMatch("100%")
                     match.fuzziness("AUTO")
@@ -794,28 +794,28 @@ class SummitSearchIndexServiceTest {
             }
             it.fields(listOf(
                 FieldAndFormat.of { field ->
-                    field.field(HtmlMapping::source.name)
+                    field.field(DocumentMapping::source.name)
                 },
                 FieldAndFormat.of { field ->
-                    field.field(HtmlMapping::title.name)
+                    field.field(DocumentMapping::title.name)
                 },
                 FieldAndFormat.of {field ->
-                    field.field(HtmlMapping::thumbnails.name)
+                    field.field(DocumentMapping::thumbnails.name)
                 }
             ))
             it.source { sourceConfig ->
                 sourceConfig.fetch(false)
             }
             it.highlight { highlight ->
-                highlight.numberOfFragments(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_COUNT)
-                highlight.fragmentSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.numberOfFragments(DocumentIndexService.HIGHLIGHT_FRAGMENT_COUNT)
+                highlight.fragmentSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
                 highlight.fields(mapOf(
-                    HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
-                    HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
-                    HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                    DocumentMapping::seoDescription.name to HighlightField.Builder().build(),
+                    DocumentMapping::paragraphContent.name to HighlightField.Builder().build(),
+                    DocumentMapping::rawTextContent.name to HighlightField.Builder().build()
                 ))
                 highlight.order(HighlighterOrder.Score)
-                highlight.noMatchSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
             }
             it.size(20)
             it.from(0)
@@ -832,40 +832,40 @@ class SummitSearchIndexServiceTest {
                 query.simpleQueryString { match ->
                     match.query(term)
                     match.fields(
-                        HtmlMapping::title.name.plus("^10"),
-                        HtmlMapping::rawTextContent.name,
-                        HtmlMapping::seoDescription.name.plus("^3"),
-                        HtmlMapping::paragraphContent.name
+                        DocumentMapping::title.name.plus("^10"),
+                        DocumentMapping::rawTextContent.name,
+                        DocumentMapping::seoDescription.name.plus("^3"),
+                        DocumentMapping::paragraphContent.name
                     )
                     match.minimumShouldMatch("100%")
-                    match.analyzer(SummitSearchIndexService.ANALYZER_NAME)
+                    match.analyzer(DocumentIndexService.ANALYZER_NAME)
                     match.defaultOperator(Operator.And)
                 }
             }
             it.fields(listOf(
                 FieldAndFormat.of { field ->
-                    field.field(HtmlMapping::source.name)
+                    field.field(DocumentMapping::source.name)
                 },
                 FieldAndFormat.of { field ->
-                    field.field(HtmlMapping::title.name)
+                    field.field(DocumentMapping::title.name)
                 },
                 FieldAndFormat.of {field ->
-                    field.field(HtmlMapping::thumbnails.name)
+                    field.field(DocumentMapping::thumbnails.name)
                 }
             ))
             it.source { sourceConfig ->
                 sourceConfig.fetch(false)
             }
             it.highlight { highlight ->
-                highlight.numberOfFragments(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_COUNT)
-                highlight.fragmentSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.numberOfFragments(DocumentIndexService.HIGHLIGHT_FRAGMENT_COUNT)
+                highlight.fragmentSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
                 highlight.fields(mapOf(
-                    HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
-                    HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
-                    HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                    DocumentMapping::seoDescription.name to HighlightField.Builder().build(),
+                    DocumentMapping::paragraphContent.name to HighlightField.Builder().build(),
+                    DocumentMapping::rawTextContent.name to HighlightField.Builder().build()
                 ))
                 highlight.order(HighlighterOrder.Score)
-                highlight.noMatchSize(SummitSearchIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
             }
             it.size(20)
             it.from(0)
@@ -878,8 +878,8 @@ class SummitSearchIndexServiceTest {
         })
     }
 
-    private fun createIndex(index: String, pagination: Int = 10): SummitSearchIndexService {
-        return SummitSearchIndexService(client, pagination, index).also {
+    private fun createIndex(index: String, pagination: Int = 10): DocumentIndexService {
+        return DocumentIndexService(client, pagination, index).also {
             it.createIfNotExists()
         }
     }
@@ -888,11 +888,11 @@ class SummitSearchIndexServiceTest {
         return Jsoup.parse(resources.resolve("$name.html").absoluteFile.readText())
     }
 
-    private fun indexHtmlContent(indexService: SummitSearchIndexService) {
+    private fun indexHtmlContent(indexService: DocumentIndexService) {
         indexedPages.forEach {
             val sourceURL = URL("$sourceUrlString/$it")
             val html = loadHtml(it)
-            indexService.indexContent(SummitSearchPutHtmlPageRequest(sourceURL, html))
+            indexService.indexContent(HtmlDocumentPutRequest(sourceURL, html))
         }
 
         refreshIndex(indexService.indexName)

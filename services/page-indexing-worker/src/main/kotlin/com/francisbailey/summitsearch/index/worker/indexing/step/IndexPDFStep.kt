@@ -3,9 +3,9 @@ package com.francisbailey.summitsearch.index.worker.indexing.step
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentPutRequest
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.springframework.stereotype.Component
 import org.apache.pdfbox.text.PDFTextStripper
@@ -18,17 +18,17 @@ import java.net.URLDecoder
 class IndexPDFStep(
     private val pdfPagePartitionThreshold: Int,
     private val textStripper: () -> PDFTextStripper,
-    private val summitSearchIndexService: SummitSearchIndexService
+    private val documentIndexService: DocumentIndexService
 ): Step<PDDocument> {
 
     @Autowired
     constructor(
-        summitSearchIndexService: SummitSearchIndexService,
+        documentIndexService: DocumentIndexService,
         pdfPagePartitionThreshold: Int
     ): this(
         pdfPagePartitionThreshold,
         { PDFTextStripper() },
-        summitSearchIndexService
+        documentIndexService
     )
 
     override fun process(entity: PipelineItem<PDDocument>, monitor: PipelineMonitor): PipelineItem<PDDocument> {
@@ -41,7 +41,7 @@ class IndexPDFStep(
             if (it.numberOfPages <= pdfPagePartitionThreshold) {
                 monitor.meter.timer("indexservice.add.latency", "host", entity.task.details.entityUrl.host).recordCallable {
                     monitor.dependencyCircuitBreaker.executeCallable {
-                        summitSearchIndexService.indexContent(buildRequest(
+                        documentIndexService.indexContent(buildRequest(
                             textStripper.getText(it),
                             entity.task.details.entityUrl
                         ))
@@ -68,10 +68,10 @@ class IndexPDFStep(
                     buildRequest(textContent, anchoredPdf, suffix)
                 }
 
-                requests.chunked(summitSearchIndexService.maxBulkIndexRequests).forEach {
+                requests.chunked(documentIndexService.maxBulkIndexRequests).forEach {
                     monitor.meter.timer("indexservice.bulk-add.latency", "host", entity.task.details.entityUrl.host).recordCallable {
                         monitor.dependencyCircuitBreaker.executeCallable {
-                            summitSearchIndexService.indexPartitionedContent(it)
+                            documentIndexService.indexPartitionedContent(it)
                         }
                     }
                 }
@@ -81,10 +81,10 @@ class IndexPDFStep(
         return entity.apply { continueProcessing = true }
     }
 
-    private fun buildRequest(textContent: String, pdfUrl: URL, titleSuffix: String? = ""): SummitSearchIndexRequest {
+    private fun buildRequest(textContent: String, pdfUrl: URL, titleSuffix: String? = ""): DocumentIndexRequest {
         val condensedContent = textContent.replace("\r\n", " ")
 
-        return SummitSearchPutRequest(
+        return DocumentPutRequest(
             source = pdfUrl,
             rawTextContent = condensedContent,
             paragraphContent = "",

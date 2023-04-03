@@ -19,7 +19,7 @@ import kotlin.math.absoluteValue
 
 @RestController
 class SummitsController(
-    private val summitSearchIndexService: SummitSearchIndexService,
+    private val documentIndexService: DocumentIndexService,
     private val queryStatsReporter: QueryStatsReporter,
     private val digitalOceanCdnShim: DigitalOceanCDNShim,
     private val meterRegistry: MeterRegistry
@@ -36,19 +36,19 @@ class SummitsController(
         log.info { "Querying search service for: $requestQuery and page: $page" }
 
         val sortType = when (sort?.lowercase()) {
-            "date" -> SummitSearchSortType.BY_DATE
-            else -> SummitSearchSortType.BY_RELEVANCE
+            "date" -> DocumentSortType.BY_DATE
+            else -> DocumentSortType.BY_RELEVANCE
         }
 
         val queryType = when(type?.lowercase()) {
-            "fuzzy" -> SummitSearchQueryType.FUZZY
-            else -> SummitSearchQueryType.STRICT
+            "fuzzy" -> DocumentQueryType.FUZZY
+            else -> DocumentQueryType.STRICT
         }
 
         return try {
             val response = meterRegistry.timer("api.searchindex.query.latency").recordCallable {
-                summitSearchIndexService.query(
-                    SummitSearchQueryRequest(
+                documentIndexService.query(
+                    DocumentQueryRequest(
                         term = requestQuery,
                         from = page?.absoluteValue?.dec()?.times(DOCUMENT_RESULTS_SIZE) ?: 0,
                         sortType = sortType,
@@ -57,14 +57,14 @@ class SummitsController(
                 )
             }!!
 
-            queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
+            queryStatsReporter.pushQueryStat(QueryStat(
                 query = response.sanitizedQuery.lowercase(),
                 page = page?.toLong(),
                 totalHits = response.totalHits,
                 timestamp = Instant.now().toEpochMilli(),
                 type = queryType.name,
                 sort = sortType.name,
-                index = summitSearchIndexService.indexName
+                index = documentIndexService.indexName
             ))
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(

@@ -17,7 +17,7 @@ import java.net.URL
 
 class SummitsControllerTest {
 
-    private val summitSearchIndexService = mock<SummitSearchIndexService> {
+    private val documentIndexService = mock<DocumentIndexService> {
         on(mock.indexName).thenReturn("summit-index")
     }
     private val queryStatsReporter = mock<QueryStatsReporter>()
@@ -25,7 +25,7 @@ class SummitsControllerTest {
     private val meterRegistry = SimpleMeterRegistry()
 
     private val controller = SummitsController(
-        summitSearchIndexService = summitSearchIndexService,
+        documentIndexService = documentIndexService,
         queryStatsReporter = queryStatsReporter,
         digitalOceanCdnShim = digitalOceanCdnShim,
         meterRegistry = meterRegistry
@@ -34,7 +34,7 @@ class SummitsControllerTest {
 
     @Test
     fun `returns bad response when illegal argument exception occurs`() {
-        whenever(summitSearchIndexService.query(any())).thenThrow(IllegalArgumentException("Test"))
+        whenever(documentIndexService.query(any())).thenThrow(IllegalArgumentException("Test"))
 
         val response = controller.search("Test", null)
 
@@ -43,9 +43,9 @@ class SummitsControllerTest {
 
     @Test
     fun `returns expected response and pushes to query stats reporter`() {
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchHit(
+                DocumentQueryHit(
                     highlight = "test",
                     title = "test",
                     source = "https://somewhere.com",
@@ -56,7 +56,7 @@ class SummitsControllerTest {
             sanitizedQuery = "some test"
         )
 
-        whenever(summitSearchIndexService.query(any())).thenReturn(result)
+        whenever(documentIndexService.query(any())).thenReturn(result)
 
         val response = controller.search("some test", null)
 
@@ -79,19 +79,19 @@ class SummitsControllerTest {
             assertEquals(result.sanitizedQuery, it.query)
             assertEquals(result.totalHits, it.totalHits)
         })
-        verify(summitSearchIndexService).query(org.mockito.kotlin.check {
+        verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_RELEVANCE, it.sortType)
-            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
+            assertEquals(DocumentSortType.BY_RELEVANCE, it.sortType)
+            assertEquals(DocumentQueryType.STRICT, it.queryType)
         })
     }
 
     @Test
     fun `returns shimmed cdn url if thumbnail is present`() {
         val shimmedThumbnailUrl = URL("http://shimmed.com")
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchHit(
+                DocumentQueryHit(
                     highlight = "test",
                     title = "test",
                     source = "https://somewhere.com",
@@ -102,7 +102,7 @@ class SummitsControllerTest {
             sanitizedQuery = "some test"
         )
 
-        whenever(summitSearchIndexService.query(any())).thenReturn(result)
+        whenever(documentIndexService.query(any())).thenReturn(result)
         whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
 
         val response = controller.search("some test", null)
@@ -126,18 +126,18 @@ class SummitsControllerTest {
             assertEquals(result.sanitizedQuery, it.query)
             assertEquals(result.totalHits, it.totalHits)
         })
-        verify(summitSearchIndexService).query(org.mockito.kotlin.check {
+        verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_RELEVANCE, it.sortType)
-            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
+            assertEquals(DocumentSortType.BY_RELEVANCE, it.sortType)
+            assertEquals(DocumentQueryType.STRICT, it.queryType)
         })
     }
 
     @Test
     fun `sorts by date when date sort parameter is passed in`() {
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchHit(
+                DocumentQueryHit(
                     highlight = "test",
                     title = "test",
                     source = "https://somewhere.com",
@@ -148,22 +148,22 @@ class SummitsControllerTest {
             sanitizedQuery = "some test"
         )
 
-        whenever(summitSearchIndexService.query(any())).thenReturn(result)
+        whenever(documentIndexService.query(any())).thenReturn(result)
 
         controller.search("some test", null, "date")
 
-        verify(summitSearchIndexService).query(org.mockito.kotlin.check {
+        verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
-            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
+            assertEquals(DocumentSortType.BY_DATE, it.sortType)
+            assertEquals(DocumentQueryType.STRICT, it.queryType)
         })
     }
 
     @Test
     fun `uses fuzzy match when fuzzy parameter is set`() {
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchHit(
+                DocumentQueryHit(
                     highlight = "test",
                     title = "test",
                     source = "https://somewhere.com",
@@ -174,14 +174,14 @@ class SummitsControllerTest {
             sanitizedQuery = "some test"
         )
 
-        whenever(summitSearchIndexService.query(any())).thenReturn(result)
+        whenever(documentIndexService.query(any())).thenReturn(result)
 
         controller.search("some test", null, "date", "fuzzy")
 
-        verify(summitSearchIndexService).query(org.mockito.kotlin.check {
+        verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
-            assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
+            assertEquals(DocumentSortType.BY_DATE, it.sortType)
+            assertEquals(DocumentQueryType.FUZZY, it.queryType)
         })
     }
 }

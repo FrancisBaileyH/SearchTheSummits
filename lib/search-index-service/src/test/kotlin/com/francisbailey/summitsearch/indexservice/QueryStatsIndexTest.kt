@@ -30,7 +30,7 @@ class QueryStatsIndexTest {
         }
 
         val data = (0..4).map {
-            SummitSearchQueryStat(
+            QueryStat(
                 query = "Some Test $it",
                 page = it.toLong(),
                 timestamp = Instant.now().toEpochMilli(),
@@ -41,7 +41,7 @@ class QueryStatsIndexTest {
             )
         }
 
-        service.pushStats(SummitSearchQueryStatsPutRequest(data))
+        service.pushStats(QueryStatsPutRequest(data))
 
         client.indices().refresh(RefreshRequest.of {
             it.index(QueryStatsIndex.INDEX_NAME)
@@ -52,10 +52,10 @@ class QueryStatsIndexTest {
             it.query { query ->
                 query.match { matchQuery ->
                     matchQuery.query("Some Test")
-                    matchQuery.field(QueryStat::query.name)
+                    matchQuery.field(QueryStatMapping::query.name)
                 }
             }
-        }, QueryStat::class.java)
+        }, QueryStatMapping::class.java)
 
         val queries = result.hits().hits().map { it.source()!!.query }.toSet()
         assertEquals(data.map { it.query }.toSet(), queries)
@@ -64,13 +64,13 @@ class QueryStatsIndexTest {
     @Test
     fun `throws IllegalArgumentException if stats size exceeds 50`() {
         val stats = (0..121).map {
-            mock<SummitSearchQueryStat>()
+            mock<QueryStat>()
         }
 
         val index = "test"
         val service = QueryStatsIndex(client, index)
 
-        assertThrows<IllegalArgumentException> { service.pushStats(SummitSearchQueryStatsPutRequest(stats)) }
+        assertThrows<IllegalArgumentException> { service.pushStats(QueryStatsPutRequest(stats)) }
     }
 
     companion object {

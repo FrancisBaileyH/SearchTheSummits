@@ -8,7 +8,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
 import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchImagePutRequest
+import com.francisbailey.summitsearch.indexservice.ImagePutRequest
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import org.springframework.stereotype.Component
@@ -31,7 +31,7 @@ class SaveImageStep(
             }!!
 
             monitor.meter.timer("imageindexservice.latency").recordCallable {
-                imageIndexService.indexImage(SummitSearchImagePutRequest(
+                imageIndexService.indexImage(ImagePutRequest(
                     source = entity.task.details.entityUrl,
                     normalizedSource = entity.task.details.entityUrl.stripQueryAndFragment(),
                     dataStoreReference = reference.toString(),

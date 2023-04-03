@@ -5,7 +5,7 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.ThumbnailValidationStep
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import com.sksamuel.scrimage.ImmutableImage
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -22,7 +22,7 @@ import java.util.*
 
 class ThumbnailValidationStepTest: StepTest() {
 
-    private val indexService = mock<SummitSearchIndexService>()
+    private val indexService = mock<DocumentIndexService>()
 
     private val step = ThumbnailValidationStep(indexService)
 

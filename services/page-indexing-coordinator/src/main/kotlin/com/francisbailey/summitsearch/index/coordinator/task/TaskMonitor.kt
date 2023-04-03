@@ -28,7 +28,7 @@ class TaskMonitor(
 ) {
     private val log = KotlinLogging.logger { }
 
-    private val taskCount = meter.gauge("${service}.taskCount", AtomicInteger())
+    private val taskCount = meter.gauge("${service}.taskCount", AtomicInteger())!!
 
     fun getActiveTasks(): List<Task> {
         return taskStore.getTasks().filter {

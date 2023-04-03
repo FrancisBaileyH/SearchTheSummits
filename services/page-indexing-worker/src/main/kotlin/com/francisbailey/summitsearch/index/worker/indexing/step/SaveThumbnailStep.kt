@@ -6,8 +6,8 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
 import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutThumbnailRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentThumbnailPutRequest
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import org.springframework.stereotype.Component
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 class SaveThumbnailStep(
     private val imageWriterStore: ImageWriterStore,
     private val imageWriter: ImageWriter,
-    private val summitSearchIndexService: SummitSearchIndexService
+    private val documentIndexService: DocumentIndexService
 ): Step<ImmutableImage> {
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         val context = entity.task.details.getContext<ImageTaskContext>()!!
@@ -27,8 +27,8 @@ class SaveThumbnailStep(
             }!!
 
             monitor.meter.timer("indexservice.latency").recordCallable {
-                summitSearchIndexService.putThumbnails(
-                    SummitSearchPutThumbnailRequest(
+                documentIndexService.putThumbnails(
+                    DocumentThumbnailPutRequest(
                         source = context.referencingURL,
                         dataStoreReferences = listOf(reference.toString())
                     )

@@ -1,8 +1,8 @@
 package com.francisbailey.summitsearch.frontend.stats
 
 import com.francisbailey.summitsearch.indexservice.QueryStatsIndex
-import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStat
-import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStatsPutRequest
+import com.francisbailey.summitsearch.indexservice.QueryStat
+import com.francisbailey.summitsearch.indexservice.QueryStatsPutRequest
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -16,9 +16,9 @@ class QueryStatsReporter(
 ) {
     private val log = KotlinLogging.logger { }
 
-    private val stats = ArrayDeque<SummitSearchQueryStat>()
+    private val stats = ArrayDeque<QueryStat>()
 
-    fun pushQueryStat(stat: SummitSearchQueryStat) = synchronized(this) {
+    fun pushQueryStat(stat: QueryStat) = synchronized(this) {
         stats.add(stat)
     }
 
@@ -35,7 +35,7 @@ class QueryStatsReporter(
 
         try {
             queryStatsService.pushStats(
-                SummitSearchQueryStatsPutRequest(
+                QueryStatsPutRequest(
                     stats = statsToPush.take(MAX_STATS_PER_PUSH).toList()
                 )
             )

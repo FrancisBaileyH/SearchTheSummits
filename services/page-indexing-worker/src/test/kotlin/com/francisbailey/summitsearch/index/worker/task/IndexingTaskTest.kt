@@ -3,7 +3,7 @@ package com.francisbailey.summitsearch.index.worker.task
 import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.index.worker.crawler.PageCrawlerService
 import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
@@ -18,7 +18,7 @@ class IndexingTaskTest {
     private val queueName = "IndexQueue-Test1"
     private val pageCrawlerService = mock<PageCrawlerService>()
     private val indexingTaskQueuePollingClient = mock<IndexingTaskQueuePollingClient>()
-    private val indexService = mock<SummitSearchIndexService>()
+    private val indexService = mock<DocumentIndexService>()
 
     private val rateLimiter = mock<io.github.resilience4j.ratelimiter.RateLimiter>()
 

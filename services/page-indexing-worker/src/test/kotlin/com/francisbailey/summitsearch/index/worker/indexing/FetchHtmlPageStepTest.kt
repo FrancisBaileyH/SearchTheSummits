@@ -7,9 +7,9 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageStep
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
-import com.francisbailey.summitsearch.indexservice.SummitSearchDeleteIndexRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentDeleteRequest
+import com.francisbailey.summitsearch.indexservice.HtmlDocumentPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import io.ktor.http.*
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.*
@@ -22,7 +22,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
     private val htmlDateGuesser = mock<GoodEnoughHtmlDateGuesser>()
     private val pageCrawlerService = mock<PageCrawlerService>()
-    private val indexService = mock<SummitSearchIndexService>()
+    private val indexService = mock<DocumentIndexService>()
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
     private val step = FetchHtmlPageStep(
@@ -60,8 +60,8 @@ class FetchHtmlPageStepTest: StepTest() {
 
         assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
-        verify(indexService, never()).indexContent(any<SummitSearchPutHtmlPageRequest>())
-        verify(indexService).deletePageContents(eq(SummitSearchDeleteIndexRequest(source = defaultIndexTask.details.entityUrl)))
+        verify(indexService, never()).indexContent(any<HtmlDocumentPutRequest>())
+        verify(indexService).deletePageContents(eq(DocumentDeleteRequest(source = defaultIndexTask.details.entityUrl)))
     }
 
     @Test

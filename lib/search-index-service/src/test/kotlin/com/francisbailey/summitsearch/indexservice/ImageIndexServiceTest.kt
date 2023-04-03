@@ -30,7 +30,7 @@ class ImageIndexServiceTest {
 
     @Test
     fun `indexes image with expected content`() {
-        val request = SummitSearchImagePutRequest(
+        val request = ImagePutRequest(
             source = URL("https://francisbaileyh.com/wp-content/image.jpeg?w=1230"),
             referencingDocumentDate = 123456789,
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
@@ -64,7 +64,7 @@ class ImageIndexServiceTest {
 
     @Test
     fun `cleans malicious text from description`() {
-        val request = SummitSearchImagePutRequest(
+        val request = ImagePutRequest(
             source = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
             referencingDocumentDate = 123456789,
             referencingDocument = URL("https://francisbaileyh.com/some-page"),
@@ -112,7 +112,7 @@ class ImageIndexServiceTest {
 
         val searchTerm = "Mount Last"
 
-        val indexRequest = SummitSearchImagePutRequest(
+        val indexRequest = ImagePutRequest(
             source = URL("https://www.francisbaileyh.com/test.png?123"),
             description = "Mount Lastt",
             referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
@@ -126,7 +126,7 @@ class ImageIndexServiceTest {
         testIndexService.indexImage(indexRequest)
         client.indices().refresh(RefreshRequest.of { it.index(index) })
 
-        val result = testIndexService.query(SummitSearchImagesQueryRequest(term = searchTerm, queryType = SummitSearchQueryType.FUZZY))
+        val result = testIndexService.query(ImageQueryRequest(term = searchTerm, queryType = DocumentQueryType.FUZZY))
 
         assertEquals(1, result.hits.size)
         assertEquals(indexRequest.source.toString(), result.hits.first().source)
@@ -141,7 +141,7 @@ class ImageIndexServiceTest {
         }
         val searchTerm = "Mount Last"
 
-        val indexRequest = SummitSearchImagePutRequest(
+        val indexRequest = ImagePutRequest(
             source = URL("https://www.francisbaileyh.com/test.png?123"),
             description = "This mount is called $searchTerm",
             referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
@@ -155,7 +155,7 @@ class ImageIndexServiceTest {
         testIndexService.indexImage(indexRequest)
         client.indices().refresh(RefreshRequest.of { it.index(index) })
 
-        val result = testIndexService.query(SummitSearchImagesQueryRequest(term = searchTerm, queryType = SummitSearchQueryType.STRICT))
+        val result = testIndexService.query(ImageQueryRequest(term = searchTerm, queryType = DocumentQueryType.STRICT))
 
         assertEquals(1, result.hits.size)
         assertEquals(indexRequest.source.toString(), result.hits.first().source)
@@ -174,7 +174,7 @@ class ImageIndexServiceTest {
         val searchTerm = "Mount Last"
 
         val normalScoreRequests = (0..2L).map {
-            SummitSearchImagePutRequest(
+            ImagePutRequest(
                 source = URL("https://www.francisbaileyh.com/$it"),
                 description = searchTerm,
                 referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
@@ -192,7 +192,7 @@ class ImageIndexServiceTest {
 
         client.indices().refresh(RefreshRequest.of { it.index(index) })
 
-        val sortByDateQueryResult = testIndexService.query(SummitSearchImagesQueryRequest(term = searchTerm, sortType = SummitSearchSortType.BY_DATE))
+        val sortByDateQueryResult = testIndexService.query(ImageQueryRequest(term = searchTerm, sortType = DocumentSortType.BY_DATE))
 
         normalScoreRequests.reversed().forEachIndexed { i, it ->
             assertEquals(it.source.toString(), sortByDateQueryResult.hits[i].source)
@@ -215,7 +215,7 @@ class ImageIndexServiceTest {
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchImagesQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.STRICT))
+        testIndexService.query(ImageQueryRequest(phraseFieldTerm, queryType = DocumentQueryType.STRICT))
 
         verify(mockClient).search(org.mockito.kotlin.check<SearchRequest> {
             assertEquals(20, it.size())
@@ -236,7 +236,7 @@ class ImageIndexServiceTest {
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchImagesQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.FUZZY))
+        testIndexService.query(ImageQueryRequest(phraseFieldTerm, queryType = DocumentQueryType.FUZZY))
 
         verify(mockClient).search(org.mockito.kotlin.check<SearchRequest> {
             assertEquals(20, it.size())
@@ -259,7 +259,7 @@ class ImageIndexServiceTest {
         whenever(response.hits()).thenReturn(hitsMetadata)
         whenever(hitsMetadata.hits()).thenReturn(emptyList())
 
-        testIndexService.query(SummitSearchImagesQueryRequest(phraseFieldTerm, queryType = SummitSearchQueryType.FUZZY, paginationResultSize = 6))
+        testIndexService.query(ImageQueryRequest(phraseFieldTerm, queryType = DocumentQueryType.FUZZY, paginationResultSize = 6))
 
         verify(mockClient).search(org.mockito.kotlin.check<SearchRequest> {
             assertEquals(paginationCount, it.size())

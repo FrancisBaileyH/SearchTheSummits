@@ -4,14 +4,14 @@ import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutHtmlPageRequest
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.HtmlDocumentPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import org.springframework.stereotype.Component
 
 @Component
 class IndexHtmlPageStep(
     private val documentIndexingFilterService: DocumentFilterService,
-    private val summitSearchIndexService: SummitSearchIndexService
+    private val documentIndexService: DocumentIndexService
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
@@ -22,8 +22,8 @@ class IndexHtmlPageStep(
 
         monitor.meter.timer("indexservice.add.latency").recordCallable {
             monitor.dependencyCircuitBreaker.executeCallable {
-                summitSearchIndexService.indexContent(
-                    SummitSearchPutHtmlPageRequest(
+                documentIndexService.indexContent(
+                    HtmlDocumentPutRequest(
                         source = entity.task.details.entityUrl,
                         htmlDocument = entity.payload!!.document,
                         pageCreationDate = entity.payload!!.pageCreationDate

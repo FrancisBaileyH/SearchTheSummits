@@ -2,7 +2,8 @@ package com.francisbailey.summitsearch.index.worker.configuration
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import com.francisbailey.summitsearch.indexservice.ImageIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.services.common.SummitSearchIndexes
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -12,9 +13,11 @@ open class IndexConfiguration(
 ) {
 
     @Bean
-    open fun summitSearchIndexService() = SummitSearchIndexService(
+    open fun summitSearchIndexService() = DocumentIndexService(
         elasticSearchClient,
-        paginationResultSize = 10
+        paginationResultSize = 10,
+        indexName = SummitSearchIndexes.documentIndexName,
+        synonyms = SummitSearchIndexes.synonyms
     ).also {
         it.createIfNotExists()
     }
@@ -22,7 +25,9 @@ open class IndexConfiguration(
     @Bean
     open fun imageIndexService() = ImageIndexService(
         elasticSearchClient,
-        paginationResultSize = 30
+        paginationResultSize = 30,
+        indexName = SummitSearchIndexes.imageIndexName,
+        synonyms = SummitSearchIndexes.synonyms
     ).also {
         it.createIfNotExists()
     }

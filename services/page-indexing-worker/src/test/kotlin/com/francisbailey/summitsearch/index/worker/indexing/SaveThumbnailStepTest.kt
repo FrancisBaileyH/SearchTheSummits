@@ -7,12 +7,11 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.SaveThumbnailStep
 import com.francisbailey.summitsearch.index.worker.store.ImageStoreType
 import com.francisbailey.summitsearch.index.worker.store.ImageWriterStore
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.PngWriter
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -30,7 +29,7 @@ class SaveThumbnailStepTest: StepTest() {
 
     private val imageStore = mock<ImageWriterStore>()
 
-    private val index = mock<SummitSearchIndexService>()
+    private val index = mock<DocumentIndexService>()
 
     private val imageWriter = mock<PngWriter>()
 

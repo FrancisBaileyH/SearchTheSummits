@@ -38,18 +38,18 @@ class SummitImagesController(
         log.info { "Querying image service for: $requestQuery and next value: $page" }
 
         val sortType = when (sort?.lowercase()) {
-            "date" -> SummitSearchSortType.BY_DATE
-            else -> SummitSearchSortType.BY_RELEVANCE
+            "date" -> DocumentSortType.BY_DATE
+            else -> DocumentSortType.BY_RELEVANCE
         }
 
         val queryType = when(type?.lowercase()) {
-            "fuzzy" -> SummitSearchQueryType.FUZZY
-            else -> SummitSearchQueryType.STRICT
+            "fuzzy" -> DocumentQueryType.FUZZY
+            else -> DocumentQueryType.STRICT
         }
 
         return try {
             val response = meterRegistry.timer("api.imageindex.query.latency").recordCallable {
-                imageIndexService.query(SummitSearchImagesQueryRequest(
+                imageIndexService.query(ImageQueryRequest(
                     queryType = queryType,
                     sortType = sortType,
                     term = requestQuery,
@@ -57,7 +57,7 @@ class SummitImagesController(
                 ))
             }!!
 
-            queryStatsReporter.pushQueryStat(SummitSearchQueryStat(
+            queryStatsReporter.pushQueryStat(QueryStat(
                 query = response.sanitizedQuery.lowercase(),
                 page = page?.toLong(),
                 totalHits = response.totalHits,
@@ -96,15 +96,15 @@ class SummitImagesController(
     ): ResponseEntity<String> {
 
         val queryType = when(type?.lowercase()) {
-            "fuzzy" -> SummitSearchQueryType.FUZZY
-            else -> SummitSearchQueryType.STRICT
+            "fuzzy" -> DocumentQueryType.FUZZY
+            else -> DocumentQueryType.STRICT
         }
 
         return try {
             val response = meterRegistry.timer("api.imageindex.query.latency").recordCallable {
-                imageIndexService.query(SummitSearchImagesQueryRequest(
+                imageIndexService.query(ImageQueryRequest(
                     queryType = queryType,
-                    sortType = SummitSearchSortType.BY_RELEVANCE,
+                    sortType = DocumentSortType.BY_RELEVANCE,
                     term = requestQuery,
                     from = 0,
                     paginationResultSize = PREVIEW_IMAGE_RESULT_SIZE

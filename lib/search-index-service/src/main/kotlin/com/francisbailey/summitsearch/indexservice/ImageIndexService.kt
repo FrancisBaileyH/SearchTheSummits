@@ -28,12 +28,13 @@ import java.net.URL
 class ImageIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    val indexName: String = INDEX_NAME
+    val indexName: String,
+    private val synonyms: List<String> = emptyList()
 ) {
 
     private val log = KotlinLogging.logger { }
 
-    fun query(queryRequest: SummitSearchImagesQueryRequest): SummitSearchPaginatedResult<SummitSearchImage> {
+    fun query(queryRequest: ImageQueryRequest): PaginatedDocumentResult<Image> {
         require(queryRequest.from in 0..MAX_FROM_VALUE) {
             "Query from value of: ${queryRequest.from} is invalid. Value must be from 0 to $MAX_FROM_VALUE"
         }
@@ -45,8 +46,8 @@ class ImageIndexService(
         log.info { "Querying images for: ${queryRequest.term}" }
 
         val summitSearchQuery = when(queryRequest.queryType) {
-            SummitSearchQueryType.FUZZY -> buildFuzzyQuery(queryRequest)
-            SummitSearchQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
+            DocumentQueryType.FUZZY -> buildFuzzyQuery(queryRequest)
+            DocumentQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
         }
 
         val response = elasticSearchClient.search(SearchRequest.of {
@@ -55,7 +56,7 @@ class ImageIndexService(
                 track.enabled(true)
             }
             it.query(summitSearchQuery.query)
-            if (queryRequest.sortType == SummitSearchSortType.BY_DATE) {
+            if (queryRequest.sortType == DocumentSortType.BY_DATE) {
                 it.sort { sort ->
                     sort.field { field ->
                         field.field(ImageMapping::referencingDocumentDate.name)
@@ -72,10 +73,10 @@ class ImageIndexService(
             it.from(queryRequest.from)
         }, ImageMapping::class.java)
 
-        return SummitSearchPaginatedResult(
+        return PaginatedDocumentResult(
             hits = response.hits().hits().map {
                 val source = it.source()!!
-                 SummitSearchImage(
+                 Image(
                      dataStoreReference = source.dataStoreReference,
                      description = source.description,
                      source = source.source,
@@ -90,11 +91,11 @@ class ImageIndexService(
         )
     }
 
-    fun indexImage(request: SummitSearchImagePutRequest) {
+    fun indexImage(request: ImagePutRequest) {
         indexImage(ImageType.STANDARD, request)
     }
 
-    private fun indexImage(type: ImageType, request: SummitSearchImagePutRequest) {
+    private fun indexImage(type: ImageType, request: ImagePutRequest) {
         log.info { "Indexing image: $type for source: ${request.source}" }
 
         val result = elasticSearchClient.index(IndexRequest.of {
@@ -160,7 +161,7 @@ class ImageIndexService(
                                 definition.synonymGraph { synonymGraph ->
                                     synonymGraph.expand(true)
                                     synonymGraph.lenient(false)
-                                    synonymGraph.synonyms(SummitSearchSynonyms.synonyms)
+                                    synonymGraph.synonyms(synonyms)
                                 }
                             }
                         }
@@ -169,12 +170,12 @@ class ImageIndexService(
             })
         }
     }
-    private fun buildFuzzyQuery(request: SummitSearchImagesQueryRequest): SummitSearchQuery {
+    private fun buildFuzzyQuery(request: ImageQueryRequest): SearchQuery {
         val query = Query.of { query ->
             query.match { match ->
                 match.query(request.term)
                 match.field(ImageMapping::description.name)
-                match.analyzer(SummitSearchIndexService.ANALYZER_NAME)
+                match.analyzer(ANALYZER_NAME)
                 match.operator(Operator.And)
                 match.minimumShouldMatch("100%")
                 match.fuzziness("AUTO")
@@ -182,10 +183,10 @@ class ImageIndexService(
             }
         }
 
-        return SummitSearchQuery(rawQueryString = request.term, query = query)
+        return SearchQuery(rawQueryString = request.term, query = query)
     }
 
-    private fun buildSimpleQueryStringQuery(request: SummitSearchImagesQueryRequest): SummitSearchQuery {
+    private fun buildSimpleQueryStringQuery(request: ImageQueryRequest): SearchQuery {
         val sanitizedQuery = SimpleQueryString(PHRASE_TERM_THRESHOLD, request.term).sanitizedQuery()
 
         val query = Query.of { query ->
@@ -200,13 +201,12 @@ class ImageIndexService(
             }
         }
 
-        return SummitSearchQuery(rawQueryString = sanitizedQuery, query = query)
+        return SearchQuery(rawQueryString = sanitizedQuery, query = query)
     }
 
     companion object {
         const val ANALYZER_NAME = "standard_with_synonyms"
         const val SYNONYM_FILTER_NAME = "synonym_graph"
-        const val INDEX_NAME = "summit-search-images"
         const val MAX_FROM_VALUE = 2000
         const val MAX_QUERY_TERM_SIZE = 100
         const val PHRASE_TERM_THRESHOLD = 2
@@ -231,7 +231,7 @@ internal enum class ImageType {
     STANDARD
 }
 
-data class SummitSearchImagePutRequest(
+data class ImagePutRequest(
     val normalizedSource: URL,
     val source: URL,
     val dataStoreReference: String,
@@ -242,15 +242,15 @@ data class SummitSearchImagePutRequest(
     val widthPx: Int
 )
 
-data class SummitSearchImagesQueryRequest(
+data class ImageQueryRequest(
     val term: String,
     val from: Int = 0,
-    val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE,
-    val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT,
+    val sortType: DocumentSortType = DocumentSortType.BY_RELEVANCE,
+    val queryType: DocumentQueryType = DocumentQueryType.STRICT,
     val paginationResultSize: Int? = null
 )
 
-data class SummitSearchImage(
+data class Image(
     val dataStoreReference: String,
     val description: String,
     val source: String,

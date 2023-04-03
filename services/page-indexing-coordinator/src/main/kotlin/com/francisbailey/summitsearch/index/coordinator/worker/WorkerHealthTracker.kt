@@ -24,7 +24,7 @@ class WorkerHealthTracker(
         "$service.healthy-workers",
         Tags.empty(),
         mutableSetOf<Worker>()
-    )
+    )!!
 
     fun getHealthyWorkers(): Set<Worker> {
         return healthyWorkers

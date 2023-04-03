@@ -43,9 +43,9 @@ class SummitImagesControllerTest {
     @Test
     fun `images api returns expected response with shimmed thumbnail url`() {
         val shimmedThumbnailUrl = URL("http://shimmed.com")
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchImage(
+                Image(
                     description = "test",
                     referencingDocument = "test",
                     source = "https://somewhere.com",
@@ -84,7 +84,7 @@ class SummitImagesControllerTest {
 
     @Test
     fun `images api pushes to query stats reporter`() {
-        val result = SummitSearchPaginatedResult<SummitSearchImage>(
+        val result = PaginatedDocumentResult<Image>(
             hits = emptyList(),
             totalHits = 0,
             sanitizedQuery = "some query"
@@ -103,8 +103,8 @@ class SummitImagesControllerTest {
 
     @Test
     fun `images api uses exact match and relevance sort by default`() {
-        val result = SummitSearchPaginatedResult(
-            hits = emptyList<SummitSearchImage>(),
+        val result = PaginatedDocumentResult(
+            hits = emptyList<Image>(),
             totalHits = 0,
             sanitizedQuery = "some test"
         )
@@ -115,15 +115,15 @@ class SummitImagesControllerTest {
 
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_RELEVANCE, it.sortType)
-            assertEquals(SummitSearchQueryType.STRICT, it.queryType)
+            assertEquals(DocumentSortType.BY_RELEVANCE, it.sortType)
+            assertEquals(DocumentQueryType.STRICT, it.queryType)
         })
     }
 
     @Test
     fun `images api uses fuzzy match when fuzzy parameter is set`() {
-        val result = SummitSearchPaginatedResult(
-            hits = emptyList<SummitSearchImage>(),
+        val result = PaginatedDocumentResult(
+            hits = emptyList<Image>(),
             totalHits = 0,
             sanitizedQuery = "some test"
         )
@@ -134,17 +134,17 @@ class SummitImagesControllerTest {
 
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchSortType.BY_DATE, it.sortType)
-            assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
+            assertEquals(DocumentSortType.BY_DATE, it.sortType)
+            assertEquals(DocumentQueryType.FUZZY, it.queryType)
         })
     }
 
     @Test
     fun `images preview api returns expected response with shimmed thumbnail url`() {
         val shimmedThumbnailUrl = URL("http://shimmed.com")
-        val result = SummitSearchPaginatedResult(
+        val result = PaginatedDocumentResult(
             hits = listOf(
-                SummitSearchImage(
+                Image(
                     description = "test",
                     referencingDocument = "test",
                     source = "https://somewhere.com",
@@ -180,8 +180,8 @@ class SummitImagesControllerTest {
 
     @Test
     fun `images preview api uses fuzzy match when fuzzy parameter is set`() {
-        val result = SummitSearchPaginatedResult(
-            hits = emptyList<SummitSearchImage>(),
+        val result = PaginatedDocumentResult(
+            hits = emptyList<Image>(),
             totalHits = 0,
             sanitizedQuery = "some test"
         )
@@ -192,7 +192,7 @@ class SummitImagesControllerTest {
 
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
-            assertEquals(SummitSearchQueryType.FUZZY, it.queryType)
+            assertEquals(DocumentQueryType.FUZZY, it.queryType)
         })
     }
 }

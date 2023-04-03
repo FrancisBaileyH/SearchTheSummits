@@ -1,7 +1,7 @@
 package com.francisbailey.summitsearch.frontend.stats
 
 import com.francisbailey.summitsearch.indexservice.QueryStatsIndex
-import com.francisbailey.summitsearch.indexservice.SummitSearchQueryStat
+import com.francisbailey.summitsearch.indexservice.QueryStat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -17,7 +17,7 @@ class QueryStatsReporterTest {
 
     @Test
     fun `adds stats and the pushes them to index`() {
-        val stat = SummitSearchQueryStat(
+        val stat = QueryStat(
             query = "test",
             timestamp = Instant.now().toEpochMilli(),
             totalHits = 1,
@@ -42,7 +42,7 @@ class QueryStatsReporterTest {
     @Test
     fun `pushes at most 100 stats per flush index call`() {
         val stats = (0..200).map {
-            SummitSearchQueryStat(
+            QueryStat(
                 query = "test $it",
                 timestamp = Instant.now().toEpochMilli(),
                 totalHits = 1,

@@ -28,16 +28,17 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.swing.text.html.HTML
 
-class SummitSearchIndexService(
+class DocumentIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    val indexName: String = SUMMIT_INDEX_NAME
+    val indexName: String,
+    private val synonyms: List<String> = emptyList()
 ) {
     private val log = KotlinLogging.logger { }
 
     val maxBulkIndexRequests = 100
 
-    fun query(queryRequest: SummitSearchQueryRequest): SummitSearchPaginatedResult<SummitSearchHit> {
+    fun query(queryRequest: DocumentQueryRequest): PaginatedDocumentResult<DocumentQueryHit> {
         require(queryRequest.from in 0..MAX_FROM_VALUE) {
             "Query from value of: ${queryRequest.from} is invalid. Value must be from 0 to $MAX_FROM_VALUE"
         }
@@ -49,8 +50,8 @@ class SummitSearchIndexService(
         log.info { "Querying for: ${queryRequest.term}" }
 
         val summitSearchQuery = when(queryRequest.queryType) {
-            SummitSearchQueryType.FUZZY -> buildFuzzyQuery(queryRequest)
-            SummitSearchQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
+            DocumentQueryType.FUZZY -> buildFuzzyQuery(queryRequest)
+            DocumentQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
         }
 
         val response = elasticSearchClient.search(SearchRequest.of {
@@ -59,10 +60,10 @@ class SummitSearchIndexService(
                     track.enabled(true)
                 }
                 it.query(summitSearchQuery.query)
-                if (queryRequest.sortType == SummitSearchSortType.BY_DATE) {
+                if (queryRequest.sortType == DocumentSortType.BY_DATE) {
                     it.sort { sort ->
                         sort.field { field ->
-                            field.field(HtmlMapping::pageCreationDate.name)
+                            field.field(DocumentMapping::pageCreationDate.name)
                             field.format(SORT_DATE_FORMAT)
                             field.missing(SORT_LAST_NAME)
                             field.order(SortOrder.Desc)
@@ -71,13 +72,13 @@ class SummitSearchIndexService(
                 }
                 it.fields(listOf(
                     FieldAndFormat.of { field ->
-                        field.field(HtmlMapping::source.name)
+                        field.field(DocumentMapping::source.name)
                     },
                     FieldAndFormat.of { field ->
-                        field.field(HtmlMapping::title.name)
+                        field.field(DocumentMapping::title.name)
                     },
                     FieldAndFormat.of { field ->
-                        field.field(HtmlMapping::thumbnails.name)
+                        field.field(DocumentMapping::thumbnails.name)
                     }
                 ))
                 it.source { sourceConfig ->
@@ -87,26 +88,26 @@ class SummitSearchIndexService(
                     highlight.numberOfFragments(HIGHLIGHT_FRAGMENT_COUNT)
                     highlight.fragmentSize(HIGHLIGHT_FRAGMENT_SIZE)
                     highlight.fields(mapOf(
-                        HtmlMapping::seoDescription.name to HighlightField.Builder().build(),
-                        HtmlMapping::paragraphContent.name to HighlightField.Builder().build(),
-                        HtmlMapping::rawTextContent.name to HighlightField.Builder().build()
+                        DocumentMapping::seoDescription.name to HighlightField.Builder().build(),
+                        DocumentMapping::paragraphContent.name to HighlightField.Builder().build(),
+                        DocumentMapping::rawTextContent.name to HighlightField.Builder().build()
                     ))
                     highlight.order(HighlighterOrder.Score)
                     highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
                 }
                 it.size(paginationResultSize)
                 it.from(queryRequest.from)
-        }, HtmlMapping::class.java)
+        }, DocumentMapping::class.java)
 
-        return SummitSearchPaginatedResult(
+        return PaginatedDocumentResult(
             hits = response.hits().hits()
                 .filterNot { it.highlight().isEmpty() }
                 .map {
                     // Order of precedence for matches
                     val highlightOptions = listOf(
-                        it.highlight()[HtmlMapping::seoDescription.name]?.firstOrNull(),
-                        it.highlight()[HtmlMapping::paragraphContent.name]?.firstOrNull(),
-                        it.highlight()[HtmlMapping::rawTextContent.name]?.firstOrNull()
+                        it.highlight()[DocumentMapping::seoDescription.name]?.firstOrNull(),
+                        it.highlight()[DocumentMapping::paragraphContent.name]?.firstOrNull(),
+                        it.highlight()[DocumentMapping::rawTextContent.name]?.firstOrNull()
                     )
 
                     val highlight = highlightOptions.firstOrNull { highlight ->
@@ -115,11 +116,11 @@ class SummitSearchIndexService(
                         !highlight.isNullOrBlank()
                     }
 
-                    SummitSearchHit(
+                    DocumentQueryHit(
                         highlight = highlight!!,
-                        source = it.stringField(HtmlMapping::source.name),
-                        title = it.stringField(HtmlMapping::title.name),
-                        thumbnails = it.listField(HtmlMapping::thumbnails.name)
+                        source = it.stringField(DocumentMapping::source.name),
+                        title = it.stringField(DocumentMapping::title.name),
+                        thumbnails = it.listField(DocumentMapping::thumbnails.name)
                     )
                 },
             next = queryRequest.from + paginationResultSize,
@@ -129,18 +130,18 @@ class SummitSearchIndexService(
     }
 
 
-    fun putThumbnails(request: SummitSearchPutThumbnailRequest) {
+    fun putThumbnails(request: DocumentThumbnailPutRequest) {
         log.info { "Updating thumbnails for: ${request.source}" }
         elasticSearchClient.update(UpdateRequest.of {
             it.index(indexName)
             it.id(generateIdFromUrl(request.source))
             it.doc(mapOf(
-                HtmlMapping::thumbnails.name to request.dataStoreReferences
+                DocumentMapping::thumbnails.name to request.dataStoreReferences
             ))
-        }, HtmlMapping::class.java)
+        }, DocumentMapping::class.java)
     }
 
-    fun pageExists(request: SummitSearchExistsRequest): Boolean {
+    fun pageExists(request: DocumentExistsRequest): Boolean {
         val result = elasticSearchClient.exists(ExistsRequest.of {
             it.index(indexName)
             it.id(generateIdFromUrl(request.source))
@@ -154,7 +155,7 @@ class SummitSearchIndexService(
      * document gets re-indexed. This is an unfortunate limitation of the es java
      * client as the update call does not seem to work/be exposed.
      */
-    fun indexPartitionedContent(requests: List<SummitSearchIndexRequest>) {
+    fun indexPartitionedContent(requests: List<DocumentIndexRequest>) {
         val firstSource = generateIdFromUrl(requests.first().source)
 
         require(requests.size <= maxBulkIndexRequests) {
@@ -169,7 +170,7 @@ class SummitSearchIndexService(
             BulkOperation.of { operation ->
                 operation.index { indexOp ->
                     indexOp.id("${generateIdFromUrl(request.source)}-$partition")
-                    indexOp.document(HtmlMapping(
+                    indexOp.document(DocumentMapping(
                         title = Jsoup.clean(request.title, Safelist.none()),
                         source = request.source,
                         host = request.source.host,
@@ -193,7 +194,7 @@ class SummitSearchIndexService(
         log.info { "Bulk index result had error: ${result.errors()}" }
     }
 
-    fun indexContent(request: SummitSearchPutRequest) {
+    fun indexContent(request: DocumentPutRequest) {
         log.info { "Indexing content from: ${request.source}" }
 
         val result = elasticSearchClient.update(
@@ -203,23 +204,23 @@ class SummitSearchIndexService(
                 it.docAsUpsert(true)
                 it.doc(
                     mapOf(
-                        HtmlMapping::title.name to Jsoup.clean(request.title, Safelist.none()),
-                        HtmlMapping::source.name to request.source.toString(),
-                        HtmlMapping::host.name to request.source.host,
-                        HtmlMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
-                        HtmlMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
-                        HtmlMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none()),
-                        HtmlMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
+                        DocumentMapping::title.name to Jsoup.clean(request.title, Safelist.none()),
+                        DocumentMapping::source.name to request.source.toString(),
+                        DocumentMapping::host.name to request.source.host,
+                        DocumentMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
+                        DocumentMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
+                        DocumentMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none()),
+                        DocumentMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
                     )
                 )
             },
-            HtmlMapping::class.java
+            DocumentMapping::class.java
         )
 
         log.info { "Result: ${result.result().name}" }
     }
 
-    fun indexContent(request: SummitSearchPutHtmlPageRequest) {
+    fun indexContent(request: HtmlDocumentPutRequest) {
         request.htmlDocument.body().select(EXCLUDED_TAG_EVALUATOR).forEach {
             it.remove()
         }
@@ -233,7 +234,7 @@ class SummitSearchIndexService(
         val description = request.htmlDocument.getSeoDescription() ?: ""
 
         indexContent(
-            SummitSearchIndexRequest(
+            DocumentIndexRequest(
                 source = request.source,
                 title = title,
                 rawTextContent = textOnly,
@@ -244,7 +245,7 @@ class SummitSearchIndexService(
         )
     }
 
-    fun deletePageContents(request: SummitSearchDeleteIndexRequest) {
+    fun deletePageContents(request: DocumentDeleteRequest) {
         log.info { "Deleting: ${request.source} from index: $indexName" }
         val response = elasticSearchClient.delete(DeleteRequest.of {
             it.index(indexName)
@@ -262,18 +263,18 @@ class SummitSearchIndexService(
                 it.index(indexName)
                 it.mappings { mapping ->
                     mapping.properties(mapOf(
-                        HtmlMapping::host.name to Property.of { property ->
+                        DocumentMapping::host.name to Property.of { property ->
                             property.keyword { keyword ->
                                 keyword.docValues(true)
                             }
                         },
-                        HtmlMapping::paragraphContent.name to Property.of { property ->
+                        DocumentMapping::paragraphContent.name to Property.of { property ->
                             property.text(TextProperty.Builder().build())
                         },
-                        HtmlMapping::rawTextContent.name to Property.of { property ->
+                        DocumentMapping::rawTextContent.name to Property.of { property ->
                             property.text(TextProperty.Builder().build())
                         },
-                        HtmlMapping::pageCreationDate.name to Property.of { property ->
+                        DocumentMapping::pageCreationDate.name to Property.of { property ->
                             property.date(DateProperty.Builder().build())
                         }
                     ))
@@ -294,7 +295,7 @@ class SummitSearchIndexService(
                                 definition.synonymGraph { synonymGraph ->
                                     synonymGraph.expand(true)
                                     synonymGraph.lenient(false)
-                                    synonymGraph.synonyms(SummitSearchSynonyms.synonyms)
+                                    synonymGraph.synonyms(synonyms)
                                 }
                             }
                         }
@@ -308,15 +309,15 @@ class SummitSearchIndexService(
         }
     }
 
-    private fun buildFuzzyQuery(request: SummitSearchQueryRequest): SummitSearchQuery {
+    private fun buildFuzzyQuery(request: DocumentQueryRequest): SearchQuery {
         val query = Query.of {  query ->
             query.multiMatch { match ->
                 match.query(request.term)
                 match.fields(
-                    HtmlMapping::title.name.plus("^10"), // boost title the highest
-                    HtmlMapping::rawTextContent.name,
-                    HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
-                    HtmlMapping::paragraphContent.name
+                    DocumentMapping::title.name.plus("^10"), // boost title the highest
+                    DocumentMapping::rawTextContent.name,
+                    DocumentMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                    DocumentMapping::paragraphContent.name
                 )
                 match.analyzer(ANALYZER_NAME)
                 match.operator(Operator.And)
@@ -326,20 +327,20 @@ class SummitSearchIndexService(
             }
         }
 
-        return SummitSearchQuery(rawQueryString = request.term, query = query)
+        return SearchQuery(rawQueryString = request.term, query = query)
     }
 
-    private fun buildSimpleQueryStringQuery(request: SummitSearchQueryRequest): SummitSearchQuery {
+    private fun buildSimpleQueryStringQuery(request: DocumentQueryRequest): SearchQuery {
         val sanitizedQuery = SimpleQueryString(PHRASE_TERM_THRESHOLD, request.term).sanitizedQuery()
 
         val query = Query.of { query ->
             query.simpleQueryString { match ->
                 match.query(sanitizedQuery)
                 match.fields(
-                    HtmlMapping::title.name.plus("^10"), // boost title the highest
-                    HtmlMapping::rawTextContent.name,
-                    HtmlMapping::seoDescription.name.plus("^3"), // boost the SEO description score
-                    HtmlMapping::paragraphContent.name
+                    DocumentMapping::title.name.plus("^10"), // boost title the highest
+                    DocumentMapping::rawTextContent.name,
+                    DocumentMapping::seoDescription.name.plus("^3"), // boost the SEO description score
+                    DocumentMapping::paragraphContent.name
                 )
                 match.minimumShouldMatch("100%")
                 match.analyzer(ANALYZER_NAME)
@@ -347,11 +348,10 @@ class SummitSearchIndexService(
             }
         }
 
-        return SummitSearchQuery(rawQueryString = sanitizedQuery, query = query)
+        return SearchQuery(rawQueryString = sanitizedQuery, query = query)
     }
 
    internal companion object {
-       const val SUMMIT_INDEX_NAME = "summit-search-index"
        const val ANALYZER_NAME = "standard_with_synonyms"
        const val SYNONYM_FILTER_NAME = "synonym_graph"
        const val MAX_FROM_VALUE = 1_000
@@ -371,50 +371,50 @@ class SummitSearchIndexService(
    }
 }
 
-internal data class SummitSearchQuery(
+internal data class SearchQuery(
     val rawQueryString: String,
     val query: Query
 )
 
-data class SummitSearchPaginatedResult<T>(
+data class PaginatedDocumentResult<T>(
     val hits: List<T>,
     val next: Int = 0,
     val totalHits: Long = 0,
     val sanitizedQuery: String
 )
 
-data class SummitSearchHit(
+data class DocumentQueryHit(
     val highlight: String,
     val source: String,
     val title: String,
     val thumbnails: List<String>?
 )
 
-enum class SummitSearchQueryType {
+enum class DocumentQueryType {
     FUZZY,
     STRICT
 }
 
-typealias SummitSearchPutRequest = SummitSearchIndexRequest
-data class SummitSearchQueryRequest(
+typealias DocumentPutRequest = DocumentIndexRequest
+data class DocumentQueryRequest(
     val term: String,
     val from: Int = 0,
-    val sortType: SummitSearchSortType = SummitSearchSortType.BY_RELEVANCE,
-    val queryType: SummitSearchQueryType = SummitSearchQueryType.STRICT
+    val sortType: DocumentSortType = DocumentSortType.BY_RELEVANCE,
+    val queryType: DocumentQueryType = DocumentQueryType.STRICT
 )
 
-data class SummitSearchPutHtmlPageRequest(
+data class HtmlDocumentPutRequest(
     val source: URL,
     val htmlDocument: Document,
     val pageCreationDate: LocalDateTime? = null
 )
 
-enum class SummitSearchSortType {
+enum class DocumentSortType {
     BY_DATE,
     BY_RELEVANCE
 }
 
-data class SummitSearchIndexRequest(
+data class DocumentIndexRequest(
     val source: URL,
     val title: String,
     val rawTextContent: String,
@@ -423,22 +423,22 @@ data class SummitSearchIndexRequest(
     val pageCreationDate: LocalDateTime? = null
 )
 
-data class SummitSearchDeleteIndexRequest(
+data class DocumentDeleteRequest(
     val source: URL
 )
 
-data class SummitSearchPutThumbnailRequest(
+data class DocumentThumbnailPutRequest(
     val source: URL,
     val dataStoreReferences: List<String>,
     val partition: Int? = null
 )
 
-data class SummitSearchExistsRequest(
+data class DocumentExistsRequest(
     val source: URL,
     val partition: Int? = null
 )
 
-internal data class HtmlMapping(
+internal data class DocumentMapping(
     val host: String,
     val source: URL,
     val title: String,
