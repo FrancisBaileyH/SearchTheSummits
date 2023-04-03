@@ -220,31 +220,6 @@ class DocumentIndexService(
         log.info { "Result: ${result.result().name}" }
     }
 
-    fun indexContent(request: HtmlDocumentPutRequest) {
-        request.htmlDocument.body().select(EXCLUDED_TAG_EVALUATOR).forEach {
-            it.remove()
-        }
-
-        val title = request.htmlDocument.title().ifBlank {
-            request.source.host
-        }
-
-        val textOnly = request.htmlDocument.body().text()
-        val paragraphContent = request.htmlDocument.body().select(HTML.Tag.P.toString()).text()
-        val description = request.htmlDocument.getSeoDescription() ?: ""
-
-        indexContent(
-            DocumentIndexRequest(
-                source = request.source,
-                title = title,
-                rawTextContent = textOnly,
-                paragraphContent = paragraphContent,
-                seoDescription = description,
-                pageCreationDate = request.pageCreationDate
-            )
-        )
-    }
-
     fun deletePageContents(request: DocumentDeleteRequest) {
         log.info { "Deleting: ${request.source} from index: $indexName" }
         val response = elasticSearchClient.delete(DeleteRequest.of {
@@ -359,15 +334,6 @@ class DocumentIndexService(
        const val HIGHLIGHT_FRAGMENT_SIZE = 200
        const val HIGHLIGHT_FRAGMENT_COUNT = 1
        const val PHRASE_TERM_THRESHOLD = 2
-
-
-       private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
-           private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
-
-           override fun matches(root: Element, element: Element): Boolean {
-               return excludedTags.contains(element.normalName())
-           }
-       }
    }
 }
 
@@ -401,12 +367,6 @@ data class DocumentQueryRequest(
     val from: Int = 0,
     val sortType: DocumentSortType = DocumentSortType.BY_RELEVANCE,
     val queryType: DocumentQueryType = DocumentQueryType.STRICT
-)
-
-data class HtmlDocumentPutRequest(
-    val source: URL,
-    val htmlDocument: Document,
-    val pageCreationDate: LocalDateTime? = null
 )
 
 enum class DocumentSortType {

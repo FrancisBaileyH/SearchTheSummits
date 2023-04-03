@@ -8,8 +8,8 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.FetchHtmlPageSt
 import com.francisbailey.summitsearch.index.worker.task.Discovery
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import com.francisbailey.summitsearch.indexservice.DocumentDeleteRequest
-import com.francisbailey.summitsearch.indexservice.HtmlDocumentPutRequest
 import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentPutRequest
 import io.ktor.http.*
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.*
@@ -60,7 +60,7 @@ class FetchHtmlPageStepTest: StepTest() {
 
         assertThrows<NonRetryableEntityException> { step.process(pipelineItem, monitor) }
 
-        verify(indexService, never()).indexContent(any<HtmlDocumentPutRequest>())
+        verify(indexService, never()).indexContent(any<DocumentPutRequest>())
         verify(indexService).deletePageContents(eq(DocumentDeleteRequest(source = defaultIndexTask.details.entityUrl)))
     }
 
@@ -84,7 +84,6 @@ class FetchHtmlPageStepTest: StepTest() {
         verify(linkDiscoveryService).submitDiscoveries(defaultIndexTask, listOf(Discovery(IndexTaskType.HTML, location)))
         verifyNoInteractions(indexService)
     }
-
 
     @Test
     fun `submits discovery on pdf content discovery`() {

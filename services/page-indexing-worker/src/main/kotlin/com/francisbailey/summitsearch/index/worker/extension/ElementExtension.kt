@@ -1,6 +1,17 @@
 package com.francisbailey.summitsearch.index.worker.extension
 
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+
+/**
+ * Some SEO Descriptions have HTML tags in them and could also contain
+ * malicious script tags. Because we fetch these values with Jsoup.attr()
+ * the values aren't stripped from HTML like our other .text() calls.
+ */
+fun Document.getSeoDescription(): String? {
+    val description = this.selectFirst("meta[name=description]")
+    return description?.attr("content")
+}
 
 fun Element.getLinks(): List<String> {
     return this.select("a[href]").map { it.attr("abs:href") }
