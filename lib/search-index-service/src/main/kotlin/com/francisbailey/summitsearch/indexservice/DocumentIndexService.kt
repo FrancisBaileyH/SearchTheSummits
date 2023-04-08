@@ -19,14 +19,10 @@ import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import org.jsoup.safety.Safelist
-import org.jsoup.select.Evaluator
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import javax.swing.text.html.HTML
 
 class DocumentIndexService(
     private val elasticSearchClient: ElasticsearchClient,
