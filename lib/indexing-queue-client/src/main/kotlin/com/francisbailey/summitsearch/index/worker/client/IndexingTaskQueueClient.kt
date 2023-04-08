@@ -202,7 +202,9 @@ enum class IndexTaskType {
     HTML,
     THUMBNAIL,
     PDF,
-    IMAGE
+    IMAGE,
+    FACEBOOK_GROUP_POST,
+    FACEBOOK_GROUP_FEED
 }
 
 class URLSerializer : KSerializer<URL> {

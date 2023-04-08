@@ -10,6 +10,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBa
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import software.amazon.awssdk.services.sqs.endpoints.internal.GetAttr.Part.Index
 
 @Configuration
 open class PipelineConfiguration(
@@ -32,7 +33,8 @@ open class PipelineConfiguration(
     private val submitImagesStep: SubmitImagesStep,
     private val checkImageExistsStep: CheckImageExistsStep,
     private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep,
-    private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep
+    private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
+    private val indexFacebookPostStep: IndexFacebookPostStep
 ) {
 
     @Bean
@@ -41,14 +43,15 @@ open class PipelineConfiguration(
             route(IndexTaskType.HTML) {
                 firstRun(fetchHtmlPageStep)
                     .then(submitLinksStep)
-                        .withHostOverride("skisickness.com", SubmitLinksStep::class, skiSicknessSubmitLinksStep)
                     .then(contentValidatorStep)
-                        .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
                     .then(submitImagesStep)
                     .then(indexHtmlPageStep) // destructive step. Need to consider supplying clone
                     .then(submitThumbnailStep)
-                        .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
-                        .withHostOverride("cascadeclimbers.com", SubmitThumbnailStep::class, cascadeClimbersSubmitThumbnailStep)
+                    .withHostOverride("skisickness.com", SubmitLinksStep::class, skiSicknessSubmitLinksStep)
+                    .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
+                    .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
+                    .withHostOverride("cascadeclimbers.com", SubmitThumbnailStep::class, cascadeClimbersSubmitThumbnailStep)
+                    .withHostOverride("www.facebook.com", IndexHtmlPageStep::class, indexFacebookPostStep)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(thumbnailValidationStep)
