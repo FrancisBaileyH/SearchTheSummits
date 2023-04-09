@@ -1,7 +1,6 @@
 version: '3'
 services:
   front-end-service:
-    platform: linux/amd64
     profiles: ["frontend"]
     env_file: variables.env
     ports:
@@ -46,12 +45,11 @@ services:
     command: redis-server --requirepass redispw
 
   page-indexing-worker:
-    platform: linux/amd64
     profiles: ["backend"]
     image: search-the-summits/page-indexing-worker
     env_file: variables.env
     environment:
-      - JAVA_OPTS=-Xmx=600m
+      - JAVA_OPTS=-Xmx600m
     ports:
       - "8081:8080"
       - "9091:9090"
@@ -64,7 +62,6 @@ services:
     restart: unless-stopped
 
   page-indexing-coordinator:
-    platform: linux/amd64
     profiles: ["backend"]
     image: search-the-summits/page-indexing-coordinator
     env_file: variables.env
