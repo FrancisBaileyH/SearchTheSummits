@@ -29,7 +29,7 @@ class IndexSourceRefreshMonitorTest {
     )
 
     @Test
-    fun `creates queue if it does not exist and saves it to store`() {
+    fun `creates queue if queue url is blank on source`() {
         val source = IndexSource(
             host = "francisbaileyh.com",
             seeds = setOf("http://francisbaileyh.com"),
@@ -37,6 +37,30 @@ class IndexSourceRefreshMonitorTest {
             documentTtl = 3600,
             refreshIntervalSeconds = 36000,
             queueUrl = ""
+        )
+        val queueUrl = "some-queue-url"
+
+        whenever(indexingTaskQueueClient.queueExists(any())).thenReturn(true)
+        whenever(indexSourceRepository.getRefreshableSources()).thenReturn(listOf(source))
+        whenever(indexingTaskQueueClient.createQueue(any())).thenReturn(queueUrl)
+
+        refreshMonitor.checkSources()
+
+        verify(indexingTaskQueueClient).createQueue("sts-index-queue-test-francisbaileyh-com")
+        verify(indexSourceRepository, times(2)).save(check {
+            assertEquals(queueUrl, it.queueUrl)
+        })
+    }
+
+    @Test
+    fun `creates queue if it does not exist and saves it to store`() {
+        val source = IndexSource(
+            host = "francisbaileyh.com",
+            seeds = setOf("http://francisbaileyh.com"),
+            nextUpdate = 0,
+            documentTtl = 3600,
+            refreshIntervalSeconds = 36000,
+            queueUrl = "test"
         )
         val queueUrl = "some-queue-url"
 
@@ -60,7 +84,7 @@ class IndexSourceRefreshMonitorTest {
             nextUpdate = 0,
             documentTtl = 3600,
             refreshIntervalSeconds = 36000,
-            queueUrl = ""
+            queueUrl = "test"
         )
 
         whenever(indexingTaskQueueClient.queueExists(any())).thenReturn(true)
@@ -81,7 +105,7 @@ class IndexSourceRefreshMonitorTest {
             nextUpdate = 0,
             documentTtl = 3600,
             refreshIntervalSeconds = 36000,
-            queueUrl = ""
+            queueUrl = "test"
         )
 
         whenever(indexingTaskQueueClient.queueExists(any())).thenReturn(true)
