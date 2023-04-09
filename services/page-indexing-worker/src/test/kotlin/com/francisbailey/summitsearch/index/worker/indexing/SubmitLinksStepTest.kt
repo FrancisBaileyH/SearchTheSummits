@@ -32,7 +32,7 @@ class SubmitLinksStepTest: StepTest() {
                 .text(it.source)
         }
 
-        val item = PipelineItem<DatedDocument>(
+        val item = PipelineItem(
             task = defaultIndexTask,
             payload = DatedDocument(
                 pageCreationDate = null,
@@ -62,7 +62,7 @@ class SubmitLinksStepTest: StepTest() {
                 .text(it.source)
         }
 
-        val item = PipelineItem<DatedDocument>(
+        val item = PipelineItem(
             task = defaultIndexTask,
             payload = DatedDocument(
                 pageCreationDate = null,
@@ -74,6 +74,43 @@ class SubmitLinksStepTest: StepTest() {
 
         Assertions.assertTrue(result.continueProcessing)
         Assertions.assertFalse(result.shouldRetry)
+        verify(linkDiscoveryService).submitDiscoveries(any(), org.mockito.kotlin.check {
+            assertEquals(expectedLinks.first(), it.first())
+            assertEquals(expectedLinks.component2(), it.component2())
+        })
+    }
+
+    @Test
+    fun `submits embedded pdf links + normal links`() {
+        val html = """
+            <html>
+                <body>
+                    <div>
+                        <a href="https://example.com">Some Link</a>
+                        <object data="https://bcmc.ca/media/newsletters/BCMC Newsletter 2001-11" type="application/pdf" width="640" height="800" style="border:1px solid black;"></object>
+                    </div>
+                </body>
+           </html>
+        """
+
+        val expectedLinks = listOf(
+            Discovery(IndexTaskType.HTML, "https://example.com"),
+            Discovery(IndexTaskType.PDF, "https://bcmc.ca/media/newsletters/BCMC Newsletter 2001-11")
+        )
+
+        val item = PipelineItem(
+            task = defaultIndexTask,
+            payload = DatedDocument(
+                pageCreationDate = null,
+                document = Jsoup.parse(html)
+            )
+        )
+
+        val result = step.process(item, monitor)
+
+        Assertions.assertTrue(result.continueProcessing)
+        Assertions.assertFalse(result.shouldRetry)
+        
         verify(linkDiscoveryService).submitDiscoveries(any(), org.mockito.kotlin.check {
             assertEquals(expectedLinks.first(), it.first())
             assertEquals(expectedLinks.component2(), it.component2())

@@ -164,4 +164,24 @@ class ElementExtensionTest {
         assertEquals("Camp In Gargett Basin", captionedImage.caption)
     }
 
+    @Test
+    fun `fetches pdf links from object elements`() {
+        val html = """
+            <html>
+                <body>
+                    <div>
+                        <object data="https://bcmc.ca/media/newsletters/BCMC Newsletter 2001-11.pdf" type="application/pdf" width="640" height="800" style="border:1px solid black;"></object>
+                        <object data="https://bcmc.ca/media/newsletters/somevideo.mp4" type="video/mp4"></object>
+                    </div>
+                </body>
+           </html>
+        """
+
+        val document = Jsoup.parse(html)
+        val pdfLinks = document.getEmbeddedPdfLinks()
+
+        assertEquals(1, pdfLinks.size)
+        assertEquals("https://bcmc.ca/media/newsletters/BCMC Newsletter 2001-11.pdf", pdfLinks.first())
+    }
+
 }

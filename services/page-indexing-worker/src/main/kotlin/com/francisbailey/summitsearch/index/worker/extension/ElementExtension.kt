@@ -21,6 +21,10 @@ fun Element.src(): String? {
     return this.attr("src")
 }
 
+fun Element.getEmbeddedPdfLinks(): List<String> {
+    return this.select("object[type=application/pdf]").map { it.attr("data") }
+}
+
 fun Element.getOGImage(): CaptionedImage? {
     val imageUrl = this.selectFirst("meta[property=og:image]")?.attr("content")
     val imageCaption = this.selectFirst("meta[property=og:image:alt]")?.attr("content")

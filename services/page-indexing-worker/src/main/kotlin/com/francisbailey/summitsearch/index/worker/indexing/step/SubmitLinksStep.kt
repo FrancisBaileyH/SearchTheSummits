@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.extension.getEmbeddedPdfLinks
 import com.francisbailey.summitsearch.index.worker.extension.getLinks
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
@@ -16,9 +17,9 @@ class SubmitLinksStep(
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        val organicLinks = entity.payload?.document?.body()?.getLinks() ?: emptyList()
+        val document = entity.payload!!.document
 
-        val discoveries = organicLinks.map {
+        val discoveries = document.getLinks().map {
             val type = when {
                 it.endsWith("pdf", ignoreCase = true) -> IndexTaskType.PDF
                 else -> IndexTaskType.HTML
@@ -27,7 +28,11 @@ class SubmitLinksStep(
             Discovery(type, it)
         }
 
-        linkDiscoveryService.submitDiscoveries(entity.task, discoveries)
+        val pdfDiscoveries = document.getEmbeddedPdfLinks().map {
+            Discovery(IndexTaskType.PDF, it)
+        }
+
+        linkDiscoveryService.submitDiscoveries(entity.task, discoveries + pdfDiscoveries)
         monitor.meter.counter("links.discovered").increment(discoveries.size.toDouble())
 
         return entity.apply { continueProcessing = true }
