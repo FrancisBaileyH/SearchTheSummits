@@ -32,6 +32,7 @@ open class FilterConfiguration {
             addFilterChain(URL("http://www.supertopo.com"), SuperTopoFilter)
             addFilterChain(URL("https://skisickness.com"), SkiSicknessFilter)
             addFilterChain(URL("https://www.mountaineers.org"), MountaineersOrgFilter)
+            addFilterChain(URL("https://bcmc.ca"), BCMCFilter)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.filter.definitions
 
 import com.francisbailey.summitsearch.index.worker.configuration.FilterConfiguration
+import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import org.junit.jupiter.api.Assertions
 import java.net.URL
@@ -15,11 +16,11 @@ abstract class FilterTest {
 
     fun verifyFilter(service: DocumentFilterService, expectedToSkip: List<String>, expectedNotToSkip: List<String>) {
         expectedToSkip.forEach {
-            Assertions.assertTrue(service.shouldFilter(URL(it)), "Failed on skipping: $it")
+            Assertions.assertTrue(service.shouldFilter(URL(it).normalizeAndEncode()), "Failed on skipping: $it")
         }
 
         expectedNotToSkip.forEach {
-            Assertions.assertFalse(service.shouldFilter(URL(it)), "Failed on not skipping: $it")
+            Assertions.assertFalse(service.shouldFilter(URL(it).normalizeAndEncode()), "Failed on not skipping: $it")
         }
     }
 
