@@ -29,8 +29,6 @@ class SubmitFacebookLinksStep(
     }
 
     companion object {
-        // https:\/\/www.facebook.com\/groups\/240069949775049\/posts\/1565897663858931\/
-        private val test = Regex
         private val FACEBOOK_POST_PATTERN = Pattern.compile("(https:\\\\/\\\\/www.facebook.com\\\\/groups\\\\/[0-9]{1,20}\\\\/posts\\\\/[0-9]{1,20}\\\\/)")
     }
 }

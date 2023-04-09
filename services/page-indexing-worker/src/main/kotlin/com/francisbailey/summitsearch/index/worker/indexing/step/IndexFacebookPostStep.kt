@@ -3,13 +3,13 @@ package com.francisbailey.summitsearch.index.worker.indexing.step
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentPutRequest
 import org.springframework.stereotype.Component
 
 @Component
 class IndexFacebookPostStep(
-    private val summitSearchIndexService: SummitSearchIndexService
+    private val summitSearchIndexService: DocumentIndexService
 ): Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         val document = entity.payload!!.document
@@ -20,7 +20,7 @@ class IndexFacebookPostStep(
         monitor.meter.timer("indexservice.add.latency").recordCallable {
             monitor.dependencyCircuitBreaker.executeCallable {
                 summitSearchIndexService.indexContent(
-                    SummitSearchPutRequest(
+                    DocumentPutRequest(
                         source = entity.task.details.entityUrl,
                         title = title,
                         rawTextContent = "",

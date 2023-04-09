@@ -5,8 +5,8 @@ import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.IndexFacebookPostStep
-import com.francisbailey.summitsearch.indexservice.SummitSearchIndexService
-import com.francisbailey.summitsearch.indexservice.SummitSearchPutRequest
+import com.francisbailey.summitsearch.indexservice.DocumentIndexService
+import com.francisbailey.summitsearch.indexservice.DocumentPutRequest
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -16,7 +16,7 @@ import java.util.*
 
 class IndexFacebookPostStepTest: StepTest() {
 
-    private val index = mock<SummitSearchIndexService>()
+    private val index = mock<DocumentIndexService>()
 
     private val step = IndexFacebookPostStep(index)
 
@@ -47,7 +47,7 @@ class IndexFacebookPostStepTest: StepTest() {
 
         step.process(item, monitor)
 
-        verify(index).indexContent(SummitSearchPutRequest(
+        verify(index).indexContent(DocumentPutRequest(
             source = task.details.entityUrl,
             title = "SWBC Peak Baggers | Mount Hansen Northwest Peak",
             rawTextContent = "",
