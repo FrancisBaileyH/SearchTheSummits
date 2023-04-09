@@ -34,7 +34,7 @@ class IndexSourceRefreshMonitor(
         meterRegistry.counter("index-source-refresh-monitor.source-count").increment()
 
         sources.forEach {
-            if (it.queueUrl.isBlank() || !indexingTaskQueueClient.queueExists(it.queueUrl)) {
+            if (it.queueUrl.isBlank()) {
                 val queueName = generateQueueName(it.host)
 
                 log.info { "Queue: $queueName not found. Generating now." }
