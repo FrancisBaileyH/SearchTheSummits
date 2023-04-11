@@ -164,7 +164,10 @@ class SummitImagesControllerTest {
 
         val expectedResponse = SummitSearchResponse(
             hits = listOf(
-                SummitSearchImagePreviewHitResponse(
+                SummitSearchImageHitResponse(
+                    description = result.hits.first().description,
+                    referencingDocument = result.hits.first().referencingDocument,
+                    source = result.hits.first().source,
                     thumbnail = shimmedThumbnailUrl.toString(),
                     imageHeight = result.hits.first().heightPx,
                     imageWidth = result.hits.first().widthPx

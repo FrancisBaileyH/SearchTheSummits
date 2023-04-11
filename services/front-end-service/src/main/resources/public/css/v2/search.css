@@ -321,6 +321,12 @@ hr.sub-menu-divider {
     padding-right: 0.5em;
 }
 
+.search-result-image-preview-thumbnail img:hover {
+    box-shadow: 0 2px 4px 1px rgba(64,60,67,.16);
+    border-color: rgba(187, 187, 187, 0.5);
+    cursor: pointer;
+}
+
 .search-result-image-preview-thumbnail:last-child {
     padding-right: 0;
 }

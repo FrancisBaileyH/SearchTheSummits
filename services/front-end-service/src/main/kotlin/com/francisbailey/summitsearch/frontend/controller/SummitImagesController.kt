@@ -113,8 +113,11 @@ class SummitImagesController(
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
-                    SummitSearchImagePreviewHitResponse(
+                    SummitSearchImageHitResponse(
+                        description = it.description,
+                        source = it.source,
                         thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
+                        referencingDocument = it.referencingDocument,
                         imageHeight = it.heightPx,
                         imageWidth = it.widthPx
                     )
@@ -147,11 +150,4 @@ data class SummitSearchImageHitResponse(
     val referencingDocument: String,
     val imageHeight: Int,
     val imageWidth: Int
-)
-
-@Serializable
-data class SummitSearchImagePreviewHitResponse(
-    val thumbnail: String,
-    val imageWidth: Int,
-    val imageHeight: Int
 )

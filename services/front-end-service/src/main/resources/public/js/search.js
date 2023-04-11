@@ -188,9 +188,11 @@ function updateDocumentResults(searchParams) {
 
             searchResults += "<div class=\"search-result-image-preview\">"
             previewResponse[0].hits.forEach(function(hit) {
+                var sourceUrl = new URL(hit.referencingDocument);
+
                 if (count < 3 || $(window).width() > 700) {
                     searchResults += "<div class=\"search-result-image-preview-thumbnail\">"
-                    searchResults += "<a href=\"" + url + "\"><img src=\"" + hit.thumbnail + "\" /></a>"
+                    searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\" />"
                     searchResults += "</div>"
                 }
 
@@ -250,7 +252,12 @@ function updateDocumentResults(searchParams) {
             totalHits: searchResponse[0].totalHits,
             requestTime: totalTime,
             currentHits: searchResponse[0].hits.size,
-            postRenderCallback: null,
+            postRenderCallback: function() {
+                $('.search-image').on('click', function() {
+                    var imageTarget = $(this);
+                    renderImageModal(imageTarget);
+                });
+            },
             resultsPerPage: searchResponse[0].resultsPerPage
         }, searchResults)
 
