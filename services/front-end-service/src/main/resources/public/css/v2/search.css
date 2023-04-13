@@ -410,6 +410,7 @@ hr.sub-menu-divider {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    max-width: 80%;
 }
 
 .search-result-link-label {
@@ -618,6 +619,10 @@ footer #footer-image {
 
     .search-results-tools .search-tool-icon {
         display: none;
+    }
+
+    .search-result-link-value {
+        max-width: 100%;
     }
 }
 
