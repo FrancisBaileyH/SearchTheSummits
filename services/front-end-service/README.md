@@ -2,6 +2,24 @@
 
 The FrontEnd is currently just a single Droplet with Nginx for TLS Termination and a Springboot service listening on port 8080.
 
+docker-compose.yml
+```
+version: '3'
+services:
+  front-end-service:
+    env_file: variables.env
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    image: francisbaileyh/search-the-summits:front-end-latest
+    volumes:
+      - front-end-volume:/service/var/logs
+
+volumes:
+  front-end-volume:
+    external: false
+```
+
 ```
 sudo apt-get install nginx
 sudo apt-get install certbot
