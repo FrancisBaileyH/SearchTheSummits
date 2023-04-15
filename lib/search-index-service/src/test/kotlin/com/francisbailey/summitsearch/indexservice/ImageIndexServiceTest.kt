@@ -15,12 +15,17 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.net.URL
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 
 class ImageIndexServiceTest {
 
     private val mockClient = mock<ElasticsearchClient>()
+
+    private val clock = mock<Clock> {
+        on(mock.instant()).thenReturn(Clock.systemUTC().instant())
+    }
 
     private val getDocument: (URL, String) -> GetResponse<ImageMapping> = { url, index ->
         client.get(GetRequest.of {
@@ -42,8 +47,12 @@ class ImageIndexServiceTest {
             widthPx = 500
         )
 
+        val visitTime = Instant.ofEpochSecond(1)
+
+        whenever(clock.instant()).thenReturn(visitTime)
+
         val index = "create-image-index"
-        val testIndexService = ImageIndexService(client, 10, index).also {
+        val testIndexService = ImageIndexService(client, 10, index, emptyList(), clock).also {
             it.createIfNotExists()
         }
 
@@ -60,6 +69,7 @@ class ImageIndexServiceTest {
         assertEquals(request.referencingDocumentDate, result.source()!!.referencingDocumentDate)
         assertEquals(request.referencingDocument.host, result.source()!!.referencingDocumentHost)
         assertEquals(request.source.toString(), result.source()!!.source)
+        assertEquals(visitTime.toEpochMilli(), result.source()!!.lastVisitTime)
         assertEquals(generateIdFromUrl(request.normalizedSource), result.id())
     }
 

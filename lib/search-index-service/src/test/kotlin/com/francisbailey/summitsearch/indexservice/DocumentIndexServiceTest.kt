@@ -26,6 +26,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.check
 import java.net.URL
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -36,6 +38,10 @@ class DocumentIndexServiceTest {
     private val sourceUrlString = "https://$source"
 
     private val mockClient = mock<ElasticsearchClient>()
+
+    private val clock = mock<Clock> {
+        on(mock.instant()).thenReturn(Clock.systemUTC().instant())
+    }
 
     @Test
     fun `returns false if index does not exist and true when it does`() {
@@ -130,6 +136,9 @@ class DocumentIndexServiceTest {
     fun `indexing page content can be searched after`() {
         val index = "test-index-liberty"
         val testIndexService = createIndex(index)
+        val visitTime = Instant.ofEpochSecond(1)
+
+        whenever(clock.instant()).thenReturn(visitTime)
 
         assertTrue(testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.isEmpty())
         testIndexService.indexContent(DocumentPutRequest(
@@ -156,6 +165,7 @@ class DocumentIndexServiceTest {
         )
         assertTrue(document.found())
         assertEquals(URL(sourceUrlString).host, document.source()?.host)
+        assertEquals(visitTime.toEpochMilli(), document.source()?.lastVisitTime)
         assertEquals("In fact, there's a very high concentration of", document.source()?.seoDescription)
     }
 
@@ -736,7 +746,7 @@ class DocumentIndexServiceTest {
     }
 
     private fun createIndex(index: String, pagination: Int = 10): DocumentIndexService {
-        return DocumentIndexService(client, pagination, index).also {
+        return DocumentIndexService(client, pagination, index, emptyList(),  clock).also {
             it.createIfNotExists()
         }
     }

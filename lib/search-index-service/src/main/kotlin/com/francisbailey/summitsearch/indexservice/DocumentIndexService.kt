@@ -21,6 +21,7 @@ import mu.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import java.net.URL
+import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -28,7 +29,8 @@ class DocumentIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
     val indexName: String,
-    private val synonyms: List<String> = emptyList()
+    private val synonyms: List<String> = emptyList(),
+    private val clock: Clock = Clock.systemUTC()
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -174,6 +176,7 @@ class DocumentIndexService(
                         paragraphContent = Jsoup.clean(request.paragraphContent, Safelist.none()),
                         seoDescription = Jsoup.clean(request.seoDescription, Safelist.none()),
                         pageCreationDate = request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli(),
+                        lastVisitTime = clock.instant().toEpochMilli()
                     ))
                 }
             }
@@ -206,7 +209,8 @@ class DocumentIndexService(
                         DocumentMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
                         DocumentMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
                         DocumentMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none()),
-                        DocumentMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
+                        DocumentMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli(),
+                        DocumentMapping::lastVisitTime.name to clock.instant().toEpochMilli()
                     )
                 )
             },
@@ -402,5 +406,6 @@ internal data class DocumentMapping(
     val paragraphContent: String,
     val rawTextContent: String,
     val thumbnails: List<String>? = null,
-    val pageCreationDate: Long? = null
+    val pageCreationDate: Long? = null,
+    val lastVisitTime: Long?
 )

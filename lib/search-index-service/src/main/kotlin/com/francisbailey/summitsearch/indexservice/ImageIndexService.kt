@@ -19,6 +19,7 @@ import mu.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import java.net.URL
+import java.time.Clock
 
 /**
  * There's definitely some opportunity to refactor this logic so that there's not so much
@@ -29,7 +30,8 @@ class ImageIndexService(
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
     val indexName: String,
-    private val synonyms: List<String> = emptyList()
+    private val synonyms: List<String> = emptyList(),
+    private val clock: Clock = Clock.systemUTC()
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -110,7 +112,8 @@ class ImageIndexService(
                 referencingDocumentDate = request.referencingDocumentDate,
                 referencingDocumentHost = request.referencingDocument.host,
                 heightPx = request.heightPx,
-                widthPx = request.widthPx
+                widthPx = request.widthPx,
+                lastVisitTime = clock.instant().toEpochMilli()
             ))
         })
 
@@ -223,7 +226,8 @@ internal data class ImageMapping(
     val referencingDocumentDate: Long?,
     val type: ImageType,
     val heightPx: Int,
-    val widthPx: Int
+    val widthPx: Int,
+    val lastVisitTime: Long?
 )
 
 internal enum class ImageType {
