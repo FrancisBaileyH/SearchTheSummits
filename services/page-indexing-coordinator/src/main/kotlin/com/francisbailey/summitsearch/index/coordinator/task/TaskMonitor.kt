@@ -70,9 +70,7 @@ class TaskMonitor(
         taskCount.set(activeTasks.size)
 
         activeTasks.forEach {
-            val tags = arrayOf("status", it.status.name, "host", it.host)
             log.info { "Task: $it is in state: ${it.status}" }
-            meter.counter("$service.task-count", *tags).increment()
 
             when(it.status) {
                 TaskStatus.PENDING -> {
