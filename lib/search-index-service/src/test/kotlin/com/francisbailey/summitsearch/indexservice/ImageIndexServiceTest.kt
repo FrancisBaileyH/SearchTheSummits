@@ -52,7 +52,7 @@ class ImageIndexServiceTest {
         whenever(clock.instant()).thenReturn(visitTime)
 
         val index = "create-image-index"
-        val testIndexService = ImageIndexService(client, 10, index, emptyList(), clock).also {
+        val testIndexService = ImageIndexService(index, client, 10, emptyList(), clock).also {
             it.createIfNotExists()
         }
 
@@ -74,6 +74,36 @@ class ImageIndexServiceTest {
     }
 
     @Test
+    fun `normalizes text`() {
+        val nonStandardString = "John\u0091s, Doug\u0092s, Martin\u2018s, Cynthia\u2019s, Shark\uFF07s Fin"
+        val standardString = "John's, Doug's, Martin's, Cynthia's, Shark's Fin"
+
+        val request = ImagePutRequest(
+            source = URL("https://francisbaileyh.com/wp-content/image.jpeg?w=1230"),
+            referencingDocumentDate = 123456789,
+            referencingDocument = URL("https://francisbaileyh.com/some-page"),
+            description = nonStandardString,
+            dataStoreReference = "https://some-reference-here",
+            normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
+            heightPx = 200,
+            widthPx = 500
+        )
+
+        val index = "create-image-index"
+        val testIndexService = ImageIndexService(index, client, 10, emptyList(), clock).also {
+            it.createIfNotExists()
+        }
+
+        testIndexService.indexImage(request)
+
+        client.indices().refresh(RefreshRequest.of { it.index(index) })
+
+        val result = getDocument(request.normalizedSource, index)
+
+        assertEquals(standardString, result.source()!!.description)
+    }
+
+    @Test
     fun `cleans malicious text from description`() {
         val request = ImagePutRequest(
             source = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
@@ -87,7 +117,7 @@ class ImageIndexServiceTest {
         )
 
         val index = "create-image-index-bad-text"
-        val testIndexService = ImageIndexService(client, 10, index).also {
+        val testIndexService = ImageIndexService(index, client, 10).also {
             it.createIfNotExists()
         }
 
@@ -106,7 +136,7 @@ class ImageIndexServiceTest {
     @Test
     fun `creates index with html analyzer if index does not exist yet`() {
         val index = "create-image-index-not-exist"
-        val testIndexService = ImageIndexService(client, 10, index)
+        val testIndexService = ImageIndexService(index, client, 10)
         assertFalse(client.indexExists(index))
 
         testIndexService.createIfNotExists()
@@ -117,7 +147,7 @@ class ImageIndexServiceTest {
     @Test
     fun `can query results using fuzzy search`() {
         val index = "image-fuzzy-query-test"
-        val testIndexService = ImageIndexService(client, 20, index).also {
+        val testIndexService = ImageIndexService(index, client, 20).also {
             it.createIfNotExists()
         }
 
@@ -147,7 +177,7 @@ class ImageIndexServiceTest {
     @Test
     fun `can query results using strict search`() {
         val index = "image-strict-query-test"
-        val testIndexService = ImageIndexService(client, 20, index).also {
+        val testIndexService = ImageIndexService(index, client, 20).also {
             it.createIfNotExists()
         }
         val searchTerm = "Mount Last"
@@ -178,7 +208,7 @@ class ImageIndexServiceTest {
     @Test
     fun `sorts by date when request specifies sortByDate type`() {
         val index = "image-sort-by-date"
-        val testIndexService = ImageIndexService(client, 20, index).also {
+        val testIndexService = ImageIndexService(index, client, 20).also {
             it.createIfNotExists()
         }
         val instant = Instant.now()
@@ -217,7 +247,7 @@ class ImageIndexServiceTest {
     fun `performs simple query string query when exact match specified in request`() {
         val index = "image-exact-match-test"
         val phraseFieldTerm = "this is a query"
-        val testIndexService = ImageIndexService(mockClient, 20, index)
+        val testIndexService = ImageIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<ImageMapping>>()
         val hitsMetadata = mock<HitsMetadata<ImageMapping>>()
@@ -238,7 +268,7 @@ class ImageIndexServiceTest {
     fun `performs fuzzy query when exact match specified in request`() {
         val index = "image-fuzzy-match-test"
         val phraseFieldTerm = "this is a query"
-        val testIndexService = ImageIndexService(mockClient, 20, index)
+        val testIndexService = ImageIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<ImageMapping>>()
         val hitsMetadata = mock<HitsMetadata<ImageMapping>>()
@@ -261,7 +291,7 @@ class ImageIndexServiceTest {
         val index = "image-fuzzy-match-test"
         val phraseFieldTerm = "this is a query"
         val paginationCount = 6
-        val testIndexService = ImageIndexService(mockClient, 20, index)
+        val testIndexService = ImageIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<ImageMapping>>()
         val hitsMetadata = mock<HitsMetadata<ImageMapping>>()

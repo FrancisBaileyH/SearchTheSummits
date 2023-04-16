@@ -58,7 +58,7 @@ class DocumentIndexServiceTest {
     @Test
     fun `creates index with html analyzer if index does not exist yet`() {
         val index = "create-index-not-exist"
-        val testIndexService = DocumentIndexService(client, 10, index)
+        val testIndexService = DocumentIndexService(index, client, 10)
         assertFalse(client.indexExists(index))
 
         testIndexService.createIfNotExists()
@@ -167,6 +167,74 @@ class DocumentIndexServiceTest {
         assertEquals(URL(sourceUrlString).host, document.source()?.host)
         assertEquals(visitTime.toEpochMilli(), document.source()?.lastVisitTime)
         assertEquals("In fact, there's a very high concentration of", document.source()?.seoDescription)
+    }
+
+    @Test
+    fun `indexed content is normalized`() {
+        val index = "test-index-normalize"
+        val testIndexService = createIndex(index)
+
+        val nonStandardString = "John\u0091s, Doug\u0092s, Martin\u2018s, Cynthia\u2019s, Shark\uFF07s Fin"
+        val standardString = "John's, Doug's, Martin's, Cynthia's, Shark's Fin"
+
+        assertTrue(testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.isEmpty())
+        testIndexService.indexContent(DocumentPutRequest(
+            source = URL("$sourceUrlString/LibertyBell"),
+            seoDescription = nonStandardString,
+            rawTextContent = nonStandardString,
+            pageCreationDate = null,
+            paragraphContent = nonStandardString,
+            title = nonStandardString
+        ))
+
+        refreshIndex(index)
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id("$source/LibertyBell")
+            },
+            DocumentMapping::class.java
+        )
+
+        assertEquals(standardString, document.source()?.seoDescription)
+        assertEquals(standardString, document.source()?.rawTextContent)
+        assertEquals(standardString, document.source()?.paragraphContent)
+        assertEquals(standardString, document.source()?.title)
+    }
+
+    @Test
+    fun `partitioned content is normalized`() {
+        val index = "test-index-normalize"
+        val testIndexService = createIndex(index)
+
+        val nonStandardString = "John\u0091s, Doug\u0092s, Martin\u2018s, Cynthia\u2019s, Shark\uFF07s Fin"
+        val standardString = "John's, Doug's, Martin's, Cynthia's, Shark's Fin"
+
+        assertTrue(testIndexService.query(DocumentQueryRequest(term = "Liberty")).hits.isEmpty())
+        testIndexService.indexPartitionedContent(listOf(DocumentPutRequest(
+            source = URL("$sourceUrlString/LibertyBell"),
+            seoDescription = nonStandardString,
+            rawTextContent = nonStandardString,
+            pageCreationDate = null,
+            paragraphContent = nonStandardString,
+            title = nonStandardString
+        )))
+
+        refreshIndex(index)
+
+        val document = client.get(
+            GetRequest.of {
+                it.index(index)
+                it.id("$source/LibertyBell-0")
+            },
+            DocumentMapping::class.java
+        )
+
+        assertEquals(standardString, document.source()?.seoDescription)
+        assertEquals(standardString, document.source()?.rawTextContent)
+        assertEquals(standardString, document.source()?.paragraphContent)
+        assertEquals(standardString, document.source()?.title)
     }
 
     @Test
@@ -296,7 +364,7 @@ class DocumentIndexServiceTest {
         val bestFieldTerm = "three terms here"
         val response = mock<SearchResponse<DocumentMapping>>()
         val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
-        val testIndexService = DocumentIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(index, mockClient, 20)
 
         whenever(mockClient.search(any<SearchRequest>(), any<Class<DocumentMapping>>())).thenReturn(response)
         whenever(response.hits()).thenReturn(hitsMetadata)
@@ -313,7 +381,7 @@ class DocumentIndexServiceTest {
     fun `query switches to phrase when term count is equal to or less than 2`() {
         val index = "phrase-match-test"
         val phraseFieldTerm = "two terms"
-        val testIndexService = DocumentIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<DocumentMapping>>()
         val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
@@ -333,7 +401,7 @@ class DocumentIndexServiceTest {
     fun `escapes non-alphanumeric characters from query`() {
         val index = "phrase-sanitization-test"
         val phraseFieldTerm = "Term-with-hyphen *produces| this (query) ~here and tom's 0123456789’!"
-        val testIndexService = DocumentIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<DocumentMapping>>()
         val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
@@ -381,7 +449,7 @@ class DocumentIndexServiceTest {
 
     @Test
     fun `throws exception if bulk index size is greater than max`() {
-        val service = DocumentIndexService(mockClient, 10, "test")
+        val service = DocumentIndexService("test", mockClient, 10)
 
         val requests = (0..service.maxBulkIndexRequests).map {
             mock<DocumentIndexRequest> {
@@ -394,7 +462,7 @@ class DocumentIndexServiceTest {
 
     @Test
     fun `throws exception if document source differs on any bulk request`() {
-        val service = DocumentIndexService(mockClient, 10, "test")
+        val service = DocumentIndexService("test", mockClient, 10)
 
         val request1 = mock<DocumentIndexRequest>()
         val request2 = mock<DocumentIndexRequest>()
@@ -621,7 +689,7 @@ class DocumentIndexServiceTest {
     fun `performs fuzzy query when specified in request`() {
         val index = "fuzzy-match-test"
         val phraseFieldTerm = "this is a query"
-        val testIndexService = DocumentIndexService(mockClient, 20, index)
+        val testIndexService = DocumentIndexService(index, mockClient, 20)
 
         val response = mock<SearchResponse<DocumentMapping>>()
         val hitsMetadata = mock<HitsMetadata<DocumentMapping>>()
@@ -746,7 +814,7 @@ class DocumentIndexServiceTest {
     }
 
     private fun createIndex(index: String, pagination: Int = 10): DocumentIndexService {
-        return DocumentIndexService(client, pagination, index, emptyList(),  clock).also {
+        return DocumentIndexService(index, client, pagination, emptyList(), clock).also {
             it.createIfNotExists()
         }
     }

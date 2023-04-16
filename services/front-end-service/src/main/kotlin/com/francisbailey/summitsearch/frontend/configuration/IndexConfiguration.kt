@@ -15,9 +15,9 @@ open class IndexConfiguration(
 
     @Bean
     open fun summitSearchIndexService() = DocumentIndexService(
+        indexName = SummitSearchIndexes.documentIndexName,
         elasticSearchClient,
         paginationResultSize = SummitsController.DOCUMENT_RESULTS_SIZE,
-        indexName = SummitSearchIndexes.documentIndexName,
         synonyms = SummitSearchIndexes.synonyms
     )
 
@@ -30,9 +30,9 @@ open class IndexConfiguration(
 
     @Bean
     open fun imageIndexService() = ImageIndexService(
+        indexName = SummitSearchIndexes.imageIndexName,
         elasticSearchClient,
         paginationResultSize = SummitImagesController.IMAGE_RESULT_SIZE,
-        indexName = SummitSearchIndexes.imageIndexName,
         synonyms = SummitSearchIndexes.synonyms
     )
 }

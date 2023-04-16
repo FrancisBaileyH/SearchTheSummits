@@ -10,9 +10,11 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
+import com.francisbailey.summitsearch.indexservice.common.DefaultTextNormalizer
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_LAST_NAME
 import com.francisbailey.summitsearch.indexservice.common.SimpleQueryString
+import com.francisbailey.summitsearch.indexservice.common.TextNormalizer
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -27,11 +29,12 @@ import java.time.Clock
  * it's of the highest importance for now.
  */
 class ImageIndexService(
+    val indexName: String,
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    val indexName: String,
     private val synonyms: List<String> = emptyList(),
-    private val clock: Clock = Clock.systemUTC()
+    private val clock: Clock = Clock.systemUTC(),
+    private val textNormalizer: TextNormalizer = DefaultTextNormalizer()
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -107,7 +110,7 @@ class ImageIndexService(
                 type = type,
                 source = request.source.toString(),
                 dataStoreReference = request.dataStoreReference,
-                description = Jsoup.clean(request.description, Safelist.none()),
+                description = textNormalizer.normalize(Jsoup.clean(request.description, Safelist.none())),
                 referencingDocument = request.referencingDocument.toString(),
                 referencingDocumentDate = request.referencingDocumentDate,
                 referencingDocumentHost = request.referencingDocument.host,

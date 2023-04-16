@@ -14,9 +14,9 @@ open class IndexConfiguration(
 
     @Bean
     open fun summitSearchIndexService() = DocumentIndexService(
+        indexName = SummitSearchIndexes.documentIndexName,
         elasticSearchClient,
         paginationResultSize = 10,
-        indexName = SummitSearchIndexes.documentIndexName,
         synonyms = SummitSearchIndexes.synonyms
     ).also {
         it.createIfNotExists()
@@ -24,9 +24,9 @@ open class IndexConfiguration(
 
     @Bean
     open fun imageIndexService() = ImageIndexService(
+        indexName = SummitSearchIndexes.imageIndexName,
         elasticSearchClient,
         paginationResultSize = 30,
-        indexName = SummitSearchIndexes.imageIndexName,
         synonyms = SummitSearchIndexes.synonyms
     ).also {
         it.createIfNotExists()

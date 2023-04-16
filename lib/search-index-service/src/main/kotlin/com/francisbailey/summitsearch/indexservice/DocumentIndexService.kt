@@ -11,10 +11,12 @@ import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
+import com.francisbailey.summitsearch.indexservice.common.DefaultTextNormalizer
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.HIGHLIGHT_DELIMITER
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_DATE_FORMAT
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.SORT_LAST_NAME
 import com.francisbailey.summitsearch.indexservice.common.SimpleQueryString
+import com.francisbailey.summitsearch.indexservice.common.TextNormalizer
 import com.francisbailey.summitsearch.indexservice.extension.*
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
 import mu.KotlinLogging
@@ -26,11 +28,12 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class DocumentIndexService(
+    val indexName: String,
     private val elasticSearchClient: ElasticsearchClient,
     private val paginationResultSize: Int,
-    val indexName: String,
     private val synonyms: List<String> = emptyList(),
-    private val clock: Clock = Clock.systemUTC()
+    private val clock: Clock = Clock.systemUTC(),
+    private val textNormalizer: TextNormalizer = DefaultTextNormalizer()
 ) {
     private val log = KotlinLogging.logger { }
 
@@ -169,12 +172,12 @@ class DocumentIndexService(
                 operation.index { indexOp ->
                     indexOp.id("${generateIdFromUrl(request.source)}-$partition")
                     indexOp.document(DocumentMapping(
-                        title = Jsoup.clean(request.title, Safelist.none()),
+                        title = textNormalizer.normalize(Jsoup.clean(request.title, Safelist.none())),
                         source = request.source,
                         host = request.source.host,
-                        rawTextContent = Jsoup.clean(request.rawTextContent, Safelist.none()),
-                        paragraphContent = Jsoup.clean(request.paragraphContent, Safelist.none()),
-                        seoDescription = Jsoup.clean(request.seoDescription, Safelist.none()),
+                        rawTextContent = textNormalizer.normalize(Jsoup.clean(request.rawTextContent, Safelist.none())),
+                        paragraphContent = textNormalizer.normalize(Jsoup.clean(request.paragraphContent, Safelist.none())),
+                        seoDescription = textNormalizer.normalize(Jsoup.clean(request.seoDescription, Safelist.none())),
                         pageCreationDate = request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli(),
                         lastVisitTime = clock.instant().toEpochMilli()
                     ))
@@ -203,12 +206,12 @@ class DocumentIndexService(
                 it.docAsUpsert(true)
                 it.doc(
                     mapOf(
-                        DocumentMapping::title.name to Jsoup.clean(request.title, Safelist.none()),
+                        DocumentMapping::title.name to textNormalizer.normalize(Jsoup.clean(request.title, Safelist.none())),
                         DocumentMapping::source.name to request.source.toString(),
                         DocumentMapping::host.name to request.source.host,
-                        DocumentMapping::rawTextContent.name to Jsoup.clean(request.rawTextContent, Safelist.none()),
-                        DocumentMapping::paragraphContent.name to Jsoup.clean(request.paragraphContent, Safelist.none()),
-                        DocumentMapping::seoDescription.name to Jsoup.clean(request.seoDescription, Safelist.none()),
+                        DocumentMapping::rawTextContent.name to textNormalizer.normalize(Jsoup.clean(request.rawTextContent, Safelist.none())),
+                        DocumentMapping::paragraphContent.name to textNormalizer.normalize(Jsoup.clean(request.paragraphContent, Safelist.none())),
+                        DocumentMapping::seoDescription.name to textNormalizer.normalize(Jsoup.clean(request.seoDescription, Safelist.none())),
                         DocumentMapping::pageCreationDate.name to request.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli(),
                         DocumentMapping::lastVisitTime.name to clock.instant().toEpochMilli()
                     )
