@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.time.Instant
+import javax.servlet.http.HttpServletRequest
 import kotlin.math.absoluteValue
 
 @RestController
@@ -32,7 +33,8 @@ class SummitImagesController(
         @RequestParam(name = "query") requestQuery: String,
         @RequestParam(name = "page", required = false) page: Int?,
         @RequestParam(name = "sort", required = false) sort: String? = null,
-        @RequestParam(name = "type", required = false) type: String? = null
+        @RequestParam(name = "type", required = false) type: String? = null,
+        request: HttpServletRequest
     ): ResponseEntity<String> {
 
         log.info { "Querying image service for: $requestQuery and next value: $page" }
@@ -64,7 +66,8 @@ class SummitImagesController(
                 timestamp = Instant.now().toEpochMilli(),
                 type = queryType.name,
                 sort = sortType.name,
-                index = imageIndexService.indexName
+                index = imageIndexService.indexName,
+                ipAddress = request.getHeader("x-forwarded-for")
             ))
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(

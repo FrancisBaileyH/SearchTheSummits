@@ -31,7 +31,8 @@ class QueryStatsIndex(
                         page = it.page,
                         type = it.type,
                         sort = it.sort,
-                        index = it.index
+                        index = it.index,
+                        ipAddress = it.ipAddress
                     ))
                 }
             }
@@ -80,7 +81,8 @@ internal data class QueryStatMapping(
     val page: Long?,
     val type: String?,
     val sort: String?,
-    val index: String?
+    val index: String?,
+    val ipAddress: String?
 )
 
 data class QueryStatsPutRequest(
@@ -94,5 +96,6 @@ data class QueryStat(
     val page: Long?,
     val type: String,
     val sort: String,
-    val index: String
+    val index: String,
+    val ipAddress: String?
 )

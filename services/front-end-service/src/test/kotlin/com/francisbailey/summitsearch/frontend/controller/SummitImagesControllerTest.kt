@@ -14,6 +14,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.net.URL
+import javax.servlet.http.HttpServletRequest
 
 class SummitImagesControllerTest {
 
@@ -22,6 +23,10 @@ class SummitImagesControllerTest {
     private val meterRegistry = SimpleMeterRegistry()
     private val imageIndexService = mock<ImageIndexService> {
         on(mock.indexName).thenReturn("image-index")
+    }
+
+    private val request = mock<HttpServletRequest> {
+        on(mock.getHeader(any())).thenReturn("")
     }
 
     private val controller = SummitImagesController(
@@ -35,7 +40,7 @@ class SummitImagesControllerTest {
     fun `api returns bad response when illegal argument exception occurs`() {
         whenever(imageIndexService.query(any())).thenThrow(IllegalArgumentException("Test"))
 
-        val response = controller.search("Test", null)
+        val response = controller.search("Test", null, request = request)
 
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
@@ -61,7 +66,7 @@ class SummitImagesControllerTest {
         whenever(imageIndexService.query(any())).thenReturn(result)
         whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
 
-        val response = controller.search("some test", null)
+        val response = controller.search("some test", null, request = request)
 
         val expectedResponse = SummitSearchResponse(
             hits = listOf(
@@ -92,7 +97,7 @@ class SummitImagesControllerTest {
 
         whenever(imageIndexService.query(any())).thenReturn(result)
 
-        controller.search("some query", page = 0)
+        controller.search("some query", page = 0, request = request)
 
         verify(queryStatsReporter).pushQueryStat(org.mockito.kotlin.check {
             assertEquals(result.sanitizedQuery, it.query)
@@ -111,7 +116,7 @@ class SummitImagesControllerTest {
 
         whenever(imageIndexService.query(any())).thenReturn(result)
 
-        controller.search("some test", null, null, null)
+        controller.search("some test", null, null, null, request = request)
 
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
@@ -130,7 +135,7 @@ class SummitImagesControllerTest {
 
         whenever(imageIndexService.query(any())).thenReturn(result)
 
-        controller.search("some test", null, "date", "fuzzy")
+        controller.search("some test", null, "date", "fuzzy", request = request)
 
         verify(imageIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)

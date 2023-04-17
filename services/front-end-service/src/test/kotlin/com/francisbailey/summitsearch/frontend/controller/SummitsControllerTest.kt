@@ -14,6 +14,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.net.URL
+import javax.servlet.http.HttpServletRequest
 
 class SummitsControllerTest {
 
@@ -31,12 +32,15 @@ class SummitsControllerTest {
         meterRegistry = meterRegistry
     )
 
+    private val request = mock<HttpServletRequest> {
+        on(mock.getHeader(any())).thenReturn("")
+    }
 
     @Test
     fun `returns bad response when illegal argument exception occurs`() {
         whenever(documentIndexService.query(any())).thenThrow(IllegalArgumentException("Test"))
 
-        val response = controller.search("Test", null)
+        val response = controller.search("Test", null, request = request)
 
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
@@ -58,7 +62,7 @@ class SummitsControllerTest {
 
         whenever(documentIndexService.query(any())).thenReturn(result)
 
-        val response = controller.search("some test", null)
+        val response = controller.search("some test", null, request = request)
 
         val expectedResponse = SummitSearchResponse(
             hits = listOf(
@@ -105,7 +109,7 @@ class SummitsControllerTest {
         whenever(documentIndexService.query(any())).thenReturn(result)
         whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
 
-        val response = controller.search("some test", null)
+        val response = controller.search("some test", null, request = request)
 
         val expectedResponse = SummitSearchResponse(
             hits = listOf(
@@ -150,7 +154,7 @@ class SummitsControllerTest {
 
         whenever(documentIndexService.query(any())).thenReturn(result)
 
-        controller.search("some test", null, "date")
+        controller.search("some test", null, "date", request = request)
 
         verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)
@@ -176,7 +180,7 @@ class SummitsControllerTest {
 
         whenever(documentIndexService.query(any())).thenReturn(result)
 
-        controller.search("some test", null, "date", "fuzzy")
+        controller.search("some test", null, "date", "fuzzy", request = request)
 
         verify(documentIndexService).query(org.mockito.kotlin.check {
             assertEquals("some test", it.term)

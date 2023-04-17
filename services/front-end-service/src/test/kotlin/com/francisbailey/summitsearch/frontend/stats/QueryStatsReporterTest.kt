@@ -24,7 +24,8 @@ class QueryStatsReporterTest {
             page = 1,
             type = "test",
             sort = "test",
-            index = "test"
+            index = "test",
+            ipAddress = "127.0.0.1"
         )
         reporter.pushQueryStat(stat)
         reporter.flushToIndex()
@@ -49,7 +50,8 @@ class QueryStatsReporterTest {
                 page = 1,
                 type = "test",
                 sort = "test",
-                index = "test"
+                index = "test",
+                ipAddress = "127.0.0.1"
             )
         }
 

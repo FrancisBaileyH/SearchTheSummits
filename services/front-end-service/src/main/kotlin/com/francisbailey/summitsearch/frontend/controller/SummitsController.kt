@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.time.Instant
+import javax.servlet.http.HttpServletRequest
 import kotlin.math.absoluteValue
 
 @RestController
@@ -31,7 +32,8 @@ class SummitsController(
         @RequestParam(name = "query") requestQuery: String,
         @RequestParam(name = "page", required = false) page: Int?,
         @RequestParam(name = "sort", required = false) sort: String? = null,
-        @RequestParam(name = "type", required = false) type: String? = null
+        @RequestParam(name = "type", required = false) type: String? = null,
+        request: HttpServletRequest
     ): ResponseEntity<String> {
         log.info { "Querying search service for: $requestQuery and page: $page" }
 
@@ -64,7 +66,8 @@ class SummitsController(
                 timestamp = Instant.now().toEpochMilli(),
                 type = queryType.name,
                 sort = sortType.name,
-                index = documentIndexService.indexName
+                index = documentIndexService.indexName,
+                ipAddress = request.getHeader("x-forwarded-for")
             ))
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(

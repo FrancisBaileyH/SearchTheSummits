@@ -38,7 +38,8 @@ class QueryStatsIndexTest {
                 totalHits = 1,
                 type = "test",
                 sort = "date",
-                index = "some index"
+                index = "some index",
+                ipAddress = "127.0.0.1"
             )
         }
 
