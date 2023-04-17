@@ -446,7 +446,7 @@ function runSearchAnimations() {
         "Nivalis",
         "Sinister Peak",
         "Harvey North Ramp",
-        "Parkhurst Peak Couloir",
+        "Parkhurst Mountain Couloir",
         "Judge Howay",
         "Mazama Dome",
         "Serra V",
