@@ -12,6 +12,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.IndexHtmlPageSt
 import com.francisbailey.summitsearch.indexservice.DocumentQueryRequest
 import com.francisbailey.summitsearch.indexservice.test.ElasticSearchTestServer
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import java.net.URL
@@ -33,6 +34,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
     )
 
     @Test
+    @Tag("integration")
     fun `query term lily returns exactly one result with expected source and search highlight`() {
         val item = buildPipelineItem(
             htmlPage = "LilyRock.html",
@@ -58,6 +60,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
     }
 
     @Test
+    @Tag("integration")
     fun `query term texas peak returns expected source and search highlight`() {
         val item = buildPipelineItem(
             htmlPage = "TexasPeak.html",
@@ -83,6 +86,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
     }
 
     @Test
+    @Tag("integration")
     fun `page with div only text is indexed and searchable`() {
         val item = buildPipelineItem(
             htmlPage = "ContentWithoutParagraphs.html",
@@ -111,6 +115,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
     }
 
     @Test
+    @Tag("integration")
     fun `pages without paragraphs or text are excluded`() {
         val pages = setOf("NoParagraphs.html", "TwinsTower.html")
 
@@ -134,6 +139,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
     }
 
     @Test
+    @Tag("integration")
     fun `excluded elements are removed from page on example site CascadeClimbers`() {
         val item = buildPipelineItem(
             htmlPage = "AssiniboineCC.html",
