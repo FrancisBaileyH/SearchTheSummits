@@ -10,7 +10,6 @@ import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBa
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import software.amazon.awssdk.services.sqs.endpoints.internal.GetAttr.Part.Index
 
 @Configuration
 open class PipelineConfiguration(
