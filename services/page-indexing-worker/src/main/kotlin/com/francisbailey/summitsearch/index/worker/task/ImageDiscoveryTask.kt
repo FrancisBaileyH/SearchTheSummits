@@ -9,11 +9,17 @@ import java.net.URL
 import java.time.Instant
 import java.util.UUID
 
+enum class ImageDiscoveryType {
+    THUMBNAIL,
+    STANDARD
+}
+
 data class ImageDiscovery(
     val source: String,
     val referencingURL: URL,
     val description: String,
-    val pageCreationDate: Long? = null
+    val pageCreationDate: Long? = null,
+    val type: ImageDiscoveryType
 )
 
 class ImageDiscoveryTask(
@@ -34,7 +40,10 @@ class ImageDiscoveryTask(
                         taskRunId = associatedTask.details.taskRunId,
                         entityUrl =  URL(discovery.source),
                         submitTime = Instant.now().toEpochMilli(),
-                        taskType = IndexTaskType.IMAGE,
+                        taskType = when(discovery.type) {
+                            ImageDiscoveryType.STANDARD -> IndexTaskType.IMAGE
+                            ImageDiscoveryType.THUMBNAIL -> IndexTaskType.THUMBNAIL
+                        },
                         entityTtl = associatedTask.details.entityTtl,
                         context = Json.encodeToString(
                             ImageTaskContext(

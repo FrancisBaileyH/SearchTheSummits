@@ -70,7 +70,8 @@ class LinkDiscoveryServiceTest {
                 source = "abc$it",
                 referencingURL = URL("https://www.exmaple.com"),
                 pageCreationDate = Instant.now().toEpochMilli(),
-                description = "ABC $it"
+                description = "ABC $it",
+                type = ImageDiscoveryType.THUMBNAIL
             )
         }.toSet()
 

@@ -1,24 +1,25 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
-import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitThumbnailStep
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscoveryType
+import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import org.jsoup.Jsoup
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 
 class SubmitThumbnailStepTest: StepTest() {
 
-    private val indexingTaskQueueClient = mock<IndexingTaskQueueClient>()
+    private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
-    private val step = SubmitThumbnailStep(indexingTaskQueueClient)
+    private val step = SubmitThumbnailStep(linkDiscoveryService)
 
     @Test
     fun `does not submit task if thumbnail is not present`() {
@@ -35,7 +36,7 @@ class SubmitThumbnailStepTest: StepTest() {
         val result = step.process(item, monitor)
 
         assertTrue(result.continueProcessing)
-        verifyNoInteractions(indexingTaskQueueClient)
+        verifyNoInteractions(linkDiscoveryService)
     }
 
     @Test
@@ -59,7 +60,7 @@ class SubmitThumbnailStepTest: StepTest() {
 
         val document = Jsoup.parse(html)
 
-        val item = PipelineItem<DatedDocument>(
+        val item = PipelineItem(
             task = defaultIndexTask,
             payload = DatedDocument(
                 pageCreationDate = null,
@@ -69,13 +70,13 @@ class SubmitThumbnailStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        verify(indexingTaskQueueClient).addTask(org.mockito.kotlin.check {
-            assertEquals(image.imageSrc, it.details.entityUrl.toString())
-            val context = it.details.getContext<ImageTaskContext>()
-
-            assertEquals(defaultIndexTask.details.entityUrl, context!!.referencingURL)
-            assertEquals(image.caption, context.description)
+        verify(linkDiscoveryService).submitImages(eq(defaultIndexTask), org.mockito.kotlin.check {
+            assertEquals(image.imageSrc, it.first().source)
+            assertEquals(ImageDiscoveryType.THUMBNAIL, it.first().type)
+            assertEquals(defaultIndexTask.details.entityUrl, it.first().referencingURL)
+            assertEquals(image.caption, it.first().description)
         })
+
         assertTrue(result.continueProcessing)
     }
 }

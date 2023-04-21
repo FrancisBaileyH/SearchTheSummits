@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.indexing
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitImagesStep
 import com.francisbailey.summitsearch.index.worker.task.ImageDiscovery
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscoveryType
 import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,13 +45,15 @@ class SubmitImagesStepTest: StepTest() {
                 source = "a-good-source.png",
                 referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world",
-                pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli()
+                pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli(),
+                type = ImageDiscoveryType.STANDARD
             ),
             ImageDiscovery(
                 source = "another-good-source.png",
                 referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world 2",
-                pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli()
+                pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli(),
+                type = ImageDiscoveryType.STANDARD
             )
         )
 
@@ -58,7 +61,7 @@ class SubmitImagesStepTest: StepTest() {
 
         val result = step.process(item, monitor)
 
-        verify(linkDiscoveryService).submitImages(eq(defaultIndexTask), org.mockito.kotlin.check {
+        verify(linkDiscoveryService).submitImages(eq(defaultIndexTask), check {
             assertEquals(2, it.size)
             assertTrue(it.containsAll(expectedDiscoveries))
         })

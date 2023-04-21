@@ -1,45 +1,39 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
-import com.francisbailey.summitsearch.index.worker.client.*
 import com.francisbailey.summitsearch.index.worker.extension.getFigCaptionedImages
 import com.francisbailey.summitsearch.index.worker.extension.getOGImage
+import com.francisbailey.summitsearch.index.worker.extension.getWPCaptionedImages
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscovery
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscoveryType
+import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import org.springframework.stereotype.Component
-import java.net.URL
-import java.time.Instant
+
 
 @Component
 class SubmitThumbnailStep(
-    private val indexingTaskQueueClient: IndexingTaskQueueClient
+    private val linkDiscoveryService: LinkDiscoveryService
 ): Step<DatedDocument> {
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
-        val thumbnailCandidate = entity.payload?.document?.getOGImage()
-            ?: entity.payload?.document?.getFigCaptionedImages()?.firstOrNull()
+        val document = entity.payload?.document
+        val thumbnailCandidate = document?.getOGImage() ?:
+        document?.getFigCaptionedImages()?.firstOrNull() ?:
+        document?.getWPCaptionedImages()?.firstOrNull()
 
         thumbnailCandidate?.let {
             monitor.dependencyCircuitBreaker.executeCallable {
                 val details = entity.task.details
                 log.info { "Found thumbnail: ${thumbnailCandidate.imageSrc} on ${details.entityUrl}" }
 
-                indexingTaskQueueClient.addTask(
-                    IndexTask(
-                        source = entity.task.source,
-                        details = IndexTaskDetails(
-                            id = details.id,
-                            taskRunId = details.taskRunId,
-                            entityUrl = URL(thumbnailCandidate.imageSrc),
-                            submitTime = Instant.now().toEpochMilli(),
-                            taskType = IndexTaskType.THUMBNAIL,
-                            entityTtl = details.entityTtl,
-                            context = Json.encodeToString(ImageTaskContext(
-                                referencingURL = details.entityUrl,
-                                description = thumbnailCandidate.caption
-                            )
-                        )
+                linkDiscoveryService.submitImages(entity.task, setOf(
+                    ImageDiscovery(
+                        description = it.caption,
+                        source = it.imageSrc,
+                        referencingURL = entity.task.details.entityUrl,
+                        type = ImageDiscoveryType.THUMBNAIL,
+                        pageCreationDate = null
                     )
                 ))
             }

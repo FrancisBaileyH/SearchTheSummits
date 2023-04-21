@@ -38,7 +38,8 @@ class ImageDiscoveryTaskTest {
                 source = "http://abc$it.com",
                 referencingURL = URL("https://www.exmaple.com"),
                 pageCreationDate = Instant.now().toEpochMilli(),
-                description = "ABC $it"
+                description = "ABC $it",
+                type = ImageDiscoveryType.STANDARD
             )
         }
 
@@ -72,7 +73,8 @@ class ImageDiscoveryTaskTest {
                 source = "bad-url",
                 referencingURL = URL("https://www.exmaple.com"),
                 pageCreationDate = Instant.now().toEpochMilli(),
-                description = "ABC $it"
+                description = "ABC $it",
+                type = ImageDiscoveryType.STANDARD
             )
         }.toMutableList()
 
@@ -80,7 +82,8 @@ class ImageDiscoveryTaskTest {
             source = "http://good-url.com",
             referencingURL = URL("https://www.exmaple.com"),
             pageCreationDate = Instant.now().toEpochMilli(),
-            description = "ABC 1"
+            description = "ABC 1",
+            type = ImageDiscoveryType.STANDARD
         )
 
         discoveries.add(expectedDiscovery)
@@ -110,7 +113,8 @@ class ImageDiscoveryTaskTest {
                 source = "http://abc$it.com",
                 referencingURL = URL("https://www.exmaple.com"),
                 pageCreationDate = Instant.now().toEpochMilli(),
-                description = "ABC $it"
+                description = "ABC $it",
+                type = ImageDiscoveryType.STANDARD
             )
         }
 
@@ -120,5 +124,40 @@ class ImageDiscoveryTaskTest {
         task.run()
 
         verify(indexingTaskQueueClient, times(2)).addTasks(any())
+    }
+
+    @Test
+    fun `changes task type based on discovery type`() {
+        val discoveries = (0..9).map {
+            ImageDiscovery(
+                source = "http://abc$it.com",
+                referencingURL = URL("https://www.exmaple.com"),
+                pageCreationDate = Instant.now().toEpochMilli(),
+                description = "ABC $it",
+                type = ImageDiscoveryType.THUMBNAIL
+            )
+        }
+
+
+        val task = ImageDiscoveryTask(indexingTaskQueueClient, discoveries.toSet(), associatedTask)
+
+        task.run()
+
+        verify(indexingTaskQueueClient).addTasks(org.mockito.kotlin.check {
+            it.forEachIndexed { index, task ->
+                assertEquals(task.source, associatedTask.source)
+                assertEquals(task.details.entityUrl.toString(), discoveries[index].source)
+                assertEquals(task.details.taskType, IndexTaskType.THUMBNAIL)
+                assertEquals(
+                    task.details.context, Json.encodeToString(
+                        ImageTaskContext(
+                            referencingURL = discoveries[index].referencingURL,
+                            description = discoveries[index].description,
+                            pageCreationDate = discoveries[index].pageCreationDate
+                        )
+                    )
+                )
+            }
+        })
     }
 }
