@@ -4,6 +4,7 @@ import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
 import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.DocumentText
 import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadContentExtractorStrategy
+import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadImageExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.strategy.FacebookContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.strategy.WildAirPhotographyContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterChain
@@ -68,7 +69,8 @@ open class SiteProcessingConfigurations() {
         SiteProcessingConfiguration(
             source = URL("https://forums.clubtread.com"),
             discoveryFilter = ClubTreadFilter,
-            htmlContentSelector = ClubTreadContentExtractorStrategy()
+            htmlContentSelector = ClubTreadContentExtractorStrategy(),
+            imageContentSelector = ClubTreadImageExtractorStrategy()
         ),
         SiteProcessingConfiguration(
             source = URL("https://peakbagger.com"),
@@ -96,6 +98,7 @@ open class SiteProcessingConfigurations() {
         ),
         SiteProcessingConfiguration(
             source = URL("https://wildairphoto.com"),
+            discoveryFilter = WildAirFilter,
             htmlContentSelector = WildAirPhotographyContentExtractorStrategy()
         ),
         SiteProcessingConfiguration(
