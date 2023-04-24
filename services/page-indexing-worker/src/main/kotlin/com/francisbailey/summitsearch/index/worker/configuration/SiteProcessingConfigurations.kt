@@ -2,7 +2,9 @@ package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.DocumentText
+import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.strategy.FacebookContentExtractorStrategy
+import com.francisbailey.summitsearch.index.worker.extractor.strategy.WildAirPhotographyContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterChain
 import com.francisbailey.summitsearch.index.worker.filter.definitions.*
 import com.francisbailey.summitsearch.index.worker.indexing.StepOverride
@@ -76,7 +78,8 @@ open class SiteProcessingConfigurations(
         ),
         SiteProcessingConfiguration(
             source = URL("https://forums.clubtread.com"),
-            discoveryFilter = ClubTreadFilter
+            discoveryFilter = ClubTreadFilter,
+            htmlContentSelector = ClubTreadContentExtractorStrategy()
         ),
         SiteProcessingConfiguration(
             source = URL("https://peakbagger.com"),
@@ -117,6 +120,10 @@ open class SiteProcessingConfigurations(
         SiteProcessingConfiguration(
             source = URL("http://sverdina.com"),
             indexingFilter = SVerdinaIndexFilterChain
+        ),
+        SiteProcessingConfiguration(
+            source = URL("https://wildairphoto.com"),
+            htmlContentSelector = WildAirPhotographyContentExtractorStrategy()
         ),
         SiteProcessingConfiguration(
             source = URL("http://www.alpenglow.org"),
