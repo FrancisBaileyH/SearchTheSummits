@@ -4,55 +4,31 @@ import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.filter.definitions.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.net.URL
 
 @Configuration
-open class FilterConfiguration {
+open class FilterConfiguration(
+    private val siteProcessingConfigurations: Set<SiteProcessingConfiguration>
+) {
 
     @Bean
     open fun linkDiscoveryFilterService(): DocumentFilterService {
         return DocumentFilterService(defaultChain = DefaultFilterChain).apply {
-            addFilterChain(URL("https://cascadeclimbers.com"), CascadeClimbersFilter)
-            addFilterChain(URL("https://forums.clubtread.com"), ClubTreadFilter)
-            addFilterChain(URL("https://www.ubc-voc.com"), UBCVarsityOutdoorClubFilter)
-            addFilterChain(URL("https://www.drdirtbag.com"), DrDirtbagFilter)
-            addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalFilter)
-            addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsFilter)
-            addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideFilter)
-            addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationFilter)
-            addFilterChain(URL("https://www.nwhikers.net"), NWHikersFilter)
-            addFilterChain(URL("https://peakbagger.com"), PeakBaggerFilter)
-            addFilterChain(URL("http://www.alpinejournal.org.uk"), AlpineJournalUKFilter)
-            addFilterChain(URL("https://alpinebenny.com"), AlpineBennyFilter)
-            addFilterChain(URL("http://www.alpenglow.org"), AlpenGlowFilter)
-            addFilterChain(URL("https://altusmountainguides.com"), AltusMountainGuidesFilter)
-            addFilterChain(URL("https://accvi.ca"), ACCVIFilter)
-            addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseFilter)
-            addFilterChain(URL("https://coastmountainguides.com"), CoastMountainGuidesFilter)
-            addFilterChain(URL("http://www.supertopo.com"), SuperTopoFilter)
-            addFilterChain(URL("https://skisickness.com"), SkiSicknessFilter)
-            addFilterChain(URL("https://www.mountaineers.org"), MountaineersOrgFilter)
-            addFilterChain(URL("https://bcmc.ca"), BCMCFilter)
+            siteProcessingConfigurations.forEach {
+                it.discoveryFilter?.let { filter ->
+                    addFilterChain(it.source, filter)
+                }
+            }
         }
     }
 
     @Bean
     open fun documentIndexingFilterService(): DocumentFilterService {
         return DocumentFilterService(defaultChain = DefaultIndexFilterChain).apply {
-            addFilterChain(URL("http://sverdina.com"), SVerdinaIndexFilterChain)
-            addFilterChain(URL("https://publications.americanalpineclub.org"), AmericanAlpineJournalIndexFilter)
-            addFilterChain(URL("https://rockymountainsummits.com"), RockyMountainSummitsIndexFilter)
-            addFilterChain(URL("https://www.idahoaclimbingguide.com"), IdahoClimbingGuideIndexFilter)
-            addFilterChain(URL("https://www.mef.org.uk"), MountEverestFoundationIndexFilter)
-            addFilterChain(URL("https://www.nwhikers.net"), NWHikersIndexFilter)
-            addFilterChain(URL("https://peakbagger.com"), PeakBaggerIndexFilter)
-            addFilterChain(URL("https://www.explor8ion.com"), Explor8ionIndexFilter)
-            addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
-            addFilterChain(URL("https://andreasfransson.se"), AndreasFranssonIndexFilter)
-            addFilterChain(URL("https://discourse.accvi.ca"), ACCVIDiscourseIndexFilter)
-            addFilterChain(URL("http://www.supertopo.com"), SuperTopoIndexFilter)
-            addFilterChain(URL("https://skisickness.com"), SkiSicknessIndexFilter)
-            addFilterChain(URL("https://www.mountaineers.org"), MountaineersOrgIndexFilter)
+            siteProcessingConfigurations.forEach {
+                it.indexingFilter?.let { filter ->
+                    addFilterChain(it.source, filter)
+                }
+            }
         }
     }
 }

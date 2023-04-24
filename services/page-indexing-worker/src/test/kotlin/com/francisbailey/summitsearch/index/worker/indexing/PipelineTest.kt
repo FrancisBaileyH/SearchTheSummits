@@ -141,7 +141,14 @@ class PipelineTest: StepTest() {
             route(IndexTaskType.PDF) {
                 firstRun(step)
                     .then(nextStep)
-                    .withHostOverride(task.details.entityUrl.host, step::class, overrideStep)
+                    .registerOverrides(mapOf(
+                        task.details.entityUrl to setOf(
+                            StepOverride(
+                                step::class,
+                                overrideStep
+                            )
+                        )
+                    ))
             }
         }
 

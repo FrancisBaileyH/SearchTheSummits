@@ -3,6 +3,7 @@ package com.francisbailey.summitsearch.index.worker.integration
 import com.francisbailey.summitsearch.index.worker.client.IndexTask
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskDetails
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
+import com.francisbailey.summitsearch.index.worker.configuration.ExtractorConfiguration
 import com.francisbailey.summitsearch.index.worker.configuration.IndexConfiguration
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
@@ -28,9 +29,12 @@ class IndexHtmlPageIntegrationTest: StepTest() {
 
     private val summitSearchIndex = indexConfiguration.summitSearchIndexService()
 
+    private val extractor = ExtractorConfiguration(mock()).htmlContentExtractor()
+
     private val step = IndexHtmlPageStep(
         documentFilterService,
-        summitSearchIndex
+        summitSearchIndex,
+        extractor
     )
 
     @Test

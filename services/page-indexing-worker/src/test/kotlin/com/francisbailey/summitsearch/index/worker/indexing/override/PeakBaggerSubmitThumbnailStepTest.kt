@@ -5,8 +5,12 @@ import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.StepTest
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscovery
+import com.francisbailey.summitsearch.index.worker.task.ImageDiscoveryType
+import com.francisbailey.summitsearch.index.worker.task.LinkDiscoveryService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import java.net.URL
@@ -15,9 +19,9 @@ import java.util.*
 
 class PeakBaggerSubmitThumbnailStepTest: StepTest() {
 
-    private val indexingTaskQueueClient = mock<IndexingTaskQueueClient>()
+    private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
-    private val step = PeakBaggerSubmitThumbnailStep(indexingTaskQueueClient)
+    private val step = PeakBaggerSubmitThumbnailStep(linkDiscoveryService)
 
     @Test
     fun `submits image if one is present`() {
@@ -34,7 +38,7 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
             )
         )
 
-        val item = PipelineItem<DatedDocument>(
+        val item = PipelineItem(
             task = task,
             payload = DatedDocument(
                 pageCreationDate = null,
@@ -42,17 +46,21 @@ class PeakBaggerSubmitThumbnailStepTest: StepTest() {
             )
         )
 
+        val expectedDiscovery = ImageDiscovery(
+            source = expectedImageSrc,
+            referencingURL = task.details.entityUrl,
+            description = "",
+            type = ImageDiscoveryType.THUMBNAIL
+        )
+
+
         val result = step.process(item, monitor)
 
-        verify(indexingTaskQueueClient).addTask(org.mockito.kotlin.check {
-            assertEquals(task.source, it.source)
-            assertEquals(URL(expectedImageSrc), it.details.entityUrl)
-            assertEquals(IndexTaskType.THUMBNAIL, it.details.taskType)
-            assertEquals(task.details.taskRunId, it.details.taskRunId)
-            assertEquals(task.details.entityUrl, it.details.getContext<ImageTaskContext>()?.referencingURL)
+        verify(linkDiscoveryService).submitImages(eq(task), org.mockito.kotlin.check {
+            assertEquals(1, it.size)
+            assertEquals(it.first(), expectedDiscovery)
         })
 
         assertTrue(result.continueProcessing)
-        assertFalse(result.shouldRetry)
     }
 }

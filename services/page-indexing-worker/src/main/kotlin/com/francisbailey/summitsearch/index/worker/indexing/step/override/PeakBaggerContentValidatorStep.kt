@@ -18,7 +18,7 @@ class PeakBaggerContentValidatorStep: Step<DatedDocument> {
 
             if (reportContent.length < MINIMUM_REPORT_LENGTH) {
                 monitor.meter.counter("Pipeline.contentvalidator.failed", "host", page.host).increment()
-                log.warn { "Skipped page: $page, because it does not have minimum content lenght of: $MINIMUM_REPORT_LENGTH" }
+                log.warn { "Skipped page: $page, because it does not have minimum content length of: $MINIMUM_REPORT_LENGTH" }
                 entity.continueProcessing = false
             }
         }

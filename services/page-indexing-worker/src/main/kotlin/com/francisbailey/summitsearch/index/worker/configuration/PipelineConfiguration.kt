@@ -2,14 +2,12 @@ package com.francisbailey.summitsearch.index.worker.configuration
 
 import com.francisbailey.summitsearch.index.worker.client.IndexTaskType
 import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
+import com.francisbailey.summitsearch.index.worker.indexing.StepOverride
 import com.francisbailey.summitsearch.index.worker.indexing.pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.step.*
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.net.URL
 
 @Configuration
 open class PipelineConfiguration(
@@ -22,8 +20,6 @@ open class PipelineConfiguration(
     private val submitThumbnailStep: SubmitThumbnailStep,
     private val thumbnailValidationStep: ThumbnailValidationStep,
     private val contentValidatorStep: ContentValidatorStep,
-    private val peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
-    private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
     private val fetchPDFStep: FetchPDFStep,
     private val indexPDFStep: IndexPDFStep,
     private val closePDFStep: ClosePDFStep,
@@ -31,9 +27,7 @@ open class PipelineConfiguration(
     private val saveImageStep: SaveImageStep,
     private val submitImagesStep: SubmitImagesStep,
     private val checkImageExistsStep: CheckImageExistsStep,
-    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep,
-    private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
-    private val indexFacebookPostStep: IndexFacebookPostStep
+    private val htmlProcessingOverrides: Map<URL, Set<StepOverride<DatedDocument>>>
 ) {
 
     @Bean
@@ -46,11 +40,7 @@ open class PipelineConfiguration(
                     .then(submitImagesStep)
                     .then(indexHtmlPageStep) // destructive step. Need to consider supplying clone
                     .then(submitThumbnailStep)
-                    .withHostOverride("skisickness.com", SubmitLinksStep::class, skiSicknessSubmitLinksStep)
-                    .withHostOverride("peakbagger.com", SubmitThumbnailStep::class, peakBaggerSubmitThumbnailStep)
-                    .withHostOverride("peakbagger.com", ContentValidatorStep::class, peakBaggerContentValidatorStep)
-                    .withHostOverride("cascadeclimbers.com", SubmitThumbnailStep::class, cascadeClimbersSubmitThumbnailStep)
-                    .withHostOverride("www.facebook.com", IndexHtmlPageStep::class, indexFacebookPostStep)
+                    .registerOverrides(htmlProcessingOverrides)
             }
             route(IndexTaskType.THUMBNAIL) {
                 firstRun(thumbnailValidationStep)

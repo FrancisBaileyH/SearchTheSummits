@@ -21,8 +21,7 @@ data class DatedDocument(
     val document: Document
 )
 
-// Use Residential proxy?
-// useProxy?
+
 @Component
 class FetchHtmlPageStep(
     private val pageCrawlerService: PageCrawlerService,

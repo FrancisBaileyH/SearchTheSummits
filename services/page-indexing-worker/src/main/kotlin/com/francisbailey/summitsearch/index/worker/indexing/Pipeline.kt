@@ -7,18 +7,19 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KLogger
 import mu.KotlinLogging
+import java.net.URL
 import kotlin.reflect.KClass
 
 
 interface ChainedRoute<T> {
     fun then(step: Step<T>): ChainedRoute<T>
-    fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
     fun finally(step: Step<T>)
+    fun registerOverrides(overrides: Map<URL, Set<StepOverride<T>>>)
 }
 
 interface ChainableRoute<T> {
     fun firstRun(step: Step<T>): ChainedRoute<T>
-    fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T>
+    fun registerOverrides(overrides: Map<URL, Set<StepOverride<T>>>)
 }
 
 /**
@@ -39,6 +40,11 @@ interface Step<T> {
     val metricPrefix: String
         get() = "Pipeline.${this::class.simpleName}"
 }
+
+data class StepOverride<T>(
+    val targetStep: KClass<*>,
+    val override: Step<T>
+)
 
 data class PipelineItem<T> (
     val task: IndexTask,
@@ -144,13 +150,16 @@ class Route<T>: ChainedRoute<T>, ChainableRoute<T> {
         return hostOverrides[host]?.get(step::class) ?: step
     }
 
-    override fun withHostOverride(host: String, targetStep: KClass<*>, override: Step<T>): ChainedRoute<T> {
-        val mappedOverride = hostOverrides.getOrPut(host) {
-            mutableMapOf()
-        }
+    override fun registerOverrides(overrides: Map<URL, Set<StepOverride<T>>>) {
+        overrides.forEach {
+            val mappedOverride = hostOverrides.getOrPut(it.key.host) {
+                mutableMapOf()
+            }
 
-        mappedOverride[targetStep] = override
-        return this
+            it.value.forEach { override ->
+                mappedOverride[override.targetStep] = override.override
+            }
+        }
     }
 
     override fun firstRun(step: Step<T>): ChainedRoute<T> {
