@@ -192,6 +192,7 @@ data class IndexTaskDetails(
 data class ImageTaskContext(
     @Serializable(with = URLSerializer::class)
     val referencingURL: URL,
+    val referencingTitle: String? = null,
     val description: String,
     val pageCreationDate: Long? = null
 )
@@ -203,8 +204,6 @@ enum class IndexTaskType {
     THUMBNAIL,
     PDF,
     IMAGE,
-    FACEBOOK_GROUP_POST,
-    FACEBOOK_GROUP_FEED
 }
 
 class URLSerializer : KSerializer<URL> {

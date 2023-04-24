@@ -27,6 +27,7 @@ class SubmitImagesStep(
                     description = image.caption,
                     source = image.imageSrc,
                     referencingURL = entity.task.details.entityUrl,
+                    referencingTitle = it.title(),
                     type = ImageDiscoveryType.STANDARD,
                     pageCreationDate = entity.payload?.pageCreationDate?.toInstant(ZoneOffset.UTC)?.toEpochMilli()
                 )

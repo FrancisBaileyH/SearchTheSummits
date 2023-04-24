@@ -113,7 +113,8 @@ class ImageIndexServiceTest {
             dataStoreReference = "https://some-reference-here",
             normalizedSource = URL("https://francisbaileyh.com/wp-content/image.jpeg"),
             heightPx = 100,
-            widthPx = 500
+            widthPx = 500,
+            referencingDocumentTitle = "This is a title<script>hello</script>"
         )
 
         val index = "create-image-index-bad-text"
@@ -130,6 +131,7 @@ class ImageIndexServiceTest {
         val result = getDocument(request.source, index)
 
         assertEquals("This is a mountain!Hello?", result.source()!!.description)
+        assertEquals("This is a title", result.source()!!.referencingDocumentTitle)
     }
 
 

@@ -16,6 +16,7 @@ enum class ImageDiscoveryType {
 
 data class ImageDiscovery(
     val source: String,
+    val referencingTitle: String? = null,
     val referencingURL: URL,
     val description: String,
     val pageCreationDate: Long? = null,
@@ -48,6 +49,7 @@ class ImageDiscoveryTask(
                         context = Json.encodeToString(
                             ImageTaskContext(
                                 referencingURL = discovery.referencingURL,
+                                referencingTitle = discovery.referencingTitle,
                                 description = discovery.description,
                                 pageCreationDate = discovery.pageCreationDate
                             )

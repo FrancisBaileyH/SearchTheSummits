@@ -48,7 +48,8 @@ class SaveImageStepTest: StepTest() {
         val context = ImageTaskContext(
             referencingURL = URL("https://www.francisbaileyh.com"),
             description = imageCaption,
-            pageCreationDate = Instant.now().toEpochMilli()
+            pageCreationDate = Instant.now().toEpochMilli(),
+            referencingTitle = "This is a title"
         )
 
         val task = IndexTask(
@@ -81,6 +82,7 @@ class SaveImageStepTest: StepTest() {
             assertEquals(task.details.entityUrl, it.source)
             assertEquals(context.pageCreationDate, it.referencingDocumentDate)
             assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
+            assertEquals(context.referencingTitle, it.referencingDocumentTitle)
             assertEquals(0, it.heightPx) // this is not super ideal, but can't mock final properties
             assertEquals(0, it.widthPx)  // for now just rely on the mocks default of 0...
         })

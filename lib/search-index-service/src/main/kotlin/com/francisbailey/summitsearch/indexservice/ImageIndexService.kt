@@ -87,7 +87,8 @@ class ImageIndexService(
                      source = source.source,
                      referencingDocument = source.referencingDocument,
                      heightPx = source.heightPx,
-                     widthPx = source.widthPx
+                     widthPx = source.widthPx,
+                     referencingDocumentTitle = source.referencingDocumentTitle
                  )
             },
             next = queryRequest.from + paginationResultSize,
@@ -116,7 +117,10 @@ class ImageIndexService(
                 referencingDocumentHost = request.referencingDocument.host,
                 heightPx = request.heightPx,
                 widthPx = request.widthPx,
-                lastVisitTime = clock.instant().toEpochMilli()
+                lastVisitTime = clock.instant().toEpochMilli(),
+                referencingDocumentTitle = request.referencingDocumentTitle?.run {
+                    textNormalizer.normalize(Jsoup.clean(this, Safelist.none()))
+                }
             ))
         })
 
@@ -227,6 +231,7 @@ internal data class ImageMapping(
     val referencingDocument: String,
     val referencingDocumentHost: String,
     val referencingDocumentDate: Long?,
+    val referencingDocumentTitle: String?,
     val type: ImageType,
     val heightPx: Int,
     val widthPx: Int,
@@ -245,6 +250,7 @@ data class ImagePutRequest(
     val description: String,
     val referencingDocument: URL,
     val referencingDocumentDate: Long? = null,
+    val referencingDocumentTitle: String? = null,
     val heightPx: Int,
     val widthPx: Int
 )
@@ -262,6 +268,7 @@ data class Image(
     val description: String,
     val source: String,
     val referencingDocument: String,
+    val referencingDocumentTitle: String?,
     val heightPx: Int,
     val widthPx: Int
 )

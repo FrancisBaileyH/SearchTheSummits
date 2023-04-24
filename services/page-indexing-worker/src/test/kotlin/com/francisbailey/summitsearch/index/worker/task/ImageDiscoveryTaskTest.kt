@@ -37,6 +37,7 @@ class ImageDiscoveryTaskTest {
             ImageDiscovery(
                 source = "http://abc$it.com",
                 referencingURL = URL("https://www.exmaple.com"),
+                referencingTitle = "Title: $it",
                 pageCreationDate = Instant.now().toEpochMilli(),
                 description = "ABC $it",
                 type = ImageDiscoveryType.STANDARD
@@ -58,7 +59,8 @@ class ImageDiscoveryTaskTest {
                         ImageTaskContext(
                             referencingURL = discoveries[index].referencingURL,
                             description = discoveries[index].description,
-                            pageCreationDate = discoveries[index].pageCreationDate
+                            pageCreationDate = discoveries[index].pageCreationDate,
+                            referencingTitle = discoveries[index].referencingTitle
                         )
                     )
                 )

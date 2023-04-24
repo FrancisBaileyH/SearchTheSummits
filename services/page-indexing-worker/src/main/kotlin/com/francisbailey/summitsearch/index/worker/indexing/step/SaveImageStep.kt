@@ -38,8 +38,9 @@ class SaveImageStep(
                     description = context.description,
                     referencingDocument = context.referencingURL,
                     referencingDocumentDate = context.pageCreationDate,
+                    referencingDocumentTitle = context.referencingTitle,
                     heightPx = entity.payload!!.height,
-                    widthPx = entity.payload!!.width
+                    widthPx = entity.payload!!.width,
                 ))
             }!!
         }

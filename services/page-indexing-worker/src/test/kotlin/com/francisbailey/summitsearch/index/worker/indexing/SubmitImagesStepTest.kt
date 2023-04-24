@@ -46,14 +46,16 @@ class SubmitImagesStepTest: StepTest() {
                 referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world",
                 pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli(),
-                type = ImageDiscoveryType.STANDARD
+                type = ImageDiscoveryType.STANDARD,
+                referencingTitle = ""
             ),
             ImageDiscovery(
                 source = "another-good-source.png",
                 referencingURL = defaultIndexTask.details.entityUrl,
                 description = "Hello world 2",
                 pageCreationDate = document.pageCreationDate!!.toInstant(ZoneOffset.UTC).toEpochMilli(),
-                type = ImageDiscoveryType.STANDARD
+                type = ImageDiscoveryType.STANDARD,
+                referencingTitle = ""
             )
         )
 

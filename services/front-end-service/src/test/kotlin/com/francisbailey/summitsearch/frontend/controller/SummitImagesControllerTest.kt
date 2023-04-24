@@ -56,7 +56,8 @@ class SummitImagesControllerTest {
                     source = "https://somewhere.com",
                     dataStoreReference = "https://123.com",
                     heightPx = 120,
-                    widthPx = 200
+                    widthPx = 200,
+                    referencingDocumentTitle = "Test"
                 )
             ),
             totalHits = 1,
@@ -155,7 +156,8 @@ class SummitImagesControllerTest {
                     source = "https://somewhere.com",
                     dataStoreReference = "https://123.com",
                     heightPx = 120,
-                    widthPx = 200
+                    widthPx = 200,
+                    referencingDocumentTitle = "Test"
                 )
             ),
             totalHits = 1,
