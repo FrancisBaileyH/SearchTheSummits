@@ -1,8 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
-import com.francisbailey.summitsearch.index.worker.extension.getDlCaptionedImages
-import com.francisbailey.summitsearch.index.worker.extension.getFigCaptionedImages
-import com.francisbailey.summitsearch.index.worker.extension.getWPCaptionedImages
+import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
+import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractor
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
 import com.francisbailey.summitsearch.index.worker.indexing.Step
@@ -15,12 +14,13 @@ import java.time.ZoneOffset
 
 @Component
 class SubmitImagesStep(
-    private val linkDiscoveryService: LinkDiscoveryService
+    private val linkDiscoveryService: LinkDiscoveryService,
+    private val imageContentExtractor: ContentExtractor<List<CaptionedImage>>
 ): Step<DatedDocument> {
 
     override fun process(entity: PipelineItem<DatedDocument>, monitor: PipelineMonitor): PipelineItem<DatedDocument> {
         entity.payload?.document?.let {
-            val images = it.getWPCaptionedImages() + it.getFigCaptionedImages() + it.getDlCaptionedImages()
+            val images = imageContentExtractor.extract(entity.task.details.entityUrl, it)
 
             val imageDiscoveries = images.map { image ->
                 ImageDiscovery(

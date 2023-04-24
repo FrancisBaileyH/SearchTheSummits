@@ -5,6 +5,7 @@ import com.francisbailey.summitsearch.index.worker.indexing.Pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.StepOverride
 import com.francisbailey.summitsearch.index.worker.indexing.pipeline
 import com.francisbailey.summitsearch.index.worker.indexing.step.*
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.net.URL

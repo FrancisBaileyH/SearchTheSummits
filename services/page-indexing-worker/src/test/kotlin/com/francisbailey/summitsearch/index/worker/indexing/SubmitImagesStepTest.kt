@@ -1,5 +1,7 @@
 package com.francisbailey.summitsearch.index.worker.indexing
 
+import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractor
+import com.francisbailey.summitsearch.index.worker.extractor.strategy.DefaultImageExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.indexing.step.DatedDocument
 import com.francisbailey.summitsearch.index.worker.indexing.step.SubmitImagesStep
 import com.francisbailey.summitsearch.index.worker.task.ImageDiscovery
@@ -17,7 +19,9 @@ class SubmitImagesStepTest: StepTest() {
 
     private val linkDiscoveryService = mock<LinkDiscoveryService>()
 
-    private val step = SubmitImagesStep(linkDiscoveryService)
+    private val imageExtractor = ContentExtractor(defaultExtractor = DefaultImageExtractorStrategy(), emptyMap())
+
+    private val step = SubmitImagesStep(linkDiscoveryService, imageExtractor)
 
     @Test
     fun `submits expected images to link discovery service`() {

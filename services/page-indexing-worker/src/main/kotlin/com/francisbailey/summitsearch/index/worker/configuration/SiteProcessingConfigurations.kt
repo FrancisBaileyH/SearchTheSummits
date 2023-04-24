@@ -1,5 +1,6 @@
 package com.francisbailey.summitsearch.index.worker.configuration
 
+import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
 import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.DocumentText
 import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadContentExtractorStrategy
@@ -23,17 +24,12 @@ data class SiteProcessingConfiguration(
     val discoveryFilter: DocumentFilterChain? = null,
     val indexingFilter: DocumentFilterChain? = null,
     val htmlContentSelector: ContentExtractorStrategy<DocumentText>? = null,
-    val htmlProcessingOverrides: Set<StepOverride<DatedDocument>> = emptySet()
+    val imageContentSelector: ContentExtractorStrategy<List<CaptionedImage>>? = null,
 )
 
 
 @Configuration
-open class SiteProcessingConfigurations(
-    skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
-    peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
-    peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
-    cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep
-) {
+open class SiteProcessingConfigurations() {
 
    val configurations = setOf(
         SiteProcessingConfiguration(
@@ -59,12 +55,6 @@ open class SiteProcessingConfigurations(
         SiteProcessingConfiguration(
             source = URL("https://cascadeclimbers.com"),
             discoveryFilter = CascadeClimbersFilter,
-            htmlProcessingOverrides = setOf(
-                StepOverride(
-                    targetStep = SubmitThumbnailStep::class,
-                    override = cascadeClimbersSubmitThumbnailStep
-                )
-            )
         ),
         SiteProcessingConfiguration(
             source = URL("https://coastmountainguides.com"),
@@ -83,17 +73,7 @@ open class SiteProcessingConfigurations(
         SiteProcessingConfiguration(
             source = URL("https://peakbagger.com"),
             discoveryFilter = PeakBaggerFilter,
-            indexingFilter = PeakBaggerIndexFilter,
-            htmlProcessingOverrides = setOf(
-                StepOverride(
-                    targetStep = ContentValidatorStep::class,
-                    override = peakBaggerContentValidatorStep
-                ),
-                StepOverride(
-                    targetStep = SubmitThumbnailStep::class,
-                    override = peakBaggerSubmitThumbnailStep
-                )
-            )
+            indexingFilter = PeakBaggerIndexFilter
         ),
         SiteProcessingConfiguration(
             source = URL("https://publications.americanalpineclub.org"),
@@ -109,12 +89,6 @@ open class SiteProcessingConfigurations(
             source = URL("https://skisickness.com"),
             discoveryFilter = SkiSicknessFilter,
             indexingFilter = SkiSicknessIndexFilter,
-            htmlProcessingOverrides = setOf(
-                StepOverride(
-                    targetStep = SubmitLinksStep::class,
-                    override = skiSicknessSubmitLinksStep
-                )
-            )
         ),
         SiteProcessingConfiguration(
             source = URL("http://sverdina.com"),
@@ -177,11 +151,39 @@ open class SiteProcessingConfigurations(
 
     @Bean
     open fun indexingSourceOverrides() = configurations
+}
+
+@Configuration
+open class PipelineOverrideConfiguration(
+    private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
+    private val peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
+    private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
+    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep
+) {
 
     @Bean
     open fun htmlPipelineOverrides(): Map<URL, Set<StepOverride<DatedDocument>>> {
-        return configurations.filterNot { it.htmlProcessingOverrides.isEmpty() }.associate {
-            it.source to it.htmlProcessingOverrides
-        }
+        return mapOf(
+            URL("https://cascadeclimbers.com") to setOf(
+                StepOverride(
+                    targetStep = SubmitThumbnailStep::class,
+                    override = cascadeClimbersSubmitThumbnailStep
+                )
+            ),
+            URL("https://peakbagger.com") to setOf(
+                StepOverride(
+                    targetStep = ContentValidatorStep::class,
+                    override = peakBaggerContentValidatorStep
+                ),
+                StepOverride(
+                    targetStep = SubmitThumbnailStep::class,
+                    override = peakBaggerSubmitThumbnailStep
+                )
+            ),
+            URL("https://skisickness.com") to setOf(StepOverride(
+                targetStep = SubmitLinksStep::class,
+                override = skiSicknessSubmitLinksStep
+            ))
+        )
     }
 }

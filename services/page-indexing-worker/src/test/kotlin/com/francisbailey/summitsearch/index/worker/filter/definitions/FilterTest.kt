@@ -20,10 +20,10 @@ abstract class FilterTest {
     private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
 
     private val indexSourceConfiguration = SiteProcessingConfigurations(
-        skiSicknessSubmitLinksStep,
-        peakBaggerSubmitThumbnailStep,
-        peakBaggerContentValidatorStep,
-        cascadeClimbersSubmitThumbnailStep
+//        skiSicknessSubmitLinksStep,
+//        peakBaggerSubmitThumbnailStep,
+//        peakBaggerContentValidatorStep,
+//        cascadeClimbersSubmitThumbnailStep
     )
 
     private val configuration = FilterConfiguration(indexSourceConfiguration.indexingSourceOverrides())

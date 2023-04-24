@@ -29,7 +29,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
 
     private val summitSearchIndex = indexConfiguration.summitSearchIndexService()
 
-    private val extractor = ExtractorConfiguration(mock()).htmlContentExtractor()
+    private val extractor = ExtractorConfiguration(emptySet()).htmlContentExtractor()
 
     private val step = IndexHtmlPageStep(
         documentFilterService,
