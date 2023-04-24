@@ -29,7 +29,6 @@ data class SiteProcessingConfiguration(
 
 @Configuration
 open class SiteProcessingConfigurations(
-    indexFacebookPostStep: IndexFacebookPostStep,
     skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
     peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
     peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,

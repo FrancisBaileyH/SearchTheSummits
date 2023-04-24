@@ -14,14 +14,12 @@ import java.net.URL
 
 abstract class FilterTest {
 
-    private val indexFacebookPostStep = mock<IndexFacebookPostStep>()
     private val skiSicknessSubmitLinksStep = mock<SkiSicknessSubmitLinksStep>()
     private val peakBaggerSubmitThumbnailStep = mock<PeakBaggerSubmitThumbnailStep>()
     private val peakBaggerContentValidatorStep = mock<PeakBaggerContentValidatorStep>()
     private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
 
     private val indexSourceConfiguration = SiteProcessingConfigurations(
-        indexFacebookPostStep,
         skiSicknessSubmitLinksStep,
         peakBaggerSubmitThumbnailStep,
         peakBaggerContentValidatorStep,
