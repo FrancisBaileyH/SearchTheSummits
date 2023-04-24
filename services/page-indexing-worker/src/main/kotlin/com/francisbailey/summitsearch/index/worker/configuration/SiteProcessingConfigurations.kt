@@ -143,12 +143,6 @@ open class SiteProcessingConfigurations(
         ),
         SiteProcessingConfiguration(
             source = URL("https://wwww.facebook.com"),
-            htmlProcessingOverrides = setOf(
-                StepOverride(
-                    targetStep = IndexHtmlPageStep::class,
-                    override = indexFacebookPostStep
-                )
-            ),
             htmlContentSelector = FacebookContentExtractorStrategy()
         ),
         SiteProcessingConfiguration(

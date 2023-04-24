@@ -4,7 +4,6 @@ import com.francisbailey.summitsearch.index.worker.configuration.FilterConfigura
 import com.francisbailey.summitsearch.index.worker.configuration.SiteProcessingConfigurations
 import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
-import com.francisbailey.summitsearch.index.worker.indexing.step.IndexFacebookPostStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
 import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
