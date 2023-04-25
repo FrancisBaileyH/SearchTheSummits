@@ -14,6 +14,12 @@ import java.net.URL
 import java.time.Duration
 
 
+@Serializable
+data class RedrivePolicy(
+    val maxReceiveCount: Int,
+    val deadLetterTargetArn: String
+)
+
 interface IndexingTaskQueuePollingClient {
     fun pollTask(queueName: String): IndexTask?
     fun deleteTask(indexTask: IndexTask)
@@ -22,10 +28,11 @@ interface IndexingTaskQueuePollingClient {
 }
 
 interface IndexingTaskQueueClient: IndexingTaskQueuePollingClient {
-    fun listTaskQueues(): Set<String>
+    fun listTaskQueues(prefix: String): Set<String>
     fun getTaskCount(queueName: String): Long
     fun queueExists(queueName: String): Boolean
     fun createQueue(queueName: String): String
+    fun getQueueArn(queueName: String): String
 
     companion object {
         const val MAX_MESSAGE_BATCH_SIZE = 10
@@ -65,9 +72,9 @@ class SQSIndexingTaskQueueClient(
         )
     }
 
-    override fun listTaskQueues(): Set<String> {
+    override fun listTaskQueues(prefix: String): Set<String> {
         val request = ListQueuesRequest.builder()
-            .queueNamePrefix(INDEXING_QUEUE_PREFIX)
+            .queueNamePrefix(prefix)
             .build()
 
         return sqsClient.listQueuesPaginator(request)
@@ -136,10 +143,14 @@ class SQSIndexingTaskQueueClient(
             .build()
         ).queueUrl()
 
+
         sqsClient.setQueueAttributes(SetQueueAttributesRequest.builder()
             .queueUrl(queueUrl)
             .attributes(mapOf(
-                QueueAttributeName.REDRIVE_POLICY to REDRIVE_POLICY,
+                QueueAttributeName.REDRIVE_POLICY to Json.encodeToString(RedrivePolicy(
+                    maxReceiveCount = 5,
+                    deadLetterTargetArn = getQueueArn(DLQ_NAME)!!
+                )),
                 QueueAttributeName.VISIBILITY_TIMEOUT to "${Duration.ofMinutes(5).seconds}"
             ))
             .build()
@@ -148,15 +159,21 @@ class SQSIndexingTaskQueueClient(
         return queueUrl
     }
 
+    override fun getQueueArn(queueName: String): String {
+        val attributes = sqsClient.getQueueAttributes(
+            GetQueueAttributesRequest
+                .builder()
+                .queueUrl(queueName)
+                .attributeNames(QueueAttributeName.QUEUE_ARN)
+                .build()
+        )
+
+        return attributes.attributes()[QueueAttributeName.QUEUE_ARN]!!
+    }
+
     companion object {
-        const val INDEXING_QUEUE_PREFIX = "IndexingQueue-"
         const val MAX_RECEIVE_WAIT_TIME = 20
-        const val REDRIVE_POLICY = """
-            {
-                "maxReceiveCount": "5",
-                "deadLetterTargetArn": "arn:aws:sqs:us-west-2:259609947632:IndexingQueue-DLQ"
-            }
-        """
+        const val DLQ_NAME = "IndexingQueue-DLQ"
     }
 }
 
