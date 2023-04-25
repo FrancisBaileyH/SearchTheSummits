@@ -31,6 +31,22 @@ class ImageWriterStoreTest {
     }
 
     @Test
+    fun `generates unique id from URL with query`() {
+        val url = URL("https://www.francisbaileyh.com/some/path/attachment.php?id=123456")
+        val altUrl =  URL("https://www.francisbaileyh.com/some/path/attachment.php?id=1234")
+
+        val expectedId = "dev-thumbnails/e7ce5206e216b1e5717cce5adc27ceaef939c568/d68fb69848fb97ef2701112d4432885a0389bb40.jpg"
+        val expectedAltId = "dev-thumbnails/e7ce5206e216b1e5717cce5adc27ceaef939c568/dfd2586643a1a0344146923a89100f908a98bc3e.jpg"
+
+        val id = ImageWriterStore.buildPathFromUrl("dev-", url, ImageStoreType.THUMBNAIL)
+        val altId = ImageWriterStore.buildPathFromUrl("dev-", altUrl, ImageStoreType.THUMBNAIL)
+
+        assertNotEquals(id, altId)
+        assertEquals(expectedId, id)
+        assertEquals(expectedAltId, altId)
+    }
+
+    @Test
     fun `storeExists returns false if NoSuchBucketFoundException is thrown`() {
         whenever(storageClient.headBucket(any<HeadBucketRequest>())).thenThrow(NoSuchBucketException.builder().build())
 

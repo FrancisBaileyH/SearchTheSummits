@@ -82,7 +82,7 @@ class ImageWriterStore(
 
     companion object {
         fun buildPathFromUrl(pathPrefix: String, url: URL, type: ImageStoreType, extension: String = "jpg"): String {
-            return "$pathPrefix${type.path}/${url.host.toSha1()}/${url.path.toSha1()}.$extension"
+            return "$pathPrefix${type.path}/${url.host.toSha1()}/${url.path.plus(url.query ?: "").toSha1()}.$extension"
         }
     }
 }
