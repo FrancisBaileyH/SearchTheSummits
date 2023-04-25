@@ -154,14 +154,12 @@ class PipelineConfigurationTest: StepTest() {
         whenever(fetchImageStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(generateImagePreviewStep.process(any(), any())).thenReturn(pipelineItem)
         whenever(saveImageStep.process(any(), any())).thenReturn(pipelineItem)
-        whenever(checkImageExistsStep.process(any(), any())).thenReturn(pipelineItem)
 
         val pipeline = pipelineConfiguration.indexingPipeline()
 
         pipeline.process(task, monitor)
 
-        inOrder(fetchImageStep, generateImagePreviewStep, saveImageStep, checkImageExistsStep) {
-            verify(checkImageExistsStep).process(any(), any())
+        inOrder(fetchImageStep, generateImagePreviewStep, saveImageStep) {
             verify(fetchImageStep).process(any(), any())
             verify(generateImagePreviewStep).process(any(), any())
             verify(saveImageStep).process(any(), any())

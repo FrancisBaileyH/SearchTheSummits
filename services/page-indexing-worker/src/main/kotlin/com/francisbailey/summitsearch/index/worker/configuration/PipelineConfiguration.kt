@@ -55,8 +55,7 @@ open class PipelineConfiguration(
                     .finally(closePDFStep)
             }
             route(IndexTaskType.IMAGE) {
-                firstRun(checkImageExistsStep)
-                    .then(fetchImageStep)
+                firstRun(fetchImageStep)
                     .then(generateImagePreviewStep)
                     .then(saveImageStep)
             }
