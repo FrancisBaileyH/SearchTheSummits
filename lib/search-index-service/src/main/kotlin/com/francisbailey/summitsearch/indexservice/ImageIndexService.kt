@@ -182,9 +182,12 @@ class ImageIndexService(
     }
     private fun buildFuzzyQuery(request: ImageQueryRequest): SearchQuery {
         val query = Query.of { query ->
-            query.match { match ->
+            query.multiMatch { match ->
                 match.query(request.term)
-                match.field(ImageMapping::description.name)
+                match.fields(
+                    ImageMapping::description.name.plus("^10"),
+                    ImageMapping::referencingDocumentTitle.name
+                )
                 match.analyzer(ANALYZER_NAME)
                 match.operator(Operator.And)
                 match.minimumShouldMatch("100%")
@@ -203,7 +206,8 @@ class ImageIndexService(
             query.simpleQueryString { match ->
                 match.query(sanitizedQuery)
                 match.fields(
-                    ImageMapping::description.name
+                    ImageMapping::description.name.plus("^10"),
+                    ImageMapping::referencingDocumentTitle.name
                 )
                 match.minimumShouldMatch("100%")
                 match.analyzer(ANALYZER_NAME)

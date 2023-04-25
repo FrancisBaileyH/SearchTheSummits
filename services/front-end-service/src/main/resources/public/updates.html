@@ -34,6 +34,13 @@
     <div class="column">
       <article>
         <h4 style="text-align: center; margin-top: 2em;">Latest Updates</h4>
+        <h5>April 24th, 2023</h5>
+        <ul>
+          <li>I've spent the past week overhauling the indexing logic in order to more easily support some new improvements to the search content</li>
+          <li>The first of those improvements is better text selection for forums like clubtread. Beforehand, I'd include all text, but that meant things like usernames, join dates and other miscellaneous information would get dumped into the search highlights. This is now fixed and should be live once the club tread content is re-indexed.</li>
+          <li>Secondly, I was only indexing images if they had an associated caption with them. However, this limits search results quite a bit. What if your caption just said "On the summit!". Well you'd likely never get that result. Now searching is also done against the title of the page. This should broaden the available images on search. The downside is that some miscellaneous photos may show up.</li>
+          <li>Finally, I've enabled image searching for some sites that never have an associated captions, like clubtread. This wasn't possible without the aforementioned change. A few more select sites may receive this treatment as well, but for now I'm just experimenting.</li>
+        </ul>
         <h5>April 15th, 2023</h5>
         <ul>
           <li>Did you know there's 6 different ways to represent an apostrophe in text? I sure didn't... but you can see all of them here: ( <strong>&#xFF07</strong> <strong>&#x2019</strong> <strong>&#x2018</strong> <strong>&#x0092</strong> <strong>&#x0091</strong> <strong>&#x0027</strong> )</li>

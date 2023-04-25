@@ -206,6 +206,37 @@ class ImageIndexServiceTest {
         assertEquals(indexRequest.heightPx, result.hits.first().heightPx)
         assertEquals(indexRequest.widthPx, result.hits.first().widthPx)
     }
+    @Test
+    fun `can query results using title`() {
+        val index = "image-title-query-test"
+        val testIndexService = ImageIndexService(index, client, 20).also {
+            it.createIfNotExists()
+        }
+        val searchTerm = "Mount Last"
+
+        val indexRequest = ImagePutRequest(
+            source = URL("https://www.francisbaileyh.com/test.png?123"),
+            description = "",
+            referencingDocument = URL("https://www.francisbaileyh.com/high-score"),
+            dataStoreReference = "some-reference",
+            referencingDocumentDate = Instant.now().toEpochMilli(),
+            referencingDocumentTitle = "This mount is called $searchTerm",
+            normalizedSource = URL("https://www.francisbaileyh.com/test.png"),
+            heightPx = 200,
+            widthPx = 400
+        )
+
+        testIndexService.indexImage(indexRequest)
+        client.indices().refresh(RefreshRequest.of { it.index(index) })
+
+        val result = testIndexService.query(ImageQueryRequest(term = searchTerm, queryType = DocumentQueryType.STRICT))
+
+        assertEquals(1, result.hits.size)
+        assertEquals(indexRequest.source.toString(), result.hits.first().source)
+        assertEquals(indexRequest.referencingDocumentTitle, result.hits.first().referencingDocumentTitle)
+        assertEquals(indexRequest.heightPx, result.hits.first().heightPx)
+        assertEquals(indexRequest.widthPx, result.hits.first().widthPx)
+    }
 
     @Test
     fun `sorts by date when request specifies sortByDate type`() {
@@ -283,8 +314,8 @@ class ImageIndexServiceTest {
 
         verify(mockClient).search(org.mockito.kotlin.check<SearchRequest> {
             assertEquals(20, it.size())
-            assertEquals("""this is a query""", it.query()?.match()?.query()?.stringValue())
-            assertEquals(Operator.And, it.query()?.match()?.operator())
+            assertEquals("""this is a query""", it.query()?.multiMatch()?.query())
+            assertEquals(Operator.And, it.query()?.multiMatch()?.operator())
         }, any<Class<ImageMapping>>())
     }
 

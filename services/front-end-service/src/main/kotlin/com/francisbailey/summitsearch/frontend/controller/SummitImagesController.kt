@@ -73,7 +73,7 @@ class SummitImagesController(
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
                     SummitSearchImageHitResponse(
-                        description = it.description,
+                        description = it.description.ifBlank { it.referencingDocumentTitle } ?: "",
                         source = it.source,
                         thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
                         referencingDocument = it.referencingDocument,
