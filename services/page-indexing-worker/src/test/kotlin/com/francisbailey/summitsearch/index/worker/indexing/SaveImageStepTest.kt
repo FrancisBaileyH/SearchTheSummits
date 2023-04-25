@@ -91,7 +91,7 @@ class SaveImageStepTest: StepTest() {
     }
 
     @Test
-    fun `normalizes image names for IDs`() {
+    fun `normalizes image names for IDs if its an image type`() {
         val imageData = ByteArray(1)
         val imageCaption = "This is an image"
         val imageSrc = URL("https://www.test.com/some/path/here/image.jpeg?w=124&h=12312")
@@ -135,6 +135,56 @@ class SaveImageStepTest: StepTest() {
             assertEquals(context.pageCreationDate, it.referencingDocumentDate)
             assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
             assertEquals(URL("https://www.test.com/some/path/here/image.jpeg"), it.normalizedSource)
+        })
+
+        assertTrue(result.continueProcessing)
+    }
+
+    @Test
+    fun `does not normalize image names for IDs if its not an image path`() {
+        val imageData = ByteArray(1)
+        val imageCaption = "This is an image"
+        val imageSrc = URL("https://www.test.com/some/path/here/image.php?id=124")
+
+        val referenceStoreUrl = URL("https://www.test-store.com/abc1234")
+
+        val context = ImageTaskContext(
+            referencingURL = URL("https://www.francisbaileyh.com"),
+            description = imageCaption,
+            pageCreationDate = Instant.now().toEpochMilli()
+        )
+
+        val task = IndexTask(
+            source = "some-queue-name",
+            details = IndexTaskDetails(
+                id = "123456",
+                entityUrl =  imageSrc,
+                submitTime = Date().time,
+                taskRunId = "test123",
+                taskType = IndexTaskType.IMAGE,
+                entityTtl = Duration.ofMinutes(60).seconds,
+                context = Json.encodeToString(context)
+            )
+        )
+
+        val item = PipelineItem(
+            payload = image,
+            task = task
+        )
+
+        whenever(image.bytes(any())).thenReturn(imageData)
+        whenever(imageStore.save(any<URL>(), any(), any())).thenReturn(referenceStoreUrl)
+
+        val result = step.process(item, monitor)
+
+        verify(imageStore).save(imageSrc, imageData, ImageStoreType.STANDARD)
+        verify(index).indexImage(org.mockito.kotlin.check {
+            assertEquals(context.referencingURL, it.referencingDocument)
+            assertEquals(context.description, it.description)
+            assertEquals(task.details.entityUrl, it.source)
+            assertEquals(context.pageCreationDate, it.referencingDocumentDate)
+            assertEquals(referenceStoreUrl.toString(), it.dataStoreReference)
+            assertEquals(imageSrc, it.normalizedSource)
         })
 
         assertTrue(result.continueProcessing)

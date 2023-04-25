@@ -1,6 +1,8 @@
 package com.francisbailey.summitsearch.index.worker.indexing.step
 
 import com.francisbailey.summitsearch.index.worker.client.ImageTaskContext
+import com.francisbailey.summitsearch.index.worker.extension.isImagePath
+import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.extension.stripQueryAndFragment
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineItem
 import com.francisbailey.summitsearch.index.worker.indexing.PipelineMonitor
@@ -23,7 +25,13 @@ class SaveImageStep(
 
     override fun process(entity: PipelineItem<ImmutableImage>, monitor: PipelineMonitor): PipelineItem<ImmutableImage> {
         val context = entity.task.details.getContext<ImageTaskContext>()!!
-        val normalizedUrl = entity.task.details.entityUrl.stripQueryAndFragment()
+        val entityUrl = entity.task.details.entityUrl
+
+        val normalizedUrl = if (entityUrl.isImagePath()) {
+            entityUrl.stripQueryAndFragment()
+        } else {
+            entityUrl.normalizeAndEncode()
+        }
 
         monitor.dependencyCircuitBreaker.executeCallable {
             val reference = monitor.meter.timer("imagestore.latency").recordCallable {
@@ -33,7 +41,7 @@ class SaveImageStep(
             monitor.meter.timer("imageindexservice.latency").recordCallable {
                 imageIndexService.indexImage(ImagePutRequest(
                     source = entity.task.details.entityUrl,
-                    normalizedSource = entity.task.details.entityUrl.stripQueryAndFragment(),
+                    normalizedSource = normalizedUrl,
                     dataStoreReference = reference.toString(),
                     description = context.description,
                     referencingDocument = context.referencingURL,
