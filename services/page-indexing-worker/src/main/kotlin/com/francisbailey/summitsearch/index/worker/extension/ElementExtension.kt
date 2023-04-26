@@ -42,10 +42,10 @@ fun Element.getCaptionedImages(parentSelector: String, captionSelector: String):
 
     return figures.mapNotNull {
         val imageSrc = it.selectFirst("img[src~=(?i)\\.(png|jpe?g)]")?.src()
-        val dataSrc = it.selectFirst("img[data-src~=(?i)\\.(png|jpe?g)]")?.attr("data-src")
         val caption = it.selectFirst(captionSelector)?.text()
 
-        val image = imageSrc ?: dataSrc // fallback to data-src if it's present
+        // fallback to data-src if it's present
+        val image = imageSrc ?: it.selectFirst("img[data-src~=(?i)\\.(png|jpe?g)]")?.attr("data-src")
 
         if (image.isNullOrBlank() || caption.isNullOrBlank()) {
             null
@@ -68,6 +68,10 @@ fun Element.getFigCaptionedImages(): List<CaptionedImage> {
 
 fun Element.getDlCaptionedImages(): List<CaptionedImage> {
     return getCaptionedImages("dl", "dd")
+}
+
+fun Element.getBlogSpotCaptionedImages(): List<CaptionedImage> {
+    return getCaptionedImages(".tr-caption-container", ".tr-caption")
 }
 
 data class CaptionedImage(

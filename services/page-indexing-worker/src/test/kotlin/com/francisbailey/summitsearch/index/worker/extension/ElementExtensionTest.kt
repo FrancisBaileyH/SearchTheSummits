@@ -184,4 +184,25 @@ class ElementExtensionTest {
         assertEquals("https://bcmc.ca/media/newsletters/BCMC Newsletter 2001-11.pdf", pdfLinks.first())
     }
 
+    @Test
+    fun `fetches blogspot images`() {
+        val html = """
+            <html>
+                <body>
+                    <table align="center" cellpadding="0" cellspacing="0" class="tr-caption-container" style="margin-left: auto; margin-right: auto; text-align: center;">
+                        <tbody>
+                            <tr><td style="text-align: center;"><a href="some-image" imageanchor="1" style="margin-left: auto; margin-right: auto;"><img border="0" height="480" src="some-image.jpeg" width="640" /></a></td></tr>
+                            <tr><td class="tr-caption" style="text-align: center;">Test Caption.</td></tr>
+                        </tbody>
+                    </table>
+                </body>
+            </html>
+        """
+
+        val images = Jsoup.parse(html).body().getBlogSpotCaptionedImages()
+
+        assertEquals("some-image.jpeg", images.first().imageSrc)
+        assertEquals("Test Caption.", images.first().caption)
+    }
+
 }
