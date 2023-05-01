@@ -70,6 +70,10 @@ class SummitsController(
                 ipAddress = request.getHeader("x-forwarded-for")
             ))
 
+            if (response.totalHits == 0L && queryType != DocumentQueryType.FUZZY) {
+                return search(requestQuery, page, sort, "fuzzy", request)
+            }
+
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
                     SummitSearchHitResponse(

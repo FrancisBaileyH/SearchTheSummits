@@ -311,13 +311,7 @@ function renderNoResultsMessage() {
     var type = url.searchParams.get("type");
 
     var noResultsMessage = "<div class=\"search-results-message\">"
-    if (type == null || type != "fuzzy") {
-        url.searchParams.set("type", "fuzzy");
-        noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents. Try a <a href=\"" + url + "\" ><strong style=\"text-decoration: underline;\">fuzzy match</strong></a> instead.</li>"
-    } else {
-        noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents.</p>"
-    }
-
+    noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents.</p>"
     noResultsMessage += "<p>Suggestions:</p><ul>"
     noResultsMessage += "<li>Try fewer keywords - <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
     noResultsMessage += "<li>Try different keywords - <strong>\"Serac Peak\"</strong> instead of <strong>\"Serac Mountain\"</strong></li>"
@@ -344,14 +338,6 @@ function renderSearchTools(resultCount) {
                 { display: "Date", value: "date" }
             ],
             resetPage: false
-        },
-        {
-            name: "type",
-            options: [
-                { display: "Exact Match", value: "exact" },
-                { display: "Fuzzy Match", value: "fuzzy" }
-            ],
-            resetPage: true
         }
     ]
 

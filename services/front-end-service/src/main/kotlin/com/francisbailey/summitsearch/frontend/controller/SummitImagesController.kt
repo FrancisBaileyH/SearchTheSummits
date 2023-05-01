@@ -70,6 +70,10 @@ class SummitImagesController(
                 ipAddress = request.getHeader("x-forwarded-for")
             ))
 
+            if (response.totalHits == 0L && queryType != DocumentQueryType.FUZZY) {
+                return search(requestQuery, page, sort, "fuzzy", request)
+            }
+
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
                     SummitSearchImageHitResponse(
@@ -113,6 +117,10 @@ class SummitImagesController(
                     paginationResultSize = PREVIEW_IMAGE_RESULT_SIZE
                 ))
             }!!
+
+            if (response.totalHits == 0L && queryType != DocumentQueryType.FUZZY) {
+                return searchPreview(requestQuery, "fuzzy")
+            }
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {

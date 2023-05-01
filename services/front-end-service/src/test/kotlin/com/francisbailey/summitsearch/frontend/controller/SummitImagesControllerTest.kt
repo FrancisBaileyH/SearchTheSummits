@@ -92,7 +92,7 @@ class SummitImagesControllerTest {
     fun `images api pushes to query stats reporter`() {
         val result = PaginatedDocumentResult<Image>(
             hits = emptyList(),
-            totalHits = 0,
+            totalHits = 1,
             sanitizedQuery = "some query"
         )
 
