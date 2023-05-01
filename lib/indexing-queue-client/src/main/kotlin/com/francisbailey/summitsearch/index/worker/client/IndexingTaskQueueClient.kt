@@ -143,13 +143,12 @@ class SQSIndexingTaskQueueClient(
             .build()
         ).queueUrl()
 
-
         sqsClient.setQueueAttributes(SetQueueAttributesRequest.builder()
             .queueUrl(queueUrl)
             .attributes(mapOf(
                 QueueAttributeName.REDRIVE_POLICY to Json.encodeToString(RedrivePolicy(
                     maxReceiveCount = 5,
-                    deadLetterTargetArn = getQueueArn(DLQ_NAME)!!
+                    deadLetterTargetArn = getQueueArn(DLQ_NAME)
                 )),
                 QueueAttributeName.VISIBILITY_TIMEOUT to "${Duration.ofMinutes(5).seconds}"
             ))
