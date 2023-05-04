@@ -52,7 +52,7 @@ class SaveImageStep(
                 ))
             }!!
         }
-        monitor.meter.counter("imageindexservice.add.success", "host", entity.task.details.entityUrl.host)
+        monitor.meter.counter("imageindexservice.add.success", "host", entity.task.details.entityUrl.host).increment()
 
         return entity.apply { continueProcessing = true }
     }
