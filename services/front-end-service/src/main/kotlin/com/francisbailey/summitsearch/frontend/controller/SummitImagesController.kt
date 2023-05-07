@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.util.HtmlUtils
 import java.net.URL
 import java.time.Instant
 import javax.servlet.http.HttpServletRequest
@@ -76,8 +77,10 @@ class SummitImagesController(
 
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
+                    val description = it.description.ifBlank { it.referencingDocumentTitle } ?: ""
+
                     SummitSearchImageHitResponse(
-                        description = it.description.ifBlank { it.referencingDocumentTitle } ?: "",
+                        description = HtmlUtils.htmlEscape(description),
                         source = it.source,
                         thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
                         referencingDocument = it.referencingDocument,
@@ -125,7 +128,7 @@ class SummitImagesController(
             ResponseEntity.ok(Json.encodeToString(SummitSearchResponse(
                 hits = response.hits.map {
                     SummitSearchImageHitResponse(
-                        description = it.description,
+                        description = HtmlUtils.htmlEscape(it.description),
                         source = it.source,
                         thumbnail = digitalOceanCdnShim.originToCDN(URL(it.dataStoreReference)).toString(),
                         referencingDocument = it.referencingDocument,

@@ -205,4 +205,92 @@ class SummitImagesControllerTest {
             assertEquals(DocumentQueryType.FUZZY, it.queryType)
         })
     }
+
+    @Test
+    fun `escapes html entities in description`() {
+        val shimmedThumbnailUrl = URL("http://shimmed.com")
+
+        val result = PaginatedDocumentResult(
+            hits = listOf(
+                Image(
+                    description = "Another photo of “Medic Peak”",
+                    referencingDocument = "test",
+                    source = "https://somewhere.com",
+                    dataStoreReference = "https://123.com",
+                    heightPx = 120,
+                    widthPx = 200,
+                    referencingDocumentTitle = "Test"
+                )
+            ),
+            totalHits = 1,
+            sanitizedQuery = "some test"
+        )
+
+        whenever(imageIndexService.query(any())).thenReturn(result)
+        whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
+
+        val response = controller.search("some test", null, request = request)
+
+        val expectedResponse = SummitSearchResponse(
+            hits = listOf(
+                SummitSearchImageHitResponse(
+                    description = "Another photo of &ldquo;Medic Peak&rdquo;",
+                    referencingDocument = result.hits.first().referencingDocument,
+                    source = result.hits.first().source,
+                    thumbnail = shimmedThumbnailUrl.toString(),
+                    imageHeight = result.hits.first().heightPx,
+                    imageWidth = result.hits.first().widthPx
+                )
+            ),
+            totalHits = result.totalHits,
+            next = 0,
+            resultsPerPage = 30
+        )
+
+        assertEquals(Json.encodeToString(expectedResponse), response.body)
+    }
+
+    @Test
+    fun `escapes html entities in description on preview`() {
+        val shimmedThumbnailUrl = URL("http://shimmed.com")
+
+        val result = PaginatedDocumentResult(
+            hits = listOf(
+                Image(
+                    description = "Another photo of “Medic Peak”",
+                    referencingDocument = "test",
+                    source = "https://somewhere.com",
+                    dataStoreReference = "https://123.com",
+                    heightPx = 120,
+                    widthPx = 200,
+                    referencingDocumentTitle = "Test"
+                )
+            ),
+            totalHits = 1,
+            sanitizedQuery = "some test"
+        )
+
+        whenever(imageIndexService.query(any())).thenReturn(result)
+        whenever(digitalOceanCdnShim.originToCDN(any())).thenReturn(shimmedThumbnailUrl)
+
+        val response = controller.searchPreview("some test", null)
+
+        val expectedResponse = SummitSearchResponse(
+            hits = listOf(
+                SummitSearchImageHitResponse(
+                    description = "Another photo of &ldquo;Medic Peak&rdquo;",
+                    referencingDocument = result.hits.first().referencingDocument,
+                    source = result.hits.first().source,
+                    thumbnail = shimmedThumbnailUrl.toString(),
+                    imageHeight = result.hits.first().heightPx,
+                    imageWidth = result.hits.first().widthPx
+                )
+            ),
+            totalHits = result.totalHits,
+            next = 0,
+            resultsPerPage = 6
+        )
+
+        assertEquals(Json.encodeToString(expectedResponse), response.body)
+    }
 }
