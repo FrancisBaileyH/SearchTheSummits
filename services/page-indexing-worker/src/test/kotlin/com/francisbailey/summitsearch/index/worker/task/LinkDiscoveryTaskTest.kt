@@ -145,6 +145,20 @@ class LinkDiscoveryTaskTest {
     }
 
     @Test
+    fun `allows processing of faceted queries`() {
+        val discovery = "https://francisbailey.com/test/@@faceted_query?b_start:int=100"
+        whenever(indexTaskDetails.entityUrl).thenReturn(defaultURL)
+        whenever(indexTaskDetails.refreshDuration()).thenReturn(Duration.ofMinutes(10))
+        whenever(pageMetadataStore.getMetadata(any())).thenReturn(pageMetadataStoreItem)
+        whenever(pageMetadataStoreItem.canRefresh(any())).thenReturn(false)
+
+        buildTask(discovery).run()
+
+        verifyNoInteractions(taskQueueClient)
+        verify(pageMetadataStore).getMetadata(URL(discovery))
+    }
+
+    @Test
     fun `skips cache if skipCache true in discovery`() {
         val discovery = URL("https://francisbailey.com/test")
         whenever(indexTaskDetails.entityUrl).thenReturn(defaultURL)
