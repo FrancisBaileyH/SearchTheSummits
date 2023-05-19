@@ -20,6 +20,10 @@ a:hover {
     text-decoration: underline;
 }
 
+.underline {
+    text-decoration: underline;
+}
+
 article ul {
     padding-left: 1em;
 }
@@ -280,6 +284,10 @@ hr.sub-menu-divider {
 .search-form-tagline {
     text-align: center;
     margin-bottom: 1.5em;
+}
+
+.search-form-tagline svg {
+    vertical-align: text-bottom;
 }
 
 .search-form-container.has-query .search-form-tagline {
