@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.mapping.CompletionProperty
 import co.elastic.clients.elasticsearch._types.mapping.DateProperty
 import co.elastic.clients.elasticsearch._types.mapping.GeoPointProperty
 import co.elastic.clients.elasticsearch._types.mapping.Property
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggester
@@ -27,10 +28,11 @@ class PlaceNameIndexService(
         val results = client.search(SearchRequest.of {
             it.index(indexName)
             it.query { query ->
-                query.matchPhrasePrefix { match ->
+                query.multiMatch { match ->
                     match.query(request.query)
+                    match.fields(PlaceNameMapping::name.name, PlaceNameMapping::alternativeName.name)
                     match.analyzer(ANALYZER_NAME)
-                    match.field(PlaceNameMapping::name.name)
+                    match.type(TextQueryType.PhrasePrefix)
                 }
             }
         }, PlaceNameMapping::class.java)
@@ -85,7 +87,8 @@ class PlaceNameIndexService(
             it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
             it.document(PlaceNameMapping(
                 name = request.name,
-                nameSuggester = listOf(request.name),
+                alternativeName = request.alternativeName,
+                nameSuggester = listOfNotNull(request.name, request.alternativeName),
                 description = request.description,
                 source = request.source,
                 elevation = request.elevation,
@@ -152,6 +155,7 @@ class PlaceNameIndexService(
 
 data class PlaceNameMapping(
     val name: String,
+    val alternativeName: String? = null,
     val nameSuggester: List<String>,
     val elevation: Int,
     val description: String?,
@@ -175,6 +179,7 @@ data class PlaceNameQueryRequest(
 
 data class PlaceNameIndexRequest(
     val name: String,
+    val alternativeName: String? = null,
     val elevation: Int,
     val description: String? = null,
     val source: String? = null,
@@ -184,6 +189,7 @@ data class PlaceNameIndexRequest(
 
 data class PlaceNameHit(
     val name: String,
+    val alternativeName: String? = null,
     val elevation: Int,
     val description: String? = null,
     val source: String? = null,

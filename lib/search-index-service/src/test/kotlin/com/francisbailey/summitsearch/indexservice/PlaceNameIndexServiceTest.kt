@@ -30,6 +30,7 @@ class PlaceNameIndexServiceTest {
 
         val request = PlaceNameIndexRequest(
             name = "Mount Hanover",
+            alternativeName = "Something Made Up",
             latitude = 49.487778,
             longitude = -123.201389,
             elevation = 1788,
@@ -46,6 +47,7 @@ class PlaceNameIndexServiceTest {
         }, PlaceNameMapping::class.java).source()
 
         assertEquals(request.name, result?.name)
+        assertEquals(request.alternativeName, result?.alternativeName)
         assertEquals(request.latitude, result?.location?.lat)
         assertEquals(request.longitude, result?.location?.lon)
         assertEquals(request.elevation, result?.elevation)
@@ -110,6 +112,27 @@ class PlaceNameIndexServiceTest {
         val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "mount"))
 
         assertEquals(request.name, results.first().suggestion)
+    }
+
+    @Test
+    fun `auto-complete searches alternative names as well`() {
+        val service = PlaceNameIndexService(client = client, indexName = "basic-autocomplete-alt").also {
+            it.createIfNotExists()
+        }
+
+        val request = PlaceNameIndexRequest(
+            name = "Mount Hanover",
+            alternativeName = "Mount Madeup",
+            latitude = 49.487778,
+            longitude = -123.201389,
+            elevation = 1788
+        )
+
+        service.index(request)
+        client.indices().refresh()
+
+        val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "mount m"))
+        assertEquals(request.alternativeName, results.first().suggestion)
     }
 
     @Test
@@ -205,26 +228,35 @@ class PlaceNameIndexServiceTest {
         assertEquals(expectedSuggestions, results.map { it.name })
     }
 
-//    @Test
-//    fun `auto-complete suggests full placename from subsequent name`() {
-//        val service = PlaceNameIndexService(client = client, indexName = "subsequent-autocomplete").also {
-//            it.createIfNotExists()
-//        }
-//
-//        val request = PlaceNameIndexRequest(
-//            name = "Mount Hanover",
-//            latitude = 49.487778,
-//            longitude = -123.201389,
-//            elevation = 1788
-//        )
-//
-//        service.index(request)
-//        client.indices().refresh()
-//
-//        val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "han"))
-//
-//        assertEquals(request.name, results.first().suggestion)
-//    }
+    @Test
+    fun `indexed place names are fetched with match prefix using alternative name`() {
+        val places = listOf("Mount Hanover", "Mount Harvey", "Hope Mountain")
+
+        val service = PlaceNameIndexService(client = client, indexName = "match-prefix-alt-name-test").also {
+            it.createIfNotExists()
+        }
+
+        val requests = places.mapIndexed { index, name ->
+            PlaceNameIndexRequest(
+                name = name,
+                alternativeName = "Mount Madeup$index",
+                latitude = 49.48777 + index,
+                longitude = -123.201389 - index,
+                elevation = 1788 + index
+            )
+        }
+
+        requests.forEach {
+            service.index(it)
+        }
+
+        client.indices().refresh()
+
+        val results = service.query(PlaceNameQueryRequest(query = "mount ma"))
+
+        assertEquals(3, results.size)
+        assertEquals(requests.map { it.name }, results.map { it.name })
+    }
 
     companion object {
         private val testServer = ElasticSearchTestServer.global()
