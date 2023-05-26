@@ -56,48 +56,48 @@ class DocumentIndexService(
         }
 
         val response = elasticSearchClient.search(SearchRequest.of {
-                it.index(indexName)
-                it.trackTotalHits { track ->
-                    track.enabled(true)
-                }
-                it.query(summitSearchQuery.query)
-                if (queryRequest.sortType == DocumentSortType.BY_DATE) {
-                    it.sort { sort ->
-                        sort.field { field ->
-                            field.field(DocumentMapping::pageCreationDate.name)
-                            field.format(SORT_DATE_FORMAT)
-                            field.missing(SORT_LAST_NAME)
-                            field.order(SortOrder.Desc)
-                        }
+            it.index(indexName)
+            it.trackTotalHits { track ->
+                track.enabled(true)
+            }
+            it.query(summitSearchQuery.query)
+            if (queryRequest.sortType == DocumentSortType.BY_DATE) {
+                it.sort { sort ->
+                    sort.field { field ->
+                        field.field(DocumentMapping::pageCreationDate.name)
+                        field.format(SORT_DATE_FORMAT)
+                        field.missing(SORT_LAST_NAME)
+                        field.order(SortOrder.Desc)
                     }
                 }
-                it.fields(listOf(
-                    FieldAndFormat.of { field ->
-                        field.field(DocumentMapping::source.name)
-                    },
-                    FieldAndFormat.of { field ->
-                        field.field(DocumentMapping::title.name)
-                    },
-                    FieldAndFormat.of { field ->
-                        field.field(DocumentMapping::thumbnails.name)
-                    }
+            }
+            it.fields(listOf(
+                FieldAndFormat.of { field ->
+                    field.field(DocumentMapping::source.name)
+                },
+                FieldAndFormat.of { field ->
+                    field.field(DocumentMapping::title.name)
+                },
+                FieldAndFormat.of { field ->
+                    field.field(DocumentMapping::thumbnails.name)
+                }
+            ))
+            it.source { sourceConfig ->
+                sourceConfig.fetch(false)
+            }
+            it.highlight { highlight ->
+                highlight.numberOfFragments(HIGHLIGHT_FRAGMENT_COUNT)
+                highlight.fragmentSize(HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.fields(mapOf(
+                    DocumentMapping::seoDescription.name to HighlightField.Builder().build(),
+                    DocumentMapping::paragraphContent.name to HighlightField.Builder().build(),
+                    DocumentMapping::rawTextContent.name to HighlightField.Builder().build()
                 ))
-                it.source { sourceConfig ->
-                    sourceConfig.fetch(false)
-                }
-                it.highlight { highlight ->
-                    highlight.numberOfFragments(HIGHLIGHT_FRAGMENT_COUNT)
-                    highlight.fragmentSize(HIGHLIGHT_FRAGMENT_SIZE)
-                    highlight.fields(mapOf(
-                        DocumentMapping::seoDescription.name to HighlightField.Builder().build(),
-                        DocumentMapping::paragraphContent.name to HighlightField.Builder().build(),
-                        DocumentMapping::rawTextContent.name to HighlightField.Builder().build()
-                    ))
-                    highlight.order(HighlighterOrder.Score)
-                    highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
-                }
-                it.size(paginationResultSize)
-                it.from(queryRequest.from)
+                highlight.order(HighlighterOrder.Score)
+                highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
+            }
+            it.size(paginationResultSize)
+            it.from(queryRequest.from)
         }, DocumentMapping::class.java)
 
         return PaginatedDocumentResult(

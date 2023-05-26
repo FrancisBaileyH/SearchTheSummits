@@ -23,18 +23,44 @@ class PlaceNameIndexService(
     private val clock: Clock = Clock.systemUTC()
 ) {
 
+    fun query(request: PlaceNameQueryRequest): List<PlaceNameHit> {
+        val results = client.search(SearchRequest.of {
+            it.index(indexName)
+            it.query { query ->
+                query.matchPhrasePrefix { match ->
+                    match.query(request.query)
+                    match.analyzer(ANALYZER_NAME)
+                    match.field(PlaceNameMapping::name.name)
+                }
+            }
+        }, PlaceNameMapping::class.java)
+
+        return results.hits().hits().map {
+            val source = it.source()!!
+            PlaceNameHit(
+                name = source.name,
+                elevation = source.elevation,
+                description = source.description,
+                source = source.source,
+                latitude = source.location.lat,
+                longitude = source.location.lon
+            )
+        }
+    }
+
     fun autoCompleteQuery(request: AutoCompleteQueryRequest): List<PlaceNameSuggestion> {
-        val results = client.search(SearchRequest.of { query ->
-            query.source(SourceConfig.of { sourceConfig ->
+        val results = client.search(SearchRequest.of {
+            it.index(indexName)
+            it.source(SourceConfig.of { sourceConfig ->
                 sourceConfig.fetch(false)
             })
-            query.suggest(Suggester.of { suggester ->
+            it.suggest(Suggester.of { suggester ->
                 suggester.suggesters(mapOf(
-                    PlaceNameMapping::name.name to FieldSuggester.of { fieldSuggester ->
+                    PlaceNameMapping::nameSuggester.name to FieldSuggester.of { fieldSuggester ->
                         fieldSuggester.prefix(request.prefix)
                         fieldSuggester.completion(CompletionSuggester.of { comSuggester ->
                             comSuggester.skipDuplicates(true)
-                            comSuggester.field(PlaceNameMapping::name.name)
+                            comSuggester.field(PlaceNameMapping::nameSuggester.name)
                             comSuggester.size(AUTO_COMPLETE_RESULT_COUNT)
                         })
                     }
@@ -42,7 +68,7 @@ class PlaceNameIndexService(
             })
         }, PlaceNameMapping::class.java)
 
-        return results.suggest()[PlaceNameMapping::name.name]
+        return results.suggest()[PlaceNameMapping::nameSuggester.name]
             ?.first()
             ?.completion()
             ?.options()
@@ -59,6 +85,7 @@ class PlaceNameIndexService(
             it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
             it.document(PlaceNameMapping(
                 name = request.name,
+                nameSuggester = listOf(request.name),
                 description = request.description,
                 source = request.source,
                 elevation = request.elevation,
@@ -77,7 +104,7 @@ class PlaceNameIndexService(
                 it.index(indexName)
                 it.mappings { mapping ->
                     mapping.properties(mapOf(
-                        PlaceNameMapping::name.name to Property.of { property ->
+                        PlaceNameMapping::nameSuggester.name to Property.of { property ->
                             property.completion(CompletionProperty.Builder().build())
                         },
                         PlaceNameMapping::lastUpdateTime.name to Property.of { property ->
@@ -125,6 +152,7 @@ class PlaceNameIndexService(
 
 data class PlaceNameMapping(
     val name: String,
+    val nameSuggester: List<String>,
     val elevation: Int,
     val description: String?,
     val source: String?,
