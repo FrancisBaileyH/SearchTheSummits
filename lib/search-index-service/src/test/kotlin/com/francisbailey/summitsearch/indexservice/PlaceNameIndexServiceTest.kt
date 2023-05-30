@@ -56,6 +56,62 @@ class PlaceNameIndexServiceTest {
     }
 
     @Test
+    fun `indexes bulk content with expected ID and content`() {
+        val service = PlaceNameIndexService(client = client, indexName = "placename-document-test").also {
+            it.createIfNotExists()
+        }
+
+        val request = PlaceNameIndexRequest(
+            name = "Mount Hanover",
+            alternativeName = "Something Made Up",
+            latitude = 49.487778,
+            longitude = -123.201389,
+            elevation = 1788,
+            description = "This is a mountain",
+            source = "NRCAN"
+        )
+
+        val request2 = PlaceNameIndexRequest(
+            name = "Mount Harvey",
+            alternativeName = "Something Made Up",
+            latitude = 49.487778,
+            longitude = -123.201389,
+            elevation = 1788,
+            description = "This is a mountain",
+            source = "NRCAN"
+        )
+
+        service.index(listOf(request, request2))
+        client.indices().refresh()
+
+        val result = client.get(GetRequest.of {
+            it.index(service.indexName)
+            it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
+        }, PlaceNameMapping::class.java).source()
+
+        assertEquals(request.name, result?.name)
+        assertEquals(request.alternativeName, result?.alternativeName)
+        assertEquals(request.latitude, result?.location?.lat)
+        assertEquals(request.longitude, result?.location?.lon)
+        assertEquals(request.elevation, result?.elevation)
+        assertEquals(request.description, result?.description)
+        assertEquals(request.source, result?.source)
+
+        val result2 = client.get(GetRequest.of {
+            it.index(service.indexName)
+            it.id("${request2.name.lowercase()}-${request2.latitude}-${request2.longitude}".toSha1())
+        }, PlaceNameMapping::class.java).source()
+
+        assertEquals(request2.name, result2?.name)
+        assertEquals(request2.alternativeName, result2?.alternativeName)
+        assertEquals(request2.latitude, result2?.location?.lat)
+        assertEquals(request2.longitude, result2?.location?.lon)
+        assertEquals(request2.elevation, result2?.elevation)
+        assertEquals(request2.description, result2?.description)
+        assertEquals(request2.source, result2?.source)
+    }
+
+    @Test
     fun `indexes content with unique ID`() {
         val service = PlaceNameIndexService(client = client, indexName = "uid-test").also {
             it.createIfNotExists()

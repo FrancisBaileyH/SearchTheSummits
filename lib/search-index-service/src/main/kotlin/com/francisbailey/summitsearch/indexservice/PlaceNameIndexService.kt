@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggester
 import co.elastic.clients.elasticsearch.core.search.FieldSuggester
 import co.elastic.clients.elasticsearch.core.search.SourceConfig
@@ -84,7 +85,7 @@ class PlaceNameIndexService(
     fun index(request: PlaceNameIndexRequest) {
         client.index(IndexRequest.of {
             it.index(indexName)
-            it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
+            it.id(generateId(request.name, request.latitude, request.longitude))
             it.document(PlaceNameMapping(
                 name = request.name,
                 alternativeName = request.alternativeName,
@@ -99,6 +100,34 @@ class PlaceNameIndexService(
                 lastUpdateTime = clock.millis()
             ))
         })
+    }
+
+    fun index(requests: List<PlaceNameIndexRequest>) {
+        client.bulk {
+            it.index(indexName)
+            it.operations(requests.map { request ->
+                BulkOperation.of { operation ->
+                    operation.index { indexOperation ->
+                        indexOperation.id(generateId(request.name, request.latitude, request.longitude))
+                        indexOperation.document(
+                            PlaceNameMapping(
+                                name = request.name,
+                                alternativeName = request.alternativeName,
+                                nameSuggester = listOfNotNull(request.name, request.alternativeName),
+                                description = request.description,
+                                source = request.source,
+                                elevation = request.elevation,
+                                location = PlaceNameLocationMapping(
+                                    lat = request.latitude,
+                                    lon = request.longitude
+                                ),
+                                lastUpdateTime = clock.millis()
+                            )
+                        )
+                    }
+                }
+            })
+        }
     }
 
     fun createIfNotExists() {
@@ -144,6 +173,10 @@ class PlaceNameIndexService(
                 }
             })
         }
+    }
+
+    internal fun generateId(name: String, latitude: Double, longitude: Double): String  {
+        return "${name.lowercase()}-${latitude}-${longitude}".toSha1()
     }
 
     companion object {

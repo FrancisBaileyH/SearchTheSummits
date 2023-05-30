@@ -17,5 +17,6 @@ class SummitSearchIndexes {
 
         const val documentIndexName = "summit-search-index"
         const val imageIndexName = "summit-search-images"
+        const val placeNameIndex = "summit-locations-index"
     }
 }
