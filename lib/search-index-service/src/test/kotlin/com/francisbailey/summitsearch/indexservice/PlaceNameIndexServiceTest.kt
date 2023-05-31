@@ -188,12 +188,12 @@ class PlaceNameIndexServiceTest {
         client.indices().refresh()
 
         val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "mount m"))
-        assertEquals(request.alternativeName, results.first().suggestion)
+        assertEquals("${request.name} (${request.alternativeName})", results.first().suggestion)
     }
 
     @Test
     fun `autocomplete only suggests documents with same prefix`() {
-        val places = listOf("Mount Hanover", "Mount Harvey", "Hope Mountain")
+        val places = listOf("Mount Hanover", "Mount Harvey", "Hope Peak")
 
         val service = PlaceNameIndexService(client = client, indexName = "multi-autocomplete").also {
             it.createIfNotExists()
@@ -227,7 +227,7 @@ class PlaceNameIndexServiceTest {
     fun `autocomplete refines result to one if only one matching prefix`() {
         val places = listOf("Mount Hanover", "Mount Harvey", "Hope Mountain")
 
-        val service = PlaceNameIndexService(client = client, indexName = "multi-autocomplete").also {
+        val service = PlaceNameIndexService(client = client, indexName = "multi-autocomplete-2").also {
             it.createIfNotExists()
         }
 

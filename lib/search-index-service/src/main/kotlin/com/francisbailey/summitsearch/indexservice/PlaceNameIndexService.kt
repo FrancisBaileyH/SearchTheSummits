@@ -10,11 +10,11 @@ import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggester
 import co.elastic.clients.elasticsearch.core.search.FieldSuggester
-import co.elastic.clients.elasticsearch.core.search.SourceConfig
 import co.elastic.clients.elasticsearch.core.search.Suggester
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import com.francisbailey.summitsearch.indexservice.common.toSha1
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
+import mu.KotlinLogging
 import java.time.Clock
 
 class PlaceNameIndexService(
@@ -23,6 +23,8 @@ class PlaceNameIndexService(
     private val synonyms: List<String> = emptyList(),
     private val clock: Clock = Clock.systemUTC()
 ) {
+
+    private val log = KotlinLogging.logger { }
 
     fun query(request: PlaceNameQueryRequest): List<PlaceNameHit> {
         val results = client.search(SearchRequest.of {
@@ -53,9 +55,6 @@ class PlaceNameIndexService(
     fun autoCompleteQuery(request: AutoCompleteQueryRequest): List<PlaceNameSuggestion> {
         val results = client.search(SearchRequest.of {
             it.index(indexName)
-            it.source(SourceConfig.of { sourceConfig ->
-                sourceConfig.fetch(false)
-            })
             it.suggest(Suggester.of { suggester ->
                 suggester.suggesters(mapOf(
                     PlaceNameMapping::nameSuggester.name to FieldSuggester.of { fieldSuggester ->
@@ -75,8 +74,9 @@ class PlaceNameIndexService(
             ?.completion()
             ?.options()
             ?.map {
+                val altSuggestion = it.source()?.alternativeName?.let { alt -> " ($alt)" } ?: ""
                 PlaceNameSuggestion(
-                    suggestion = it.text()
+                    suggestion = it.source()!!.name + altSuggestion
                 )
             } ?: emptyList()
     }
