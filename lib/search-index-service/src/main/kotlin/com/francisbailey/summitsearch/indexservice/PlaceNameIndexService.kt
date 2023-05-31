@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch._types.mapping.DateProperty
 import co.elastic.clients.elasticsearch._types.mapping.GeoPointProperty
 import co.elastic.clients.elasticsearch._types.mapping.Property
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
-import co.elastic.clients.elasticsearch.core.IndexRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggester
@@ -97,7 +96,7 @@ class PlaceNameIndexService(
                             PlaceNameMapping(
                                 name = request.name,
                                 alternativeName = request.alternativeName,
-                                nameSuggester = listOfNotNull(request.name, request.alternativeName),
+                                nameSuggester = generateSuggestions(request.name) + generateSuggestions(request.alternativeName),
                                 description = request.description,
                                 source = request.source,
                                 elevation = request.elevation,
