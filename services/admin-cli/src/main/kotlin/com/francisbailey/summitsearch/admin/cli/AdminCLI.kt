@@ -14,6 +14,10 @@ import de.topobyte.osm4j.core.model.util.OsmModelUtil
 import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator
 import mu.KotlinLogging
 
+/**
+ * @TODO - "peak" incorporates 5040 peak
+ * @TODO - Exact match when auto-complete is used
+ */
 class AdminCLI: CliktCommand() {
 
     private val log = KotlinLogging.logger { }

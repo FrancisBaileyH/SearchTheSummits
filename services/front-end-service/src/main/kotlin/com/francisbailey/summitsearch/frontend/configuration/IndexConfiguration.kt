@@ -35,4 +35,10 @@ open class IndexConfiguration(
         paginationResultSize = SummitImagesController.IMAGE_RESULT_SIZE,
         synonyms = SummitSearchIndexes.synonyms
     )
+
+    @Bean
+    open fun placeNameIndexService() = PlaceNameIndexService(
+        indexName = SummitSearchIndexes.placeNameIndex,
+        elasticSearchClient
+    )
 }
