@@ -314,6 +314,19 @@ class PlaceNameIndexServiceTest {
         assertEquals(requests.map { it.name }, results.map { it.name })
     }
 
+    @Test
+    fun `suggester generates expected values`() {
+        val expectedSuggestions = listOf(
+            "Howay",
+            "Judge Howay",
+            "Mount Judge Howay"
+        )
+
+        val service = PlaceNameIndexService(client = client, indexName = "suggestion-test")
+
+        assertEquals(expectedSuggestions, service.generateSuggestions("Mount Judge Howay"))
+    }
+
     companion object {
         private val testServer = ElasticSearchTestServer.global()
         private val client = testServer.client()

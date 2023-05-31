@@ -83,23 +83,7 @@ class PlaceNameIndexService(
     }
 
     fun index(request: PlaceNameIndexRequest) {
-        client.index(IndexRequest.of {
-            it.index(indexName)
-            it.id(generateId(request.name, request.latitude, request.longitude))
-            it.document(PlaceNameMapping(
-                name = request.name,
-                alternativeName = request.alternativeName,
-                nameSuggester = listOfNotNull(request.name, request.alternativeName),
-                description = request.description,
-                source = request.source,
-                elevation = request.elevation,
-                location = PlaceNameLocationMapping(
-                    lat = request.latitude,
-                    lon = request.longitude
-                ),
-                lastUpdateTime = clock.millis()
-            ))
-        })
+        index(listOf(request))
     }
 
     fun index(requests: List<PlaceNameIndexRequest>) {
@@ -177,6 +161,16 @@ class PlaceNameIndexService(
 
     internal fun generateId(name: String, latitude: Double, longitude: Double): String  {
         return "${name.lowercase()}-${latitude}-${longitude}".toSha1()
+    }
+
+    internal fun generateSuggestions(name: String?): List<String> {
+        return name?.let {
+            it.split(" ")
+                .reversed()
+                .runningReduce { acc, s ->
+                    "$s $acc"
+                }
+        } ?: emptyList()
     }
 
     companion object {
