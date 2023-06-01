@@ -176,10 +176,21 @@ hr.sub-menu-divider {
 #search-suggestion-box {
     text-align: left;
     position: absolute;
-    width: 100%;
-    max-width: 502px;
+    padding: 0 20px;
     z-index: 3;
     pointer-events: auto;
+    left: 0;
+    right: 0;
+}
+
+@media(min-width: 400px) {
+    #search-suggestion-box {
+        max-width: 500px;
+        padding: 0;
+        width: 100%;
+        left: unset;
+        right: unset;
+    }
 }
 
 #search-suggestion-box ul {
@@ -204,6 +215,7 @@ hr.sub-menu-divider {
 #search-suggestion-box ul li a {
     display: inline-block;
     width: 100%;
+    font-size: 16px;
 }
 
 #search-suggestion-box ul li a, #search-suggestion-box ul li a:hover {
@@ -218,7 +230,6 @@ hr.sub-menu-divider {
 }
 
 .search-form-container .search-form-ui-bar {
-    width: 100%;
     border: 1px solid rgb(187, 187, 187);
     border-radius: 16px;
     height: 45px;
@@ -245,6 +256,10 @@ hr.sub-menu-divider {
 .search-form-container.has-query .search-form-ui-bar {
     box-shadow: 0 2px 4px 1px rgba(64,60,67,.16);
     border-color: rgba(187, 187, 187, 0.5);
+}
+
+.search-form-container.has-query .search-form-ui-bar {
+    width: 100%;
 }
 
 .search-form-container .search-form-ui-bar .search-clear-button {
