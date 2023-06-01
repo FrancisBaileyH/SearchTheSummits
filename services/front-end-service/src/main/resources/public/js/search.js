@@ -44,17 +44,49 @@ $(document).ready(function() {
     });
 
     $('#search-bar').keyup((e) => {
+        if (e.originalEvent.code != "ArrowDown" && e.originalEvent.code != "ArrowUp") {
+            clearTimeout(typingTimeout)
+            typingTimeout = setTimeout(() => {
+                timeoutMs = 300;
+                value = $(e.target).val();
+                $.get('/api/placenames/autocomplete', { query: $(e.target).val() })
+                  .done(suggestions => renderAutoSuggestDropdown(suggestions))
+                },
+                timeoutMs
+            )
+        }
+    });
 
-        console.log(e);
-        clearTimeout(typingTimeout)
-        typingTimeout = setTimeout(() => {
-            timeoutMs = 300;
-            value = $(e.target).val();
-            $.get('/api/placenames/autocomplete', { query: $(e.target).val() })
-              .done(suggestions => renderAutoSuggestDropdown(suggestions))
-            },
-            timeoutMs
-        )
+    $(".search-form-container").keydown((e) => {
+        var currentSuggestion = $("#search-suggestion-box li.current");
+        var allSuggestions = $("#search-suggestion-box li");
+        var hasSuggestions = $(".search-form-container").hasClass("has-suggestions")
+        var searchBar = $("#search-bar");
+
+        if (!hasSuggestions) {
+            return;
+        }
+
+        if (e.originalEvent.code == "ArrowDown") {
+            e.preventDefault();
+
+            if (!currentSuggestion.length) {
+                allSuggestions.first().addClass("current")
+            } else if (currentSuggestion.next().length) {
+                currentSuggestion.next().addClass("current");
+                currentSuggestion.removeClass("current");
+            }
+
+            searchBar.val($("#search-suggestion-box li.current a").data("suggestion"));
+        } else if (e.originalEvent.code == "ArrowUp") {
+            e.preventDefault();
+
+            if (currentSuggestion.length && currentSuggestion.prev().length) {
+                currentSuggestion.prev().addClass("current");
+                currentSuggestion.removeClass("current");
+                searchBar.val($("#search-suggestion-box li.current a").data("suggestion"));
+            }
+        }
     });
 
     $('.search-clear-button').on('click', function() {
@@ -97,10 +129,10 @@ function renderResourceMenu(resource) {
 
 function renderAutoSuggestDropdown(suggestions) {
     var dropdownHtml = "";
-    $(".search-form-ui-bar").removeClass("has-suggestions")
+    $(".search-form-container").removeClass("has-suggestions")
 
     if (suggestions.placenames.length > 0) {
-        $(".search-form-ui-bar").addClass("has-suggestions")
+        $(".search-form-container").addClass("has-suggestions")
         dropdownHtml += "<ul>";
         suggestions.placenames.forEach(function(value, index) {
             dropdownHtml += "<li><a data-suggestion='" + value.suggestion +"' href='/?query=" + value.suggestion + "'>" + value.displayName + "</a></li>";

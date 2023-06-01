@@ -211,7 +211,9 @@ hr.sub-menu-divider {
     color: black;
 }
 
-#search-suggestion-box ul li:focus, #search-suggestion-box ul li:hover {
+#search-suggestion-box ul li:focus,
+#search-suggestion-box ul li:hover,
+#search-suggestion-box ul li.current {
     background-color: rgba(187, 187, 187, 0.5);
 }
 
@@ -224,7 +226,7 @@ hr.sub-menu-divider {
     display: flex;
 }
 
-.search-form-container .search-form-ui-bar.has-suggestions {
+.search-form-container.has-suggestions .search-form-ui-bar {
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
 }
