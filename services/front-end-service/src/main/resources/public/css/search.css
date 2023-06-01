@@ -193,11 +193,17 @@ hr.sub-menu-divider {
     border-top: 0px;
     padding-top: 0.4em;
     padding-bottom: 0.4em;
+    overflow: hidden;
 }
 
 #search-suggestion-box ul li {
     padding: 0.4em 0.8em;
     margin: 0;
+}
+
+#search-suggestion-box ul li a {
+    display: inline-block;
+    width: 100%;
 }
 
 #search-suggestion-box ul li a, #search-suggestion-box ul li a:hover {

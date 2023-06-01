@@ -64,10 +64,10 @@ class AdminCLI: CliktCommand() {
                 val name = tags["name"]
                 val natural = tags["natural"]
 
-                if (name != null && elevation != null && natural in setOf("peak", "volcano")) {
+                if (name != null && natural in setOf("peak", "volcano")) {
                     PlaceNameIndexRequest(
                         name = name,
-                        elevation = elevation.toInt(),
+                        elevation = elevation?.toInt(),
                         latitude = node.latitude,
                         longitude = node.longitude,
                         alternativeName = tags["alt_name"],

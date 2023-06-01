@@ -34,7 +34,10 @@ class PlaceNamesController(
 
             ResponseEntity.ok().body(Json.encodeToString(PlaceNameAutoCompleteResponse(
                 response.map {
-                    it.suggestion
+                    PlaceNameAutoCompleteHit(
+                        displayName = it.displayName,
+                        suggestion = it.suggestion
+                    )
                 }
             )))
         } catch (e: Exception) {
@@ -53,6 +56,12 @@ class PlaceNamesController(
 }
 
 @Serializable
+data class PlaceNameAutoCompleteHit(
+    val displayName: String,
+    val suggestion: String
+)
+
+@Serializable
 data class PlaceNameAutoCompleteResponse(
-    val placenames: List<String>
+    val placenames: List<PlaceNameAutoCompleteHit>
 )

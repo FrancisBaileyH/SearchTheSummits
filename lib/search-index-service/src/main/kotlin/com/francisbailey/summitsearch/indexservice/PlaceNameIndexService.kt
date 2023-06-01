@@ -74,9 +74,19 @@ class PlaceNameIndexService(
             ?.completion()
             ?.options()
             ?.map {
-                val altSuggestion = it.source()?.alternativeName?.let { alt -> " ($alt)" } ?: ""
+                val alternativeName = it.source()?.alternativeName
+                val altSuggestion = alternativeName?.let { alt -> " ($alt)" } ?: ""
+                val name = it.source()!!.name
+
+                val suggestion = if (alternativeName != null && !name.contains(it.text())) {
+                    alternativeName
+                } else {
+                    name
+                }
+
                 PlaceNameSuggestion(
-                    suggestion = it.source()!!.name + altSuggestion
+                    suggestion = suggestion,
+                    displayName = it.source()!!.name + altSuggestion
                 )
             } ?: emptyList()
     }
@@ -183,7 +193,7 @@ data class PlaceNameMapping(
     val name: String,
     val alternativeName: String? = null,
     val nameSuggester: List<String>,
-    val elevation: Int,
+    val elevation: Int?,
     val description: String?,
     val source: String?,
     val location: PlaceNameLocationMapping,
@@ -206,7 +216,7 @@ data class PlaceNameQueryRequest(
 data class PlaceNameIndexRequest(
     val name: String,
     val alternativeName: String? = null,
-    val elevation: Int,
+    val elevation: Int?,
     val description: String? = null,
     val source: String? = null,
     val latitude: Double,
@@ -216,7 +226,7 @@ data class PlaceNameIndexRequest(
 data class PlaceNameHit(
     val name: String,
     val alternativeName: String? = null,
-    val elevation: Int,
+    val elevation: Int?,
     val description: String? = null,
     val source: String? = null,
     val latitude: Double,
@@ -224,5 +234,6 @@ data class PlaceNameHit(
 )
 
 data class PlaceNameSuggestion(
+    val displayName: String,
     val suggestion: String
 )

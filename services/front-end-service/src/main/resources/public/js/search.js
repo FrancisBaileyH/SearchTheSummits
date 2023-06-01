@@ -1,4 +1,6 @@
 var maxPaginatedResults = 1000;
+let typingTimeout = null;
+var timeoutMs = 0;
 
 // I'm not a front-end dev so please don't judge :(
 $(document).ready(function() {
@@ -41,24 +43,23 @@ $(document).ready(function() {
         renderClearButton();
     });
 
-
-    let typingTimeout = null
     $('#search-bar').keyup((e) => {
+
+        console.log(e);
         clearTimeout(typingTimeout)
         typingTimeout = setTimeout(() => {
+            timeoutMs = 300;
             value = $(e.target).val();
             $.get('/api/placenames/autocomplete', { query: $(e.target).val() })
               .done(suggestions => renderAutoSuggestDropdown(suggestions))
             },
-            300
+            timeoutMs
         )
     });
 
     $('.search-clear-button').on('click', function() {
         $("#search-bar").val("");
-
         renderAutoSuggestDropdown({ placenames: [] });
-
         renderClearButton();
         $("#search-bar").focus();
     });
@@ -96,24 +97,18 @@ function renderResourceMenu(resource) {
 
 function renderAutoSuggestDropdown(suggestions) {
     var dropdownHtml = "";
-
     $(".search-form-ui-bar").removeClass("has-suggestions")
 
     if (suggestions.placenames.length > 0) {
         $(".search-form-ui-bar").addClass("has-suggestions")
-
         dropdownHtml += "<ul>";
         suggestions.placenames.forEach(function(value, index) {
-            dropdownHtml += "<li><a href='/?query=" + value + "'>" + value + "</a></li>";
+            dropdownHtml += "<li><a data-suggestion='" + value.suggestion +"' href='/?query=" + value.suggestion + "'>" + value.displayName + "</a></li>";
         });
         dropdownHtml += "</ul>";
     }
 
     $("#search-suggestion-box").html(dropdownHtml);
-
-    if (suggestions.placenames.length > 0) {
-        $("#search-suggestion-box li").first().focus();
-    }
 }
 
 function updateSearchResults() {
