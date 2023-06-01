@@ -188,7 +188,7 @@ class PlaceNameIndexServiceTest {
         client.indices().refresh()
 
         val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "mount m"))
-        assertEquals("${request.name} (${request.alternativeName})", results.first().suggestion)
+        assertEquals(request.alternativeName, results.first().suggestion)
     }
 
     @Test
