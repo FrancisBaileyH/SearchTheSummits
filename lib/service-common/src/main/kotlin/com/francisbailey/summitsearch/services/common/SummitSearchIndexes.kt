@@ -12,7 +12,8 @@ class SummitSearchIndexes {
             "bc, british columbia",
             "fsr, forest service road, service road",
             "rd, road",
-            "pk, peak"
+            "pk, peak",
+            "st, saint"
         )
 
         const val documentIndexName = "summit-search-index"
