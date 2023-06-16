@@ -90,6 +90,11 @@ open class SiteProcessingConfigurations() {
             indexingFilter = RockyMountainSummitsIndexFilter
         ),
         SiteProcessingConfiguration(
+            source = URL("https://sites.google.com"),
+            discoveryFilter = StephAbeggFilter,
+            indexingFilter = StephAbeggIndexFilter
+        ),
+        SiteProcessingConfiguration(
             source = URL("https://skisickness.com"),
             discoveryFilter = SkiSicknessFilter,
             indexingFilter = SkiSicknessIndexFilter,
