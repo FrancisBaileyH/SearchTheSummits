@@ -1,0 +1,286 @@
+
+<html>
+<head>
+    <title>Tetons Climbing -  - </title>
+    <meta name="description" content="Climbing: Bugaboos, High Sierra, Wind River Range, Beartooths, Selkirks, N Cascades, Canadian Rockies" />
+    <meta charset="UTF-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="article:tag" content="Tetons Climbing -  - " />
+    <meta name="generator" content="Homesite 5.5" />
+    <meta name="author" content="Peter Cole Photographer Mountaineer" />
+    <link rel="canonical" href="https://amountainlifetime.net//content/gallery.php" />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/meyerweb_reset.css" media="screen" />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/style-3.css" media="screen" />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/jquery.modal.min.css" media="screen" />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/mobile-menu.css" media="screen" />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/jquery.flex-images.css" media="screen"  />
+    <link rel="stylesheet" href="https://amountainlifetime.net/css/gigantic.pagination.css" media="screen" />
+
+    <script src="https://amountainlifetime.net/js/jquery-1.10.2.min.js"></script>
+    <script src="https://amountainlifetime.net/js/jquery.modal_0.9.1.js"></script>
+    <script src="https://amountainlifetime.net/js/jquery.easing.1.3.js"></script>
+    <script src="https://amountainlifetime.net/js/jquery.blazy.js"></script>
+
+    <script>
+$(document).ready(function() {
+	// LOAD DIFFERENT LIGHTBOX JS/CSS FILES FOR MOBILE AND DESKTOP
+	// PATHS ARE NOT THE SAME USING THIS CODE INSTEAD OF SOURCING FILES DIRECTLY AS ABOVE
+	// THE SOLUTION IS TO CREATE A COOKIE THAT CAN BE PASSED TO A PHP FUNCTION
+
+	// MOBILE DEVICE
+	if($(window).width() < 756) {
+		document.cookie = "device=mobile; expires=Fri,31 Dec 9999 23:59:59 GMT; path=https://amountainlifetime.net/common/content/gallery.php";
+		$("<link/>", {
+		   rel: "stylesheet",
+		   type: "text/css",
+		   href: "https://amountainlifetime.net/css/jquery.fancybox.css"
+				}).appendTo("head");
+
+		// THEN GET JS FILE(S)
+		$.getScript("https://amountainlifetime.net/js/jquery.fancybox.min-3.5.2.js");
+
+		}
+
+	// DESKTOP
+	else {
+		document.cookie = "device=desktop; expires=Fri,31 Dec 9999 23:59:59 GMT; path=https://amountainlifetime.net/common/content/gallery.php";
+		$("<link/>", {
+		   rel: "stylesheet",
+		   type: "text/css",
+		   href: "https://amountainlifetime.net/css/jquery.fancybox-2.1.5.css"
+				}).appendTo("head");
+
+		$("<link/>", {
+		   rel: "stylesheet",
+		   type: "text/css",
+		   href: "https://amountainlifetime.net/css/jquery.fancybox-buttons.css"
+				}).appendTo("head");
+
+		// THEN GET JS FILES
+		$.getScript("https://amountainlifetime.net/js/jquery.fancybox-2.1.5.js", function() {
+			// CALL THE FUNCTION TO RUN THE LIGHTBOX
+			$("a[rel=group]").fancybox({
+				prevEffect		: 'none',
+				nextEffect		: 'none',
+				closeBtn		: false,
+				helpers		: {
+					buttons	: {}
+					},
+				beforeLoad: function() {
+					this.title = $(this.element).attr('caption');
+					}
+				});
+			});
+	   }
+	});
+
+</script>
+
+    <script>
+$(document).ready(function() {
+	if($(window).width() < 756) {
+		document.cookie = "device=mobile";
+		}
+	else {
+		document.cookie = "device=desktop";
+	   }
+	});
+</script>
+
+
+    <link rel="shortcut icon" href="https://amountainlifetime.net/favicon.ico" />
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113195857-1"></script>
+    <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-113195857-1');
+</script>
+
+</head>
+<body id="site">
+<div id="container">
+    <!-- MOBILE HEADER AND MENU -->
+    <header>
+        <div class="mobileLogo"><img src="https://amountainlifetime.net/img/logo/mt-lifetime-logo-v3m.png" alt="" /></div>
+        <div class="mobile-nav-button">
+            <div class="mobile-nav-button__line"></div>
+            <div class="mobile-nav-button__line"></div>
+            <div class="mobile-nav-button__line"></div>
+        </div>
+        <nav class="mobile-menu">
+            <ul>
+                <li><a href="https://amountainlifetime.net/index.php">Home</a></li>
+                <li><a href="https://amountainlifetime.net/content/about.php">About</a></li>
+                <li><a href="https://amountainlifetime.net/content/slideshow.php">Slide Show</a></li>
+                <li><a href="https://amountainlifetime.net/content/collections.php">Collections</a></li>
+                <li id="albums"><a href="#">Albums</a>
+                    <ul class="albums">
+                        <li><a href="https://amountainlifetime.net/content/albums.php">All Albums</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=1">Peaks Bagging</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=2">Alpine Climbs</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=3">Expeditions</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=4">Northeast US</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=5">Ice Climbs</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=6">Rock Climbs</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=7">Colorado Plateau</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=8">Backcountry Skiing</a></li>
+                        <li><a href="https://amountainlifetime.net/content/albums.php?ID=9">Big Walls</a></li>
+                    </ul>
+                </li>
+                <!-- <li><a href="chronology.php">Chronology</a></li> --><!-- PROBABLY TOO COMPLEX TO DO IN MOBILE LAYOUT -->
+                <li><a href="https://amountainlifetime.net/content/regions.php">Locations</a></li>
+                <li><a href="https://amountainlifetime.net/content/peaks-climbed.php">List Peaks Climbed</a></li>
+                <li><a href="https://amountainlifetime.net/content/peaks.php">Peaks / Climbs</a></li>
+                <li><a href="https://amountainlifetime.net/content/search.php">Search</a></li>
+                <li><a href="https://amountainlifetime.net/content/contact.php">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <!-- HEADER and MENU-->
+    <div id="header">
+        <div class="headerLogo"><img src="https://amountainlifetime.net/img/logo/mt-lifetime-logo-v3d.png" alt="" /></div>
+        <div class="menu">
+            <a href="https://amountainlifetime.net/index.php">Home</a>
+            <a href="https://amountainlifetime.net/content/about.php">About</a>
+            <a href="https://amountainlifetime.net/content/slideshow.php">Slide Show</a>
+            <a href="https://amountainlifetime.net/content/collections.php">Collections</a>
+            <a href="https://amountainlifetime.net/content/albums.php">Albums</a>
+            <a href="https://amountainlifetime.net/content/chronology.php">Chronology</a>
+            <a href="https://amountainlifetime.net/content/regions.php">Regions</a>
+            <a href="https://amountainlifetime.net/content/peaks-climbed.php">List Peaks Climbed</a>
+            <a href="https://amountainlifetime.net/content/peaks.php">Peaks / Climbs</a>
+            <a href="https://amountainlifetime.net/content/search.php">Search</a>
+            <a href="https://amountainlifetime.net/content/contact.php">Contact</a>
+        </div>
+    </div>
+    <br class="clearfix" />
+    <!-- CONTENT -->
+    <div class="center">
+    </div>
+    <div class="gallery themeLightGrey">
+        <div class="albumIntro"><span class="first-row">TETONS CLIMBING : Winter climbing in the Tetons ~ Winter 91 / 92</span><span class="second-row">(17) images</span><p class="albumText">Last thing we did on that great 6 weeks in the Tetons was to skin up into Garnet Canyon for some climbing. The Grand was getting plenty of attention. Getting up early would have helped - ended up over in the South Fork on Cloudveil and Spaulding.&nbsp;&nbsp;</div>
+        <div id="show" class="flex-images">
+            <a class="lightbox" caption="EARL ALDERSON SKINNING INTO GARNET CANYON FOR AN ATTEMPT ON THE GRAND, TETONS, WY<br />very stable snow pack during our stay in the area<br />&copy;1992&nbsp; #2241&nbsp;041_0621_92" rel="group" href="https://amountainlifetime.net/img/gallery/41/1992/18/041_0621_92.jpg"><div class="item" data-width="855" data-height="1150"><img class="b-lazy" src="https://amountainlifetime.net/img/resources/blank.gif" data-src="https://amountainlifetime.net/img/gallery/41/1992/18/041_0621_92.jpg" alt="" /><p class="over">EARL ALDERSON SKINNING INTO GARNET CANYON FOR AN ATTEMPT ON THE GRAND, TETONS, WY</p></div></a>
+
+            <a class="lightbox" caption="EARL ALDERSON AND SUNRISE AT A WINTER CAMPSITE IN GARNET CANYON, TETONS, WY<br />very hazard free season saw people skiing and climbing all over the big teton peaks<br />&copy;1992&nbsp; #2101&nbsp;041_0628_92" rel="group" href="https://amountainlifetime.net/img/gallery/41/1992/18/041_0628_92.jpg"><div class="item" data-width="861" data-height="1280"><img class="b-lazy" src="https://amountainlifetime.net/img/resources/blank.gif" data-src="https://amountainlifetime.net/img/gallery/41/1992/18/041_0628_92.jpg" alt="" /><p class="over">EARL ALDERSON AND SUNRISE AT A WINTER CAMPSITE IN GARNET CANYON, TETONS, WY</p></div></a>
+
+        </div>
+    </div>
+    <div class="center bottomNav">
+    </div>
+    <script src="https://amountainlifetime.net/js/jquery.flex-images-items.js"></script>
+    <script type="text/javascript">
+  	$(document).ready(function() {
+		// CALL FLEX IMAGES
+		$('#show').flexImages({
+			rowHeight: 250
+			});
+		$("a.lightbox").show();
+		$(".item p.over").hide();
+		$(".item p.bottom").show();
+
+		$(".item img").mouseover(function(e) {
+			e.preventDefault();
+			var $thisElement = $(this).parent().find('p.over');
+			$('.item p.over').not($thisElement).hide();
+
+			$thisElement.show();
+			});
+
+		$(".item img").mouseout(function(e) {
+			$(".item p.over").hide();
+			});
+
+
+		var blazy = new Blazy({
+			container: '#show'
+			});
+
+		});
+	</script>
+
+    <!-- FOOTER -->
+    <div id="footer">
+        <div class="footerMenu">
+            <a href="https://amountainlifetime.net/index.php">Home</a>
+            <a href="https://amountainlifetime.net/content/about.php">About</a>
+            <a href="https://amountainlifetime.net/content/slideshow.php">Slide Show</a>
+            <a href="https://amountainlifetime.net/content/collections.php">Collections</a>
+            <a href="https://amountainlifetime.net/content/albums.php">Albums</a>
+            <a href="https://amountainlifetime.net/content/chronology.php">Chronology</a>
+            <a href="https://amountainlifetime.net/content/regions.php">Regions</a>
+            <a href="https://amountainlifetime.net/content/peaks-climbed.php">List Peaks Climbed</a>
+            <a href="https://amountainlifetime.net/content/peaks.php">Peaks / Climbs</a>
+            <a href="https://amountainlifetime.net/content/search.php">Search</a>
+        </div>
+        <p class="note small"><a href="#top">Top of Page</a></p>
+        <p class="note small">
+            Copyright &copy;
+            <script>
+					var d = new Date();
+					var y = d.getFullYear();
+					document.write(y);
+				</script>
+            Peter Cole
+            <br />
+            <a href="http://b2webservices.com" target="_blank">Built by B2 Web Services</a>
+        </p>
+    </div>
+</div><!-- CLOSE CONTAINER DIV -->
+<!-- MOBILE MENU -->
+<script>
+$(document).ready(function () {
+	$('.mobile-nav-button').on('click', function() {
+		$("nav.mobile-menu ul ul").hide('slow');
+		$(".mobile-nav-button .mobile-nav-button__line:nth-of-type(1)" ).toggleClass( "mobile-nav-button__line--1");
+		$(".mobile-nav-button .mobile-nav-button__line:nth-of-type(2)" ).toggleClass( "mobile-nav-button__line--2");
+		$(".mobile-nav-button .mobile-nav-button__line:nth-of-type(3)" ).toggleClass( "mobile-nav-button__line--3");
+		$('.mobile-menu').toggleClass('mobile-menu--open');
+		return false;
+		});
+
+	// NESTED MOBILE MENU ITEMS
+	// OPEN AND CLOSE ACCORDIAN
+	$("nav.mobile-menu ul li").on('click',function() {
+		$("nav.mobile-menu ul ul").hide('slow');
+		var menuItem = $(this).attr('id');
+
+		if($("."+menuItem).is(":hidden")) {
+			$("ul.menu ul").hide('slow');
+		   $("."+menuItem).show('slow');
+		   }
+		else {
+			$("ul.menu ul").hide('slow');
+			$("."+menuItem).hide('slow');
+			$("ul.menu li").css({'color':'#5c524d'});
+		   }
+		});
+	});
+</script>
+<script>
+// MOBILE FLOATING BACK TO TOP ELEMENT
+$(document).ready(function() {
+	if($(window).width() < 736) {
+		var amountScrolled = 200;  // mobile phone height
+		$(window).scroll(function() {
+			if($(window).scrollTop() > amountScrolled) {
+				$('a.backToTopBtn').fadeIn('slow');
+			   }
+			else {
+			   $('a.backToTopBtn').fadeOut();
+			   }
+			});
+
+		// CALL FUNCTION
+		$('a.backToTopBtn').on('click', function() {
+			$('html, body').scrollTop();
+			});
+		}
+	});
+</script>
+<a href="#" class="backToTopBtn"></a>
+</body>
+</html>

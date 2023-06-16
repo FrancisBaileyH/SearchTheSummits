@@ -3,10 +3,7 @@ package com.francisbailey.summitsearch.index.worker.configuration
 import com.francisbailey.summitsearch.index.worker.extension.CaptionedImage
 import com.francisbailey.summitsearch.index.worker.extractor.ContentExtractorStrategy
 import com.francisbailey.summitsearch.index.worker.extractor.DocumentText
-import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadContentExtractorStrategy
-import com.francisbailey.summitsearch.index.worker.extractor.strategy.ClubTreadImageExtractorStrategy
-import com.francisbailey.summitsearch.index.worker.extractor.strategy.FacebookContentExtractorStrategy
-import com.francisbailey.summitsearch.index.worker.extractor.strategy.WildAirPhotographyContentExtractorStrategy
+import com.francisbailey.summitsearch.index.worker.extractor.strategy.*
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterChain
 import com.francisbailey.summitsearch.index.worker.filter.definitions.*
 import com.francisbailey.summitsearch.index.worker.indexing.StepOverride
@@ -44,6 +41,11 @@ open class SiteProcessingConfigurations() {
         SiteProcessingConfiguration(
             source = URL("https://altusmountainguides.com"),
             discoveryFilter = AltusMountainGuidesFilter
+        ),
+        SiteProcessingConfiguration(
+            source = URL("https://amountainlifetime.net"),
+            indexingFilter = AMountainLifetimeIndexFilter,
+            imageContentSelector = AMountainLifeTimeImageExtractorStrategy()
         ),
         SiteProcessingConfiguration(
             source = URL("https://andreasfransson.se"),
