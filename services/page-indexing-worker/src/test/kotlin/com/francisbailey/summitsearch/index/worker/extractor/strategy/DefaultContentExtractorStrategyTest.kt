@@ -42,6 +42,11 @@ class DefaultContentExtractorStrategyTest {
                     <ul>
                       <li><a>Bad Content</a></li>
                     </ul>
+                    <form>
+                        <select>
+                            <option>Test!</option>
+                        </select>
+                    </form>
                     <footer><h1>Footer</h1></footer>
                 </body>
             </html>

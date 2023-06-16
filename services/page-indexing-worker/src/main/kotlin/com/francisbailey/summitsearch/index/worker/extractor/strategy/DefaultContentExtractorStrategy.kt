@@ -26,7 +26,7 @@ class DefaultContentExtractorStrategy: ContentExtractorStrategy<DocumentText> {
 
     companion object {
         private val EXCLUDED_TAG_EVALUATOR = object: Evaluator() {
-            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header")
+            private val excludedTags = setOf("ul", "li", "a", "nav", "footer", "header", "form", "select")
 
             override fun matches(root: Element, element: Element): Boolean {
                 return excludedTags.contains(element.normalName())
