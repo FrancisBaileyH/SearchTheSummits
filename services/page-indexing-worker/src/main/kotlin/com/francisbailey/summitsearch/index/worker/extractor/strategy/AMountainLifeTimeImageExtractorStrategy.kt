@@ -7,8 +7,6 @@ import org.jsoup.nodes.Document
 
 class AMountainLifeTimeImageExtractorStrategy: ContentExtractorStrategy<List<CaptionedImage>> {
     override fun extract(document: Document): List<CaptionedImage> {
-        val imageCandidates = document.select(".lightbox .item")
-
         return document.getCaptionedImages(".lightbox .item", "p")
     }
 }
