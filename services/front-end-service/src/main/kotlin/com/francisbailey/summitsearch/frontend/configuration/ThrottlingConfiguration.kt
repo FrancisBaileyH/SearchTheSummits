@@ -18,6 +18,7 @@ open class ThrottlingConfiguration {
         ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitsController.SEARCH_API_PATH) to 3,
         ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_API_PATH) to 3,
         ThrottlingService.rateLimiterKey(HttpMethod.GET, SummitImagesController.SEARCH_PREVIEW_API_PATH) to 3,
+        ThrottlingService.rateLimiterKey(HttpMethod.GET, PlaceNamesController.PLACENAME_SEARCH_PATH) to 1,
         ThrottlingService.rateLimiterKey(HttpMethod.GET, PlaceNamesController.AUTO_COMPLETE_PLACENAME_SEARCH_PATH) to 4
     )
 }

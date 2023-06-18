@@ -230,32 +230,76 @@ function updateDocumentResults(searchParams) {
     var startTime = new Date().getTime();
     var endpoint = new URL(window.location.origin + "/api/summits");
     var previewEndpoint = new URL(window.location.origin + "/api/images/preview")
+    var placeNameEndpoint = new URL(window.location.origin + "/api/placenames")
 
     endpoint.search = "?" + searchParams.toString();
     previewEndpoint.search = "?" + searchParams.toString();
+    placeNameEndpoint.search = "?query=" + searchParams.get("query")
 
     var deferredSearch = $.getJSON(endpoint)
     var deferredPreviewSearch = $.Deferred().resolve(null);
+    var deferredPlaceNameSearch = $.Deferred().resolve(null);
 
     if (searchParams.get("page") == 1 || searchParams.get("page") == null) {
         deferredPreviewSearch = $.getJSON(previewEndpoint)
+        deferredPlaceNameSearch = $.getJSON(placeNameEndpoint)
     }
 
-    $.when(deferredSearch, deferredPreviewSearch).done(function(searchResponse, previewResponse) {
+    $.when(deferredSearch, deferredPreviewSearch, deferredPlaceNameSearch).done(function(searchResponse, previewResponse, placeNameResponse) {
         var totalTime = new Date().getTime() - startTime;
         var searchResults = "";
+        var previewMapData = null;
+        var hasImages = false;
+        var previewMapDescription = "";
+
+        // Preview Container Start
+        searchResults = "<div class='preview-container'>";
+
+        if (placeNameResponse != null &&
+            placeNameResponse.length > 0 &&
+            placeNameResponse[0].placenames.length == 1
+        ) {
+            var placeName = placeNameResponse[0].placenames[0];
+            searchResults += "<div class='preview-map-container'>";
+            searchResults += "<div id='preview-map'></div>";
+            previewMapDescription += "<div class='preview-map-description'>"
+            previewMapDescription += "<strong>Name: </strong>" + placeName.name + "</br>"
+
+            if (placeName.alternativeName != null) {
+                previewMapDescription += "<strong>Alternative Name: </strong>" + placeName.alternativeName + "</br>"
+            }
+
+            if (placeName.elevation != null) {
+                previewMapDescription += "<strong>Elevation: </strong>" + placeName.elevation + "m</br>"
+            }
+
+            previewMapDescription += "</div>"
+            searchResults += previewMapDescription;
+            searchResults += "</div>"
+
+            previewMapData = {
+                latitude: placeName.latitude,
+                longitude: placeName.longitude
+            };
+        }
 
         if (previewResponse != null && previewResponse[0].hits.length >= 3) {
             var count = 0;
             var url = new URL(window.location.href);
+            var classes = "preview-image-container"
+            hasImages = true;
 
             url.searchParams.set("resource", "images")
 
-            searchResults += "<div class=\"search-result-image-preview\">"
+            if (previewMapData != null) {
+                classes += " has-preview-map"
+            }
+            searchResults += "<div class=\"" + classes + "\">"
+
             previewResponse[0].hits.forEach(function(hit) {
                 var sourceUrl = new URL(hit.referencingDocument);
 
-                if (count < 3 || $(window).width() > 700) {
+                if (count < 3 || ($(window).width() > 700 && previewMapData == null)) {
                     searchResults += "<div class=\"search-result-image-preview-thumbnail\">"
                     searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\" />"
                     searchResults += "</div>"
@@ -264,8 +308,21 @@ function updateDocumentResults(searchParams) {
                 count += 1;
             })
             searchResults += "</div>"
-            searchResults += "<div class=\"search-result-image-preview-button\"><a href=\"" + url + "\"><span>View Images</span><hr class=\"search-result-image-preview-divider\"></hr></a></div>"
         }
+
+        if (previewMapData != null) {
+            searchResults += previewMapDescription;
+        }
+
+        searchResults += "</div>";
+
+        if (hasImages) {
+            searchResults += "<div class=\"search-result-image-preview-button\"><a href=\"" + url + "\"><span>View Images</span><hr class=\"search-result-image-preview-divider\"></hr></a></div>"
+        } else if (previewMapData != null) {
+            searchResults += "<hr></hr>"
+        }
+
+        // Preview Container End
 
         searchResponse[0].hits.forEach(function(hit) {
             var thumbnailHtml = ""
@@ -322,6 +379,25 @@ function updateDocumentResults(searchParams) {
                     var imageTarget = $(this);
                     renderImageModal(imageTarget);
                 });
+
+                if (previewMapData != null) {
+                    var map = L.map('preview-map', {
+                        center: [previewMapData.latitude, previewMapData.longitude],
+                        zoomControl: false,
+                        zoom: 13
+                    });
+
+                    L.marker([
+                        previewMapData.latitude,
+                        previewMapData.longitude
+                    ]).addTo(map);
+
+                    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 18,
+                        minZoom: 6,
+                        attribution: 'OT:Basemap &copy; <a href="https://www.opentopomap.org/">OpenTopoMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+                    }).addTo(map);
+                }
             },
             resultsPerPage: searchResponse[0].resultsPerPage
         }, searchResults)

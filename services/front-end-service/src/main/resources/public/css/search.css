@@ -389,14 +389,38 @@ hr.sub-menu-divider {
     border-radius: 16px;
 }
 
-.search-result-group .search-result:nth-child(n+2) {
-   /* padding-left: 1em; */
+
+.preview-container {
+    display: flex;
+    font-size: 1.7rem;
 }
 
-.search-result-image-preview {
+.preview-container > .preview-map-description {
+    display: none;
+}
+
+#preview-map {
+    height: 280px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+    z-index: 1;
+    border: 1px solid #E1E1E1;
+}
+
+.preview-map-container {
+    flex-grow: 5;
+    padding-right: 8px;
+}
+
+.preview-image-container {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+}
+
+.preview-image-container.has-preview-map {
+    flex-direction: column;
+    flex-grow: 0;
 }
 
 .search-result-image-preview-thumbnail {
@@ -673,6 +697,34 @@ footer #footer-image {
 }
 
 @media(max-width: 500px) {
+
+    .preview-container {
+        flex-direction: column;
+    }
+
+    .preview-map-description {
+        display: none;
+    }
+
+    .preview-container > .preview-map-description {
+        display: block;
+        margin-top: 8px;
+    }
+
+    .preview-map-container {
+        padding: 0;
+    }
+
+    #preview-map {
+        height: 180px;
+        padding: 0;
+    }
+
+    .preview-image-container.has-preview-map {
+        flex-direction: row;
+        margin-top: 0;
+    }
+
     .search-form-container h3 {
         font-size: 2.8rem;
     }
@@ -796,8 +848,34 @@ footer #footer-image {
         width: auto;
         max-width: 1000px;
     }
+
+    .preview-image-container.has-preview-map .search-result-image-preview-thumbnail:first-child img {
+        border-radius: 0px;
+        border-top-right-radius: 16px;
+        border-top-left-radius: 16px;
+    }
+
+    .preview-image-container.has-preview-map .search-result-image-preview-thumbnail:last-child img {
+        border-radius: 0px;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .preview-image-container.has-preview-map .search-result-image-preview-thumbnail {
+        line-height: 0;
+    }
+
+    .preview-image-container.has-preview-map .search-result-image-preview-thumbnail img {
+        width: 175px;
+        height: 88px;
+        margin-bottom: 8px;
+    }
 }
 
 .centered {
     text-align: center;
+}
+
+.leaflet-container {
+    font-size: 1rem;
 }

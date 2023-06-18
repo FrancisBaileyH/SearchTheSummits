@@ -27,6 +27,10 @@ class PlaceNameIndexService(
     private val log = KotlinLogging.logger { }
 
     fun query(request: PlaceNameQueryRequest): List<PlaceNameHit> {
+        require(request.query.length <= MAX_QUERY_SIZE) {
+            "Query term must not contain more than $MAX_QUERY_SIZE characters"
+        }
+
         val results = client.search(SearchRequest.of {
             it.index(indexName)
             it.query { query ->
@@ -45,6 +49,7 @@ class PlaceNameIndexService(
                 name = source.name,
                 elevation = source.elevation,
                 description = source.description,
+                alternativeName = source.alternativeName,
                 source = source.source,
                 latitude = source.location.lat,
                 longitude = source.location.lon
@@ -52,7 +57,30 @@ class PlaceNameIndexService(
         }
     }
 
+    /**
+     * Return a suggestion + display name whenever a suggestion is found.
+     *
+     * The display name is the combination of the normal name + alternative name
+     * while the suggestion is the one of the alt name or normal name (whichever you started typing in)
+     *
+     * E.g. For Quirin Peak which has alternative name of Hydro Mountain if you start typing "Hyd"
+     * You would get:
+     *
+     * display name = Quirin Peak (Hydro Mountain)
+     * suggestion = Hydro Peak
+     *
+     * vice versa
+     *
+     * Search = "quir"
+     *
+     * display name = "Quirin Peak (Hydro Mountain)
+     * suggestion = "Quirin Peak"
+     */
     fun autoCompleteQuery(request: AutoCompleteQueryRequest): List<PlaceNameSuggestion> {
+        require(request.prefix.length <= MAX_AUTO_COMPLETE_QUERY_SIZE) {
+            "Query term must not contain more than $MAX_AUTO_COMPLETE_QUERY_SIZE characters"
+        }
+
         val results = client.search(SearchRequest.of {
             it.index(indexName)
             it.suggest(Suggester.of { suggester ->
@@ -172,6 +200,14 @@ class PlaceNameIndexService(
         return "${name.lowercase()}-${latitude}-${longitude}".toSha1()
     }
 
+    /**
+     * Takes a name like "Mount Judge Howay" and produces a list like:
+     * - Howay
+     * - Judge Howay
+     * - Mount Judge Howay
+     *
+     * This enables someone to search the prefix: "How" and get "Mount Judge Howay"
+     */
     internal fun generateSuggestions(name: String?): List<String> {
         return name?.let {
             it.split(" ")
@@ -186,6 +222,8 @@ class PlaceNameIndexService(
         const val ANALYZER_NAME = "standard_with_synonyms"
         const val SYNONYM_FILTER_NAME = "synonym_graph"
         const val AUTO_COMPLETE_RESULT_COUNT = 6
+        const val MAX_AUTO_COMPLETE_QUERY_SIZE = 40
+        const val MAX_QUERY_SIZE = 100
     }
 }
 
