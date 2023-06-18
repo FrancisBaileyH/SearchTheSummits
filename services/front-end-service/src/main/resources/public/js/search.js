@@ -274,7 +274,7 @@ function updateDocumentResults(searchParams) {
             }
 
             previewMapDescription += "</div>"
-            searchResults += previewMapDescription;
+//            searchResults += previewMapDescription;
             searchResults += "</div>"
 
             previewMapData = {
@@ -310,9 +310,9 @@ function updateDocumentResults(searchParams) {
             searchResults += "</div>"
         }
 
-        if (previewMapData != null) {
-            searchResults += previewMapDescription;
-        }
+//        if (previewMapData != null) {
+//            searchResults += previewMapDescription;
+//        }
 
         searchResults += "</div>";
 
