@@ -6,10 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 
 class PlaceNameControllerTest {
 
@@ -58,7 +55,7 @@ class PlaceNameControllerTest {
             )
         ))
 
-        val response = controller.search("Test Case Peak")
+        val response = controller.autoCompleteSearch("Test Case Peak")
         val expectedResponse = PlaceNameSearchResponse(listOf(
             PlaceNameAutoCompleteHit(
                 displayName = "Test Case Peak",
