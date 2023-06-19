@@ -108,6 +108,10 @@ open class SiteProcessingConfigurations() {
             discoveryFilter = WildAirFilter,
             htmlContentSelector = WildAirPhotographyContentExtractorStrategy()
         ),
+       SiteProcessingConfiguration(
+           source = URL("https://wildisle.ca"),
+           discoveryFilter = WildIsleFilter
+       ),
         SiteProcessingConfiguration(
             source = URL("http://www.alpenglow.org"),
             discoveryFilter = AlpenGlowFilter
