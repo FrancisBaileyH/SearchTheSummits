@@ -863,6 +863,7 @@ footer #footer-image {
 
     .preview-image-container.has-preview-map .search-result-image-preview-thumbnail {
         line-height: 0;
+        padding-right: 0;
     }
 
     .preview-image-container.has-preview-map .search-result-image-preview-thumbnail img {

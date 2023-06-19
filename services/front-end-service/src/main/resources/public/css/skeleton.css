@@ -751,7 +751,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .leaflet-container {
 	background: #ddd;
-	outline-offset: 1px;
+	outline-offset: 0;
 	}
 .leaflet-container a {
 	color: #0078A8;
