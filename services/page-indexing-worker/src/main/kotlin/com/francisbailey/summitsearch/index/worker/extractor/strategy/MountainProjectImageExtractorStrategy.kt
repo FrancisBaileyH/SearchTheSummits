@@ -8,6 +8,6 @@ import org.jsoup.nodes.Document
 class MountainProjectImageExtractorStrategy: ContentExtractorStrategy<List<CaptionedImage>> {
 
     override fun extract(document: Document): List<CaptionedImage> {
-        return document.getCaptionedImages("div.card-with-photo", ".card-text .title-row")
+        return document.getCaptionedImages("#route-page div.card-with-photo", ".card-text .title-row")
     }
 }
