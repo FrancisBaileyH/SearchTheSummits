@@ -48,7 +48,6 @@ class PipelineConfigurationTest: StepTest() {
         generateImagePreviewStep = generateImagePreviewStep,
         submitImagesStep = submitImagesStep,
         saveImageStep = saveImageStep,
-        checkImageExistsStep = checkImageExistsStep,
         htmlProcessingOverrides = emptyMap()
     )
 

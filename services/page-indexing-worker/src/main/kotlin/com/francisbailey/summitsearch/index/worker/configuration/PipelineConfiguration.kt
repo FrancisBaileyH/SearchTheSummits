@@ -27,7 +27,6 @@ open class PipelineConfiguration(
     private val generateImagePreviewStep: GenerateImagePreviewStep,
     private val saveImageStep: SaveImageStep,
     private val submitImagesStep: SubmitImagesStep,
-    private val checkImageExistsStep: CheckImageExistsStep,
     private val htmlProcessingOverrides: Map<URL, Set<StepOverride<DatedDocument>>>
 ) {
 

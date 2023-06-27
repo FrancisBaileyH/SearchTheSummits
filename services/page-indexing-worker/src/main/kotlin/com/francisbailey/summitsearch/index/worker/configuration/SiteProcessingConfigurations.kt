@@ -8,10 +8,7 @@ import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterChain
 import com.francisbailey.summitsearch.index.worker.filter.definitions.*
 import com.francisbailey.summitsearch.index.worker.indexing.StepOverride
 import com.francisbailey.summitsearch.index.worker.indexing.step.*
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
+import com.francisbailey.summitsearch.index.worker.indexing.step.override.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.net.URL
@@ -25,9 +22,8 @@ data class SiteProcessingConfiguration(
     val imageContentSelector: ContentExtractorStrategy<List<CaptionedImage>>? = null,
 )
 
-
 @Configuration
-open class SiteProcessingConfigurations() {
+open class SiteProcessingConfigurations {
 
    val configurations = setOf(
         SiteProcessingConfiguration(
@@ -148,6 +144,13 @@ open class SiteProcessingConfigurations() {
             indexingFilter = MountaineersOrgIndexFilter
         ),
         SiteProcessingConfiguration(
+            source = URL("https://www.mountainproject.com"),
+            htmlContentSelector = MountainProjectContentExtractorStrategy(),
+            imageContentSelector = MountainProjectImageExtractorStrategy(),
+            discoveryFilter = MountainProjectFilter,
+            indexingFilter = MountainProjectIndexFilter
+        ),
+        SiteProcessingConfiguration(
             source = URL("https://www.nwhikers.net"),
             discoveryFilter = NWHikersFilter,
             indexingFilter = NWHikersIndexFilter
@@ -172,7 +175,8 @@ open class PipelineOverrideConfiguration(
     private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
     private val peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
     private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
-    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep
+    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep,
+    private val mountainProjectContentValidatorStep: MountainProjectContentValidatorStep
 ) {
 
     @Bean
@@ -197,6 +201,10 @@ open class PipelineOverrideConfiguration(
             URL("https://skisickness.com") to setOf(StepOverride(
                 targetStep = SubmitLinksStep::class,
                 override = skiSicknessSubmitLinksStep
+            )),
+            URL("https://www.mountainproject.com") to setOf(StepOverride(
+                targetStep = ContentValidatorStep::class,
+                override = mountainProjectContentValidatorStep
             ))
         )
     }
