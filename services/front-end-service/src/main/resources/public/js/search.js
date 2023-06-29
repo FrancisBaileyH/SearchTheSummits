@@ -135,7 +135,7 @@ function renderAutoSuggestDropdown(suggestions) {
         $(".search-form-container").addClass("has-suggestions")
         dropdownHtml += "<ul>";
         suggestions.placenames.forEach(function(value, index) {
-            dropdownHtml += "<li><a data-suggestion='" + value.suggestion +"' href='/?query=" + value.suggestion + "'>" + value.displayName + "</a></li>";
+            dropdownHtml += "<li><a data-suggestion='" + escapeHtml(value.suggestion) +"' href='/?query=" + escapeHtml(value.suggestion) + "'>" + value.displayName + "</a></li>";
         });
         dropdownHtml += "</ul>";
     }
@@ -179,7 +179,7 @@ function updateImageResults(searchParams) {
             var sourceUrl = new URL(hit.referencingDocument);
             searchResults += "<div class=\"search-image-container\" data-fld-width=\"" + hit.imageWidth +"\" data-fld-height=\"" + hit.imageHeight + "\">"
             searchResults += "<figure>"
-            searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\"/>"
+            searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + escapeHtml(hit.description) +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\"/>"
             searchResults += "<figcaption style=\"max-width: " + hit.imageWidth + "px;\"><a href=\"" + hit.referencingDocument + "\" target=\"_blank\"><span class=\"search-image-reference-host\">" + sourceUrl.host + "</span><br />" + hit.description + "</a></figcaption>"
             searchResults += "</figure>"
             searchResults += "</div>"
@@ -255,9 +255,14 @@ function updateDocumentResults(searchParams) {
         // Preview Container Start
         searchResults = "<div class='preview-container'>";
 
+        // if there's a single match, or the query matches exactly once in the results, display a map
+        // e.g. a search for "Aconcagua" will produce: ["Aconcagua", "Aconcagua Sur"], but it's safe
+        // to assume we just want "Aconcagua". Where as a search for "Goat Mountain" might produce duplicates
+        // and so we should avoid displaying a map for it
         if (placeNameResponse != null &&
             placeNameResponse.length > 0 &&
-            placeNameResponse[0].placenames.length == 1
+            (placeNameResponse[0].placenames.length == 1 ||
+             isPlaceNameUniqueExactMatch(searchParams.get("query"), placeNameResponse[0].placenames))
         ) {
             var placeName = placeNameResponse[0].placenames[0];
             searchResults += "<div class='preview-map-container'>";
@@ -301,7 +306,7 @@ function updateDocumentResults(searchParams) {
 
                 if (count < 3 || ($(window).width() > 700 && previewMapData == null)) {
                     searchResults += "<div class=\"search-result-image-preview-thumbnail\">"
-                    searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + hit.description +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\" />"
+                    searchResults += "<img class=\"search-image\" src=\"" + hit.thumbnail + "\" data-src=\"" + hit.source + "\" data-description=\"" + escapeHtml(hit.description) +"\" data-host=\"" + sourceUrl.host +"\" data-reference=\"" + hit.referencingDocument + "\" />"
                     searchResults += "</div>"
                 }
 
@@ -586,4 +591,8 @@ function runSearchAnimations() {
     animatedPhrases.push(finalPhrase);
 
     printPhrases(animatedPhrases, $('#search-bar'));
+}
+
+function isPlaceNameUniqueExactMatch(value, placeNames) {
+    return placeNames.filter(placeName => value == placeName.name || value == placeName.alternativeName).length == 1
 }

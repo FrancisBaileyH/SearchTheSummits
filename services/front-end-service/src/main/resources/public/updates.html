@@ -34,6 +34,20 @@
     <div class="column">
       <article>
         <h4 style="text-align: center; margin-top: 2em;">Latest Updates</h4>
+        <h5>June 29th, 2023</h5>
+        <ul>
+          <li>Refined the auto-complete search experience a bit further:
+            <ul>
+              <li>Cleaned up OSM names which fixes issues with summits named like: "Mount Seton/Goat Mountain" in OSM. Now auto-complete recognizes the values as an alternative name</li>
+              <li>Changed the way latin american summits are handled as often they're often officially named like: "Cerro Aconcagua" but usually only referred to as: "Aconcagua"</li>
+              <li>Added some text normalization to fix bad apostrophes in the summit names. E.g. Puʻuhonuaʻula is now saved as: Pu'uhonua'ula</li>
+              <li>Removed duplicate locations</li>
+            </ul>
+          </li>
+          <li>Updated the map preview logic so that it will display for more summits now. Previously, the map would not display if there was more than one match e.g. "Goat Mountain". But in some cases you may type "Aconcagua" and the API would return both "Aconcagua" and "Aconcagua Sur". It's safe to assume we just want "Aconcagua" since it's both unique and an exact match.</li>
+          <li>Fixed a long standing bug in image previews and more recently in auto-complete where a result with an apostrophe in it would break the expected text up.</li>
+          <li>Started indexing mountain project routes, but only if they are alpine routes. The site isn't intended for regular climbing routes at the moment. Thought that may change in the future.</li>
+        </ul>
         <h5>June 18th, 2023</h5>
         <ul>
           <li>Preview maps have now been implemented, giving you context on your search location!</li>
