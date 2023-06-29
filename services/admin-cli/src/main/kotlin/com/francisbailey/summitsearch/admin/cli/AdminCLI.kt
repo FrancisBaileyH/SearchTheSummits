@@ -31,16 +31,16 @@ class AdminCLI: CliktCommand() {
     override fun run() {
         val client = ElasticSearchClientFactory.build(
             ElasticSearchClientFactory.Configuration(
-            endpoint = endpoint!!,
-            fingerprint = fingerprint,
-            username = username!!,
-            password = password!!,
-            scheme = if (fingerprint.isBlank()) {
-                "http"
-            } else {
-                "https"
-            }
-        ))
+                endpoint = endpoint!!,
+                fingerprint = fingerprint,
+                username = username!!,
+                password = password!!,
+                scheme = if (fingerprint.isBlank()) {
+                    "http"
+                } else {
+                    "https"
+                }
+            ))
 
         val placeNameIndex = PlaceNameIndexService(
             SummitSearchIndexes.placeNameIndex,
@@ -62,14 +62,29 @@ class AdminCLI: CliktCommand() {
                 val elevation = tags["ele"]?.toDoubleOrNull()
                 val name = tags["name"]
                 val natural = tags["natural"]
+                val alternativeName = tags["alt_name"]
 
                 if (name != null && natural in setOf("peak", "volcano")) {
+                    val sanitizedNames = when {
+                        name.contains("/") -> {
+                            val names = name.split("/")
+                            names.first() to names.last().trim()
+                        }
+                        name.contains("(") -> {
+                            name.substringBefore("(") to alternativeName
+                        }
+                        name.lowercase().startsWith("cerro ") -> {
+                            (name.substringAfter("Cerro") to name)
+                        }
+                        else -> name to alternativeName
+                    }
+
                     PlaceNameIndexRequest(
-                        name = name,
+                        name = sanitizedNames.first.trim(),
                         elevation = elevation?.toInt(),
                         latitude = node.latitude,
                         longitude = node.longitude,
-                        alternativeName = tags["alt_name"],
+                        alternativeName = sanitizedNames.second?.trim(),
                         description = tags["description"],
                         source = tags["source"]
                     )
