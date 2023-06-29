@@ -133,7 +133,6 @@ class PlaceNameIndexService(
                 val normalizedName = textNormalizer.normalize(request.name)
                 val normalizedAltName = request.alternativeName?.let { textNormalizer.normalize(it) }
 
-                println("${request.name} and $normalizedName")
                 BulkOperation.of { operation ->
                     operation.index { indexOperation ->
                         indexOperation.id(generateId(request.latitude, request.longitude))
