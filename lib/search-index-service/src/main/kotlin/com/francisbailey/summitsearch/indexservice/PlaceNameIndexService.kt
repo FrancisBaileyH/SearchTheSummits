@@ -12,6 +12,8 @@ import co.elastic.clients.elasticsearch.core.search.CompletionSuggester
 import co.elastic.clients.elasticsearch.core.search.FieldSuggester
 import co.elastic.clients.elasticsearch.core.search.Suggester
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
+import com.francisbailey.summitsearch.indexservice.common.DefaultTextNormalizer
+import com.francisbailey.summitsearch.indexservice.common.TextNormalizer
 import com.francisbailey.summitsearch.indexservice.common.toSha1
 import com.francisbailey.summitsearch.indexservice.extension.indexExists
 import mu.KotlinLogging
@@ -21,7 +23,8 @@ class PlaceNameIndexService(
     val indexName: String,
     private val client: ElasticsearchClient,
     private val synonyms: List<String> = emptyList(),
-    private val clock: Clock = Clock.systemUTC()
+    private val clock: Clock = Clock.systemUTC(),
+    private val textNormalizer: TextNormalizer = DefaultTextNormalizer()
 ) {
 
     private val log = KotlinLogging.logger { }
@@ -35,7 +38,7 @@ class PlaceNameIndexService(
             it.index(indexName)
             it.query { query ->
                 query.multiMatch { match ->
-                    match.query(request.query)
+                    match.query(textNormalizer.normalize(request.query))
                     match.fields(PlaceNameMapping::name.name, PlaceNameMapping::alternativeName.name)
                     match.analyzer(ANALYZER_NAME)
                     match.type(TextQueryType.PhrasePrefix)
@@ -127,14 +130,20 @@ class PlaceNameIndexService(
         client.bulk {
             it.index(indexName)
             it.operations(requests.map { request ->
+                val normalizedName = textNormalizer.normalize(request.name)
+                val normalizedAltName = request.alternativeName?.let { textNormalizer.normalize(it) }
+
+                println("${request.name} and $normalizedName")
                 BulkOperation.of { operation ->
                     operation.index { indexOperation ->
-                        indexOperation.id(generateId(request.name, request.latitude, request.longitude))
+                        indexOperation.id(generateId(request.latitude, request.longitude))
                         indexOperation.document(
                             PlaceNameMapping(
-                                name = request.name,
-                                alternativeName = request.alternativeName,
-                                nameSuggester = generateSuggestions(request.name) + generateSuggestions(request.alternativeName),
+                                name = normalizedName,
+                                alternativeName = normalizedAltName,
+                                nameSuggester = generateSuggestions(normalizedName)
+                                    .union(generateSuggestions(normalizedAltName))
+                                    .toList(),
                                 description = request.description,
                                 source = request.source,
                                 elevation = request.elevation,
@@ -196,8 +205,8 @@ class PlaceNameIndexService(
         }
     }
 
-    internal fun generateId(name: String, latitude: Double, longitude: Double): String  {
-        return "${name.lowercase()}-${latitude}-${longitude}".toSha1()
+    internal fun generateId(latitude: Double, longitude: Double): String  {
+        return "${latitude}-${longitude}".toSha1()
     }
 
     /**

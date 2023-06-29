@@ -43,7 +43,7 @@ class PlaceNameIndexServiceTest {
 
         val result = client.get(GetRequest.of {
             it.index(service.indexName)
-            it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
+            it.id("${request.latitude}-${request.longitude}".toSha1())
         }, PlaceNameMapping::class.java).source()
 
         assertEquals(request.name, result?.name)
@@ -74,8 +74,8 @@ class PlaceNameIndexServiceTest {
         val request2 = PlaceNameIndexRequest(
             name = "Mount Harvey",
             alternativeName = "Something Made Up",
-            latitude = 49.487778,
-            longitude = -123.201389,
+            latitude = 49.487771,
+            longitude = -123.201329,
             elevation = 1788,
             description = "This is a mountain",
             source = "NRCAN"
@@ -86,7 +86,7 @@ class PlaceNameIndexServiceTest {
 
         val result = client.get(GetRequest.of {
             it.index(service.indexName)
-            it.id("${request.name.lowercase()}-${request.latitude}-${request.longitude}".toSha1())
+            it.id("${request.latitude}-${request.longitude}".toSha1())
         }, PlaceNameMapping::class.java).source()
 
         assertEquals(request.name, result?.name)
@@ -99,7 +99,7 @@ class PlaceNameIndexServiceTest {
 
         val result2 = client.get(GetRequest.of {
             it.index(service.indexName)
-            it.id("${request2.name.lowercase()}-${request2.latitude}-${request2.longitude}".toSha1())
+            it.id("${request2.latitude}-${request2.longitude}".toSha1())
         }, PlaceNameMapping::class.java).source()
 
         assertEquals(request2.name, result2?.name)
@@ -325,6 +325,27 @@ class PlaceNameIndexServiceTest {
         val service = PlaceNameIndexService(client = client, indexName = "suggestion-test")
 
         assertEquals(expectedSuggestions, service.generateSuggestions("Mount Judge Howay"))
+    }
+
+    @Test
+    fun `normalizes search results`() {
+        val service = PlaceNameIndexService(client = client, indexName = "text-sanitizer-test").also {
+            it.createIfNotExists()
+        }
+
+        val request = PlaceNameIndexRequest(
+            name = "Puʻuhonuaʻula",
+            alternativeName = null,
+            latitude = 19.48027,
+            longitude = -154.88856,
+            elevation = 258
+        )
+
+        service.index(request)
+        client.indices().refresh()
+
+        val results = service.autoCompleteQuery(AutoCompleteQueryRequest(prefix = "Pu'"))
+        assertEquals("Pu'uhonua'ula", results.first().suggestion)
     }
 
     companion object {

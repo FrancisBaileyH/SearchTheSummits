@@ -11,7 +11,8 @@ class DefaultTextNormalizerTest {
         "\u0092",
         "\u2018",
         "\u2019",
-        "\uFF07"
+        "\uFF07",
+        "\u02BB"
     )
 
     @Test

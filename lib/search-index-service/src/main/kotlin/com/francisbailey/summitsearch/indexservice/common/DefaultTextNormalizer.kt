@@ -16,7 +16,8 @@ class DefaultTextNormalizer: TextNormalizer {
             "\u0092",
             "\u2018",
             "\u2019",
-            "\uFF07"
+            "\uFF07",
+            "\u02BB"
         )
 
         val APOSTROPHE_REGEX = Regex("[${APOSTROPHE_REPRESENTATIONS.joinToString("")}]")
