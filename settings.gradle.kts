@@ -2,7 +2,7 @@ rootProject.name = "search-the-summits"
 include("services:page-indexing-coordinator")
 include("services:page-indexing-worker")
 include("services:front-end-service")
-include("services:admin-cli")
+include("services:osm-importer")
 include("lib:search-index-service")
 include("lib:service-common")
 include("lib:kotlin-htmldate")

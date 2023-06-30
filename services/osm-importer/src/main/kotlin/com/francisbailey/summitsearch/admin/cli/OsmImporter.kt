@@ -17,7 +17,7 @@ import mu.KotlinLogging
 /**
  * @TODO - "peak" incorporates 5040 peak
  */
-class AdminCLI: CliktCommand() {
+class OsmImporter: CliktCommand() {
 
     private val log = KotlinLogging.logger { }
 
@@ -111,4 +111,4 @@ class AdminCLI: CliktCommand() {
     }
 }
 
-fun main(args: Array<String>) = AdminCLI().main(args)
+fun main(args: Array<String>) = OsmImporter().main(args)
