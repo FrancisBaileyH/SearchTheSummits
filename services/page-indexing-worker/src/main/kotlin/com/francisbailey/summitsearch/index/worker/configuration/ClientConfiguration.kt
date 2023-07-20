@@ -5,6 +5,7 @@ import com.francisbailey.htmldate.HtmlDateSearchConfiguration
 import com.francisbailey.summitsearch.services.common.RegionConfig
 import com.francisbailey.summitsearch.index.worker.client.IndexingTaskQueueClient
 import com.francisbailey.summitsearch.index.worker.client.SQSIndexingTaskQueueClient
+import com.francisbailey.summitsearch.index.worker.extension.Utf8PassThroughEncoder
 import com.francisbailey.summitsearch.indexservice.*
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -72,6 +73,7 @@ open class ClientConfiguration(
             install(ContentEncoding) {
                 gzip()
                 deflate()
+                customEncoder(Utf8PassThroughEncoder)
             }
            followRedirects = false
         }

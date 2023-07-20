@@ -35,7 +35,8 @@ class HttpCrawlerClient(
         return try {
             transformer(response)
         } catch (e: Exception) {
-            throw UnparsableEntityException("Unable to parse content from: $pageUrl. Reason: ${e.message}")
+            log.debug(e) { "Failed to fetch content from: $pageUrl" }
+            throw UnparsableEntityException("Unable to parse content from: $pageUrl. Reason: ${e.message}.")
         }
     }
 

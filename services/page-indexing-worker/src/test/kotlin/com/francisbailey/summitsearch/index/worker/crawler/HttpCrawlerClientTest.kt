@@ -2,6 +2,7 @@ package com.francisbailey.summitsearch.index.worker.crawler
 
 import com.francisbailey.summitsearch.index.worker.configuration.ClientConfiguration
 import com.francisbailey.summitsearch.services.common.RegionConfig
+import io.ktor.client.call.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.network.sockets.*
 import io.ktor.client.network.sockets.ConnectTimeoutException
@@ -9,6 +10,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -198,5 +200,27 @@ class HttpCrawlerClientTest {
         })
 
         assertThrows<RetryableEntityException> { service.get(url, validator, transformer, Duration.ofMillis(25)) }
+    }
+
+    @Test
+    fun `processes bad UTF-8 content encoding without issue`() {
+        val expectedResult = "Test"
+
+        whenever(transformer.invoke(any())).thenReturn(expectedResult)
+
+        val service = HttpCrawlerClient(clientConfiguration.httpClient(MockEngine { request ->
+            assertEquals(url.toURI(), request.url.toURI())
+            respond(
+                content = expectedResult,
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentEncoding, "UTF-8")
+            )
+        }))
+
+        val result = service.get(url, validator) {
+            runBlocking { String(it.body<ByteArray>()) }
+        }
+
+        assertEquals(expectedResult, result)
     }
 }
