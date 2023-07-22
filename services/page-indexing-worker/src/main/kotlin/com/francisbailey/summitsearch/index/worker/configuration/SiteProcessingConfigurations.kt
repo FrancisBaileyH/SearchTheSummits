@@ -71,6 +71,12 @@ open class SiteProcessingConfigurations {
             imageContentSelector = ClubTreadImageExtractorStrategy()
         ),
         SiteProcessingConfiguration(
+            source = URL("https://pbase.com/nolock"),
+            discoveryFilter = ScurlockFilter,
+            indexingFilter = ScurlockIndexFilter,
+            imageContentSelector = PBaseImageExtractorStrategy()
+        ),
+        SiteProcessingConfiguration(
             source = URL("https://peakbagger.com"),
             discoveryFilter = PeakBaggerFilter,
             indexingFilter = PeakBaggerIndexFilter
