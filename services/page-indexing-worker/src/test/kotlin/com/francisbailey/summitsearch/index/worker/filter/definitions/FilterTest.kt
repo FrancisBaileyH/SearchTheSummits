@@ -4,27 +4,12 @@ import com.francisbailey.summitsearch.index.worker.configuration.FilterConfigura
 import com.francisbailey.summitsearch.index.worker.configuration.SiteProcessingConfigurations
 import com.francisbailey.summitsearch.index.worker.extension.normalizeAndEncode
 import com.francisbailey.summitsearch.index.worker.filter.DocumentFilterService
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.CascadeClimbersSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerContentValidatorStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.PeakBaggerSubmitThumbnailStep
-import com.francisbailey.summitsearch.index.worker.indexing.step.override.SkiSicknessSubmitLinksStep
 import org.junit.jupiter.api.Assertions
-import org.mockito.kotlin.mock
 import java.net.URL
 
 abstract class FilterTest {
 
-    private val skiSicknessSubmitLinksStep = mock<SkiSicknessSubmitLinksStep>()
-    private val peakBaggerSubmitThumbnailStep = mock<PeakBaggerSubmitThumbnailStep>()
-    private val peakBaggerContentValidatorStep = mock<PeakBaggerContentValidatorStep>()
-    private val cascadeClimbersSubmitThumbnailStep = mock<CascadeClimbersSubmitThumbnailStep>()
-
-    private val indexSourceConfiguration = SiteProcessingConfigurations(
-//        skiSicknessSubmitLinksStep,
-//        peakBaggerSubmitThumbnailStep,
-//        peakBaggerContentValidatorStep,
-//        cascadeClimbersSubmitThumbnailStep
-    )
+    private val indexSourceConfiguration = SiteProcessingConfigurations()
 
     private val configuration = FilterConfiguration(indexSourceConfiguration.indexingSourceOverrides())
 

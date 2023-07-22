@@ -175,19 +175,12 @@ open class PipelineOverrideConfiguration(
     private val skiSicknessSubmitLinksStep: SkiSicknessSubmitLinksStep,
     private val peakBaggerSubmitThumbnailStep: PeakBaggerSubmitThumbnailStep,
     private val peakBaggerContentValidatorStep: PeakBaggerContentValidatorStep,
-    private val cascadeClimbersSubmitThumbnailStep: CascadeClimbersSubmitThumbnailStep,
     private val mountainProjectContentValidatorStep: MountainProjectContentValidatorStep
 ) {
 
     @Bean
     open fun htmlPipelineOverrides(): Map<URL, Set<StepOverride<DatedDocument>>> {
         return mapOf(
-            URL("https://cascadeclimbers.com") to setOf(
-                StepOverride(
-                    targetStep = SubmitThumbnailStep::class,
-                    override = cascadeClimbersSubmitThumbnailStep
-                )
-            ),
             URL("https://peakbagger.com") to setOf(
                 StepOverride(
                     targetStep = ContentValidatorStep::class,
