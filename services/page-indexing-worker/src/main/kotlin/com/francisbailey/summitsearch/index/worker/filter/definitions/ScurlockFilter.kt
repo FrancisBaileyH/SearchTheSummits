@@ -6,7 +6,9 @@ import java.util.regex.Pattern
 
 object ScurlockFilter: DocumentFilterChain(exclusive = false) {
     init {
-        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/nolock/.*")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/nolock/image/[0-9]{3,10}$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/nolock/image/[0-9]{3,10}$")))
+        addFilter(PathMatchingDocumentFilter(Pattern.compile("^/nolock/[a-zA-Z0-9-_]{1,200}$")))
     }
 }
 
