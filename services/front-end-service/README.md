@@ -49,3 +49,9 @@ sudo certbot --nginx -d monitoring.searchthesummits.com
 
 nginx -t && nginx -s reload
 ```
+
+#### Kibana Cert Renewal
+```
+nginx -s stop
+certbot certonly --standalone -d kibana.searchthesummits.com
+```
