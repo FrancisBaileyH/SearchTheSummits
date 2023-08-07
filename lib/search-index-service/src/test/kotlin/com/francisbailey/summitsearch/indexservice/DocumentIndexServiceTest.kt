@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.SearchResponse
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
+import co.elastic.clients.elasticsearch.core.search.HighlighterType
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
@@ -751,6 +752,7 @@ class DocumentIndexServiceTest {
                 ))
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.type(HighlighterType.Plain)
             }
             it.size(20)
             it.from(0)
@@ -801,6 +803,7 @@ class DocumentIndexServiceTest {
                 ))
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.type(HighlighterType.Plain)
             }
             it.size(20)
             it.from(0)

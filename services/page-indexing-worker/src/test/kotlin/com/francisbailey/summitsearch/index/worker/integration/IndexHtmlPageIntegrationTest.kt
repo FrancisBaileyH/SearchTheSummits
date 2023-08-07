@@ -108,7 +108,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
         val result = results.hits.first()
 
         Assertions.assertEquals(
-            "We had traversed so far to the right that we had reached the main uptrack leading into the <em>Connaught</em> Drainage. We couldn't believe it.",
+            "all these people coming from in the middle of nowhere? Then the truth dawned on us. We had traversed so far to the right that we had reached the main uptrack leading into the <em>Connaught</em> Drainage. We",
             result.highlight
         )
         Assertions.assertEquals(item.task.details.entityUrl.toString(), result.source)
@@ -136,7 +136,7 @@ class IndexHtmlPageIntegrationTest: StepTest() {
         Assertions.assertEquals(1, result.hits.size)
         Assertions.assertEquals("https://example.com/TwinsTower.html", result.hits.first().source)
         Assertions.assertEquals(
-            "Like Bill Corbett mentioned in this The 11,000ers book, \"the sudden view of <em>Twins</em> <em>Tower</em> from…",
+            "Canadian Rockies. Like Bill Corbett mentioned in this The 11,000ers book, \"the sudden view of <em>Twins</em> <em>Tower</em> from…",
             result.hits.first().highlight
         )
         Assertions.assertEquals("Twins Tower | Steven's Peak-bagging Journey", result.hits.first().title)

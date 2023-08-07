@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch.core.*
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.HighlightField
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
+import co.elastic.clients.elasticsearch.core.search.HighlighterType
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import com.francisbailey.summitsearch.indexservice.common.DefaultTextNormalizer
 import com.francisbailey.summitsearch.indexservice.common.ElasticSearchConstants.Companion.HIGHLIGHT_DELIMITER
@@ -95,6 +96,7 @@ class DocumentIndexService(
                 ))
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
+                highlight.type(HighlighterType.Plain)
             }
             it.size(paginationResultSize)
             it.from(queryRequest.from)
@@ -118,7 +120,7 @@ class DocumentIndexService(
                     }
 
                     DocumentQueryHit(
-                        highlight = highlight!!,
+                        highlight = highlight!!.trim(),
                         source = it.stringField(DocumentMapping::source.name),
                         title = it.stringField(DocumentMapping::title.name),
                         thumbnails = it.listField(DocumentMapping::thumbnails.name)

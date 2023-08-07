@@ -832,7 +832,7 @@ footer #footer-image {
 
 .modal p {
     margin: 0;
-    padding: 0 16px;
+    padding: 4px 16px 0 16px;
     overflow-wrap: anywhere;
 }
 
@@ -841,6 +841,11 @@ footer #footer-image {
     max-width: 100%;
     max-height: calc(100vh - 225px);
     text-align: center;
+}
+
+.search-image-modal .centered {
+    line-height: 0;
+    background-color: black;
 }
 
 @media(min-width: 500px) {
