@@ -170,7 +170,8 @@ hr.sub-menu-divider {
     margin: 0 auto;
     max-width: 500px;
     text-align: center;
-    padding-top: 25%;
+    /*padding-top: 25%;*/
+    padding-top: 10%;
 }
 
 #search-suggestion-box {
@@ -353,6 +354,26 @@ hr.sub-menu-divider {
 
 .search-form-container.has-query .search-form-column {
     flex: 1 1 auto;
+}
+
+.info-box {
+    max-width: max-content;
+    margin: 0 auto;
+    padding: .75rem 1.25rem;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    color: #383d41;
+    background-color: #e2e3e5;
+    border-color: #d6d8db;
+}
+
+.info-box p {
+    margin-bottom: 1em;
+}
+
+.info-box ul {
+    margin-bottom: 0;
+    list-style-type: disc;
 }
 
 .search-form-tagline {

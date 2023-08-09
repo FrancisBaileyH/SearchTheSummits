@@ -7,6 +7,6 @@ internal class ElasticSearchConstants {
         const val SORT_LAST_NAME = "_last"
 
         val RESERVED_QUERY_REGEX = Regex("[-+|*()~]")
-        val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\\s]")
+        val QUERY_SANITIZATION_REGEX = Regex("[^-a-zA-Z0-9’'\"\\s]")
     }
 }

@@ -56,6 +56,8 @@ class DocumentIndexService(
             DocumentQueryType.STRICT -> buildSimpleQueryStringQuery(queryRequest)
         }
 
+        log.info { "Sanitized query: ${summitSearchQuery.rawQueryString}" }
+
         val response = elasticSearchClient.search(SearchRequest.of {
             it.index(indexName)
             it.trackTotalHits { track ->

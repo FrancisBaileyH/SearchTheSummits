@@ -12,6 +12,7 @@ $(document).ready(function() {
         $(".search-form-container").addClass("has-query");
         $(".search-form-container").removeClass("invisible");
         $(".header-menu").addClass("invisible");
+        $(".info-box").addClass("invisible");
         $("#search-bar").val(urlQuery);
         renderResourceMenu(resource);
         updateSearchResults();
@@ -135,7 +136,7 @@ function renderAutoSuggestDropdown(suggestions) {
         $(".search-form-container").addClass("has-suggestions")
         dropdownHtml += "<ul>";
         suggestions.placenames.forEach(function(value, index) {
-            dropdownHtml += "<li><a data-suggestion='" + escapeHtml(value.suggestion) +"' href='/?query=" + escapeHtml(value.suggestion) + "'>" + value.displayName + "</a></li>";
+            dropdownHtml += "<li><a data-suggestion='\"" + escapeHtml(value.suggestion) +"\"' href='/?query=\"" + escapeHtml(value.suggestion) + "\"'>" + value.displayName + "</a></li>";
         });
         dropdownHtml += "</ul>";
     }
@@ -459,7 +460,7 @@ function renderNoResultsMessage() {
     var noResultsMessage = "<div class=\"search-results-message\">"
     noResultsMessage += "<p>Your search for - <strong>" + query + "</strong> did not match any documents.</p>"
     noResultsMessage += "<p>Suggestions:</p><ul>"
-    noResultsMessage += "<li>Try fewer keywords - <strong>\"Ember\"</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
+    noResultsMessage += "<li>Try fewer keywords - <strong>Ember</strong> instead of <strong>\"Ember Mountain\"</strong>.</li>"
     noResultsMessage += "<li>Try different keywords - <strong>\"Serac Peak\"</strong> instead of <strong>\"Serac Mountain\"</strong></li>"
     noResultsMessage += "<li>Make sure all words are spelled correctly.</li>"
     noResultsMessage += "</ul></div>"
@@ -566,7 +567,7 @@ function runSearchAnimations() {
         "Lincoln Peak",
         "Devils Throne",
         "Phyllis's Engine",
-        "South Early Winters Spire",
+        "\"South Early Winters Spire\"",
         "Locomotive Mountain",
         "Ember Mountain",
         "Mount Baker",
@@ -577,13 +578,14 @@ function runSearchAnimations() {
         "Mount Bonnycastle",
         "Nivalis",
         "Sinister Peak",
-        "Harvey North Ramp",
-        "Parkhurst Mountain Couloir",
+        "\"Harvey\" \"North Ramp\"",
+        "\"Parkhurst Mountain\" Couloir",
         "Judge Howay",
         "Mazama Dome",
         "Serra V",
         "Mount Asperity",
-        "Bellicose Peak"
+        "Bellicose Peak",
+        "The Defendant"
     ]);
 
     var animatedPhrases = [firstPhrase]

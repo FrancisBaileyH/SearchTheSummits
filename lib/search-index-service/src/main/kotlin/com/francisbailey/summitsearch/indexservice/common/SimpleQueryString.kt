@@ -13,7 +13,8 @@ class SimpleQueryString(
                 "\\${it.value}"
             }
 
-        if (phraseBreak == 0) {
+        // User is attempting a strict match
+        if (phraseBreak == 0 || term.contains("\"")) {
             return term
         }
 
