@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*
 import co.elastic.clients.elasticsearch.core.*
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.search.HighlightField
+import co.elastic.clients.elasticsearch.core.search.HighlighterFragmenter
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
 import co.elastic.clients.elasticsearch.core.search.HighlighterType
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
@@ -99,6 +100,7 @@ class DocumentIndexService(
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(HIGHLIGHT_FRAGMENT_SIZE)
                 highlight.type(HighlighterType.Plain)
+                highlight.fragmenter(HighlighterFragmenter.Simple)
             }
             it.size(paginationResultSize)
             it.from(queryRequest.from)

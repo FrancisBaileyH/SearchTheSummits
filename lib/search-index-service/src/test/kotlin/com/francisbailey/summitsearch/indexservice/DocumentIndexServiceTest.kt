@@ -8,10 +8,7 @@ import co.elastic.clients.elasticsearch.core.ExistsRequest
 import co.elastic.clients.elasticsearch.core.GetRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.SearchResponse
-import co.elastic.clients.elasticsearch.core.search.HighlightField
-import co.elastic.clients.elasticsearch.core.search.HighlighterOrder
-import co.elastic.clients.elasticsearch.core.search.HighlighterType
-import co.elastic.clients.elasticsearch.core.search.HitsMetadata
+import co.elastic.clients.elasticsearch.core.search.*
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import co.elastic.clients.elasticsearch.indices.RefreshRequest
 import com.francisbailey.summitsearch.indexservice.extension.generateIdFromUrl
@@ -753,6 +750,7 @@ class DocumentIndexServiceTest {
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
                 highlight.type(HighlighterType.Plain)
+                highlight.fragmenter(HighlighterFragmenter.Simple)
             }
             it.size(20)
             it.from(0)
@@ -804,6 +802,7 @@ class DocumentIndexServiceTest {
                 highlight.order(HighlighterOrder.Score)
                 highlight.noMatchSize(DocumentIndexService.HIGHLIGHT_FRAGMENT_SIZE)
                 highlight.type(HighlighterType.Plain)
+                highlight.fragmenter(HighlighterFragmenter.Simple)
             }
             it.size(20)
             it.from(0)
