@@ -1,5 +1,12 @@
+# End of Life
+Search the summits was a really fun hobby project and an attempt to solve the real world problem of finding information and beta on the mountains of the world. A problem exacerbated by major search engines being polluted with ads and SEO/click bait sites. Adding to that, search engines have deprioritized older websites which don't conform to new web standards. This means websites with valuable beta can not be easily found or that entirely irrelevant results will appear in your search instead.
+
+By creating a highly focused search engine which exclusively crawled mountain-related websites, my goal was to offer a much better search experience. Unfortunately, other projects have taken precedent and the search engine was too niche to pick up much use.
+
+Part of the problem is my own making as I set out to play around with various distributed systems concepts; making the site much more complex than necessary. If I were to start over again, I'd simply follow the keep it simple stupid philosophy. In any event, it was a blast to make and I'm now open sourcing it for all to see my mistakes and successes!
+
 # Search the Summits
-Search the summits is a custom built search engine designed to search blogs, forums and other sites for trip reports, alpine journals and other documents related to ascending the world's mountains. 
+Search the summits is a custom built search engine designed to search blogs, forums and other sites for trip reports, alpine journals and other documents related to ascending the world's mountains.
 
 The search engine is comprised of several services to facilitate searching content including a custom web crawler system and frontend for serving up and running search queries. The crawling system supports a number of key features including:
 - automated content refreshing
